@@ -4242,7 +4242,13 @@
         profile: prof ? { firstName: prof.firstName, lastName: prof.lastName, team: prof.team } : null })
     });
     var d = await r.json().catch(function(){ return {}; });
-    if (!r.ok) throw new Error(d.error || 'Could not save the subscription.');
+    if (!r.ok){
+      // Technical details are for the admin (console / Admin panel), not for riders
+      console.warn('Team messages: server said', r.status, d.error);
+      throw new Error(r.status >= 500
+        ? 'Team messages aren\'t available right now. Please try again later.'
+        : 'Could not turn on team messages. Please try again.');
+    }
   }
   async function refreshTeamCard(){
     var sub = document.getElementById('teamCardSub'), btn = document.getElementById('teamCardBtn');
@@ -4292,7 +4298,7 @@
         try{ localStorage.setItem('rootahead_team_push', '1'); }catch(e){}
       }
     } catch(err){
-      sub.textContent = (err && err.message) ? err.message : 'Could not change team messages.';
+      sub.textContent = (err && err.message && err.message.length < 120) ? err.message : 'Could not change team messages. Please try again later.';
       btn.disabled = false; return;
     }
     btn.disabled = false;
