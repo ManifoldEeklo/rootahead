@@ -1,8 +1,11 @@
-// Admin: number of generated tracks per user (device profile).
+// Admin: number of generated tracks per user (device profile),
+// plus ?user=<deviceId> for one user's route history and ?route=<id> for one GPX.
 // Protected server-side: the request must carry header x-admin-key equal to
 // the ADMIN_PASSWORD environment variable set in Vercel. Without that env
 // var the endpoint refuses to answer, so names are never exposed by default.
 var getRedis = require('./_redis').getRedis;
+
+var HISTORY_LIMIT = 100; // newest routes shown per user
 
 function parse(v){
   if (v && typeof v === 'object') return v;       // Upstash client already parsed it
@@ -25,6 +28,30 @@ module.exports = async function handler(req, res){
   }
   try{
     var redis = getRedis();
+    var q = req.query || {};
+
+    // ?route=<id> → one stored route including its GPX
+    if (q.route){
+      var rec = parse(await redis.get('rootahead:route:' + String(q.route).slice(0, 40)));
+      if (!rec){ res.status(404).json({ error: 'Route not found.' }); return; }
+      res.status(200).json(rec);
+      return;
+    }
+
+    // ?user=<deviceId> → that user's route history, newest first (no GPX bodies)
+    if (q.user){
+      var ids = (await redis.lrange('rootahead:user:' + String(q.user).slice(0, 100) + ':routes', 0, HISTORY_LIMIT)) || [];
+      var more = ids.length > HISTORY_LIMIT;
+      ids = ids.slice(0, HISTORY_LIMIT);
+      var recs = ids.length ? (await redis.mget.apply(redis, ids.map(function(id){ return 'rootahead:route:' + id; }))) : [];
+      var routes = recs.map(parse).filter(Boolean).map(function(r){
+        return { id: r.id, createdAt: r.createdAt, distanceKm: r.distanceKm, gainM: r.gainM, loop: r.loop,
+                 shape: r.shape, activity: r.activity, hasGpx: !!r.gpx };
+      });
+      res.status(200).json({ routes: routes, more: more });
+      return;
+    }
+
     var counts = (await redis.hgetall('rootahead:users:routecount')) || {};
     var profiles = (await redis.hgetall('rootahead:users')) || {};
     var total = 0;

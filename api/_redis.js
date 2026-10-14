@@ -9,8 +9,11 @@
 // if nothing usable is there, throws an error that says what to fix.
 var Redis = require('@upstash/redis').Redis;
 
+function clean(v){ return String(v).trim().replace(/^["']|["']$/g, '').trim(); } // tolerate values pasted with quotes
+
 function findEnv(suffixes){
-  var env = process.env, keys = Object.keys(env);
+  var env = {}, keys = Object.keys(process.env);
+  keys.forEach(function(k){ env[k] = process.env[k] ? clean(process.env[k]) : process.env[k]; });
   for (var i = 0; i < suffixes.length; i++){
     if (env[suffixes[i]]) return { name: suffixes[i], value: env[suffixes[i]] };      // exact name first
   }
@@ -43,6 +46,11 @@ function getRedis(){
   } else {
     msg = 'Database not connected: in Vercel → Storage connect "Upstash for Redis" to this project, then Redeploy.';
   }
+  // Add the NAMES (never the values) of related variables this deployment can
+  // see, so it's clear whether the connection reached this deployment at all.
+  var seen = Object.keys(process.env).filter(function(k){ return /REDIS|UPSTASH|KV_|REST_API|STORAGE/i.test(k); }).sort();
+  msg += ' [Seen by this deployment: ' + (seen.length ? seen.join(', ') : 'no database variables at all') +
+         '; environment: ' + (process.env.VERCEL_ENV || 'unknown') + ']';
   var e = new Error(msg); e.notConfigured = true;
   throw e;
 }

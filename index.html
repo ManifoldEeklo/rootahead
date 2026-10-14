@@ -332,7 +332,8 @@
   }
   .admin-overlay.open{display:flex;}
   .admin-panel{
-    width:300px;max-width:calc(100% - 32px);background:var(--panel);border:1px solid var(--line);
+    max-height:calc(100% - 32px);overflow-y:auto;-webkit-overflow-scrolling:touch;
+    width:440px;max-width:calc(100% - 32px);background:var(--panel);border:1px solid var(--line);
     border-radius:var(--radius);padding:16px;box-shadow:0 10px 40px rgba(0,0,0,.6);
   }
   .admin-panel-header{
@@ -363,6 +364,23 @@
   .admin-stats-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
   .admin-stats-header span{font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;font-weight:600;}
   .admin-stats-row{display:flex;justify-content:space-between;padding:4px 0;font-size:12.5px;color:var(--text);}
+  .admin-tabs{display:flex;gap:4px;margin:0 0 4px;border-bottom:1px solid var(--line);}
+  .admin-tab{flex:1 1 0;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-muted);
+    font:inherit;font-size:12.5px;font-weight:600;padding:9px 4px;cursor:pointer;margin-bottom:-1px;}
+  .admin-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+  .admin-stats-block.first{margin-top:8px;border-top:none;padding-top:6px;}
+  .user-stats-row{cursor:pointer;}
+  .user-stats-row:hover .n{color:var(--gold);}
+  .user-stats-row .cnt::after{content:' ›';color:var(--text-muted);}
+  .uh-head{margin:12px 0 8px;}
+  .uh-name{font-size:15px;font-weight:600;}
+  .uh-team{font-size:11px;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;}
+  .uh-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:12.5px;}
+  .uh-row:last-child{border-bottom:none;}
+  .uh-row .d{flex:1 1 auto;min-width:0;}
+  .uh-row .d b{display:block;font-family:'IBM Plex Mono',monospace;color:var(--gold);font-weight:600;}
+  .uh-row .d span{display:block;font-size:11px;color:var(--text-muted);}
+  .uh-row .btn{flex:0 0 auto;}
   .admin-stats-row span:last-child{font-family:'IBM Plex Mono',monospace;color:var(--gold);}
 
   .status.ok{color:var(--gold);}
@@ -966,6 +984,55 @@
           <div class="admin-error" id="adminError"></div>
         </div>
         <div id="adminSettingsView" style="display:none;">
+          <div class="admin-tabs" role="tablist">
+            <button class="admin-tab active" type="button" data-tab="users" role="tab">Users</button>
+            <button class="admin-tab" type="button" data-tab="stats" role="tab">Stats</button>
+            <button class="admin-tab" type="button" data-tab="features" role="tab">Hidden features</button>
+          </div>
+
+          <div class="admin-tabpane" data-pane="users">
+          <div class="admin-stats-block first">
+            <div class="admin-stats-header">
+              <span>Users &amp; route history</span>
+              <button class="btn small" id="refreshUserStatsBtn">↻ Refresh</button>
+            </div>
+            <div id="userStatsList"></div>
+            <div id="userHistory" style="display:none;">
+              <button class="btn small" type="button" id="userHistoryBack">‹ All users</button>
+              <div class="uh-head"><div class="uh-name" id="uhName"></div><div class="uh-team" id="uhTeam"></div></div>
+              <div id="uhList"></div>
+              <div class="admin-note" id="uhNote"></div>
+            </div>
+            <div class="admin-note" id="userStatsError"></div>
+          </div>
+
+          </div>
+
+          <div class="admin-tabpane" data-pane="stats" style="display:none;">
+          <div class="admin-stats-block first">
+            <div class="admin-stats-header">
+              <span>Usage stats</span>
+              <button class="btn small" id="refreshStatsBtn">↻ Refresh</button>
+            </div>
+            <div class="admin-stats-row"><span>App opens</span><span id="statVisits">—</span></div>
+            <div class="admin-stats-row"><span>Unique devices</span><span id="statDevices">—</span></div>
+            <div class="admin-stats-row"><span>Routes generated</span><span id="statRoutes">—</span></div>
+            <div class="admin-note" id="statsError"></div>
+          </div>
+
+          <div class="admin-stats-block">
+            <div class="admin-stats-header">
+              <span>Notifications</span>
+            </div>
+            <button class="btn small" id="pushSubscribeBtn" style="width:100%;">🔔 Notify me on new visits</button>
+            <div class="admin-note">
+              Sends a push notification to this device whenever someone opens the app. Add this app to your phone's home screen first, and allow notifications when your browser asks. Works per-device — you can enable it on more than one.
+            </div>
+            <div class="admin-note" id="pushError"></div>
+          </div>
+          </div>
+
+          <div class="admin-tabpane" data-pane="features" style="display:none;">
           <div class="admin-toggle-row">
             <div>
               <div class="admin-toggle-label">Waypoints</div>
@@ -1009,36 +1076,6 @@
             <button class="admin-switch" id="toggleAdvancedControls" data-on="false">OFF</button>
           </div>
           <div class="admin-note">Changes apply immediately and are visible above as soon as you toggle them.</div>
-
-          <div class="admin-stats-block">
-            <div class="admin-stats-header">
-              <span>Tracks per user</span>
-              <button class="btn small" id="refreshUserStatsBtn">↻ Refresh</button>
-            </div>
-            <div id="userStatsList"></div>
-            <div class="admin-note" id="userStatsError"></div>
-          </div>
-
-          <div class="admin-stats-block">
-            <div class="admin-stats-header">
-              <span>Usage stats</span>
-              <button class="btn small" id="refreshStatsBtn">↻ Refresh</button>
-            </div>
-            <div class="admin-stats-row"><span>App opens</span><span id="statVisits">—</span></div>
-            <div class="admin-stats-row"><span>Unique devices</span><span id="statDevices">—</span></div>
-            <div class="admin-stats-row"><span>Routes generated</span><span id="statRoutes">—</span></div>
-            <div class="admin-note" id="statsError"></div>
-          </div>
-
-          <div class="admin-stats-block">
-            <div class="admin-stats-header">
-              <span>Notifications</span>
-            </div>
-            <button class="btn small" id="pushSubscribeBtn" style="width:100%;">🔔 Notify me on new visits</button>
-            <div class="admin-note">
-              Sends a push notification to this device whenever someone opens the app. Add this app to your phone's home screen first, and allow notifications when your browser asks. Works per-device — you can enable it on more than one.
-            </div>
-            <div class="admin-note" id="pushError"></div>
           </div>
         </div>
       </div>
@@ -4142,6 +4179,8 @@
       setSwitch(document.getElementById('toggleExplanations'), featureFlags.explanations);
       setSwitch(document.getElementById('toggleAdvancedControls'), featureFlags.advancedControls);
       adminKey = pw;
+      showAdminTab('users');
+      closeUserHistory();
       loadStats();
       loadUserStats();
       refreshPushButton();
@@ -4203,12 +4242,79 @@
           who.appendChild(n); who.appendChild(tm);
           var c = document.createElement('span'); c.className = 'cnt'; c.textContent = u.routes;
           row.appendChild(who); row.appendChild(c); list.appendChild(row);
+          row.title = 'Show route history';
+          row.addEventListener('click', function(){ openUserHistory(u); });
         });
         errEl.textContent = users.length + ' user' + (users.length === 1 ? '' : 's') + ' · ' + (res.data.totalRoutes || 0) + ' tracks stored';
       })
       .catch(function(){ errEl.textContent = 'Backend not reachable (needs the Vercel deploy).'; });
   }
-  document.getElementById('refreshUserStatsBtn').addEventListener('click', loadUserStats);
+  document.getElementById('refreshUserStatsBtn').addEventListener('click', function(){ closeUserHistory(); loadUserStats(); });
+
+  // Admin tabs: Users (default) · Stats · Hidden features
+  Array.prototype.forEach.call(document.querySelectorAll('.admin-tab'), function(tab){
+    tab.addEventListener('click', function(){ showAdminTab(tab.getAttribute('data-tab')); });
+  });
+  function showAdminTab(name){
+    Array.prototype.forEach.call(document.querySelectorAll('.admin-tab'), function(t){ t.classList.toggle('active', t.getAttribute('data-tab') === name); });
+    Array.prototype.forEach.call(document.querySelectorAll('.admin-tabpane'), function(p){ p.style.display = p.getAttribute('data-pane') === name ? 'block' : 'none'; });
+  }
+
+  // Route history of one user (newest first), each with its stored GPX
+  function adminGet(query){
+    return fetch('/api/admin-users' + query, { headers: { 'x-admin-key': adminKey } })
+      .then(function(r){ return r.json().then(function(d){ return { ok:r.ok, data:d }; }); });
+  }
+  function closeUserHistory(){
+    document.getElementById('userHistory').style.display = 'none';
+    document.getElementById('userStatsList').style.display = '';
+    document.getElementById('userStatsError').style.display = '';
+  }
+  function openUserHistory(u){
+    var name = (u.firstName || u.lastName) ? ((u.firstName || '') + ' ' + (u.lastName || '')).trim() : '(no profile)';
+    document.getElementById('uhName').textContent = name;
+    document.getElementById('uhTeam').textContent = (u.team || '—') + ' · ' + u.routes + ' route' + (u.routes === 1 ? '' : 's');
+    document.getElementById('userStatsList').style.display = 'none';
+    document.getElementById('userStatsError').style.display = 'none';
+    document.getElementById('userHistory').style.display = 'block';
+    var list = document.getElementById('uhList'), note = document.getElementById('uhNote');
+    list.innerHTML = ''; note.textContent = 'Loading…';
+    adminGet('?user=' + encodeURIComponent(u.deviceId)).then(function(res){
+      if (!res.ok){ note.textContent = (res.data && res.data.error) || 'Could not load history.'; return; }
+      var routes = res.data.routes || [];
+      note.textContent = routes.length ? (res.data.more ? 'Showing the latest ' + routes.length + '.' : '') : 'No stored routes for this user.';
+      routes.forEach(function(rt){
+        var row = document.createElement('div'); row.className = 'uh-row';
+        var d = document.createElement('div'); d.className = 'd';
+        var b = document.createElement('b');
+        b.textContent = (rt.distanceKm != null ? rt.distanceKm + ' km' : '? km') + (rt.gainM != null ? ' · ' + rt.gainM + ' m↑' : '');
+        var sp = document.createElement('span');
+        var when = rt.createdAt ? new Date(rt.createdAt) : null;
+        sp.textContent = (when ? when.toLocaleDateString() + ' ' + when.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '') +
+          ' · ' + (rt.loop ? 'loop' : 'point to point') + (rt.shape && rt.shape !== 'loop' ? ' · ' + rt.shape.replace(':', ' ') : '');
+        d.appendChild(b); d.appendChild(sp); row.appendChild(d);
+        var btn = document.createElement('button'); btn.className = 'btn small'; btn.type = 'button';
+        btn.textContent = rt.hasGpx ? '⬇ GPX' : 'no GPX';
+        btn.disabled = !rt.hasGpx;
+        btn.addEventListener('click', function(){ downloadStoredGpx(rt, name, btn); });
+        row.appendChild(btn); list.appendChild(row);
+      });
+    }).catch(function(){ note.textContent = 'Backend not reachable (needs the Vercel deploy).'; });
+  }
+  function downloadStoredGpx(rt, name, btn){
+    btn.disabled = true; var label = btn.textContent; btn.textContent = '…';
+    adminGet('?route=' + encodeURIComponent(rt.id)).then(function(res){
+      btn.disabled = false; btn.textContent = label;
+      if (!res.ok || !res.data.gpx){ document.getElementById('uhNote').textContent = (res.data && res.data.error) || 'GPX not available.'; return; }
+      var blob = new Blob([res.data.gpx], { type:'application/gpx+xml' });
+      var url = URL.createObjectURL(blob), a = document.createElement('a');
+      var day = (rt.createdAt || '').slice(0, 10);
+      a.href = url; a.download = ('root-ahead-' + name + '-' + day + '-' + Math.round(rt.distanceKm || 0) + 'km.gpx').replace(/[^\w.-]+/g, '_');
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+    }).catch(function(){ btn.disabled = false; btn.textContent = label; });
+  }
+  document.getElementById('userHistoryBack').addEventListener('click', closeUserHistory);
 
   document.getElementById('toggleExplanations').addEventListener('click', function(){
     featureFlags.explanations = !featureFlags.explanations;
