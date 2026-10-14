@@ -5,6 +5,24 @@
 <title>ROOT-Ahead — Route Planner</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#0d1712">
+<!-- Installable app (PWA): iPhone/iPad "Add to Home Screen" + Android install -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="ROOT-Ahead">
+<meta name="application-name" content="ROOT-Ahead">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<script>
+  // Android/Chrome fire this once, possibly before the app script runs —
+  // keep it so the dashboard's Install button can show the real prompt.
+  window.__installPrompt = null;
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    window.__installPrompt = e;
+    document.dispatchEvent(new Event('rootahead-installable'));
+  });
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -472,6 +490,23 @@
   .dash-toast{position:fixed;left:50%;bottom:calc(36px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);
     background:var(--panel-alt);border:1px solid var(--line);color:var(--text);font-size:13px;
     padding:8px 14px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;z-index:4100;}
+  .install-card{max-width:960px;width:calc(100% - 44px);margin:0 auto 28px;display:none;align-items:center;gap:12px;
+    background:var(--panel);border:1px solid var(--gold);border-radius:10px;padding:12px 14px;}
+  .install-card.show{display:flex;}
+  .install-card img{width:40px;height:40px;border-radius:9px;flex:0 0 auto;}
+  .install-card .txt{flex:1 1 auto;min-width:0;font-size:13px;line-height:1.35;}
+  .install-card .txt b{display:block;font-size:14px;}
+  .install-card .txt span{color:var(--text-muted);font-size:12px;}
+  .install-card .btn.primary{width:auto;margin:0;padding:9px 14px;font-size:14px;}
+  .install-card .x{background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;padding:4px;}
+  #iosInstall{position:fixed;inset:0;z-index:4600;display:none;align-items:flex-end;justify-content:center;
+    background:rgba(6,10,8,.8);padding:16px;}
+  #iosInstall.open{display:flex;}
+  .ios-sheet{width:100%;max-width:420px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 18px 14px;}
+  .ios-sheet h3{font-family:'Fjalla One',sans-serif;font-weight:400;letter-spacing:.05em;text-transform:uppercase;margin:0 0 12px;font-size:18px;}
+  .ios-sheet ol{margin:0 0 14px;padding-left:20px;font-size:14px;line-height:1.6;}
+  .ios-sheet .share{display:inline-block;vertical-align:-3px;width:18px;height:18px;stroke:var(--accent);fill:none;stroke-width:2;}
+  .ios-sheet .note{font-size:12px;color:var(--text-muted);margin:0 0 12px;}
   .dash-toast.show{opacity:1;transform:translate(-50%,0);}
 
   /* ---------- FIRST-RUN REGISTRATION ---------- */
@@ -491,9 +526,18 @@
 
   /* home button in the planner header */
   .home-btn{align-self:center;display:flex;align-items:center;justify-content:center;
-    width:34px;height:34px;flex:0 0 auto;cursor:pointer;font-size:18px;line-height:1;
+    height:34px;padding:0 12px;flex:0 0 auto;cursor:pointer;font-size:13px;font-weight:600;line-height:1;
     background:var(--panel-alt);border:1px solid var(--line);border-radius:var(--radius);color:var(--text);}
   .home-btn:hover{border-color:var(--accent);}
+  .sidebar-home{display:block;width:100%;margin:0 0 14px;text-align:left;}
+  .admin-controls{margin-top:22px;padding:14px 12px 4px;border:1px dashed var(--gold);border-radius:6px;background:rgba(217,181,86,.04);}
+  .admin-controls-title{font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:10px;}
+  .user-stats-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:5px 0;border-bottom:1px solid var(--line);font-size:12.5px;}
+  .user-stats-row:last-child{border-bottom:none;}
+  .user-stats-row .who{min-width:0;}
+  .user-stats-row .who .n{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .user-stats-row .who .tm{display:block;font-size:10.5px;color:var(--text-muted);}
+  .user-stats-row .cnt{font-family:'IBM Plex Mono',monospace;color:var(--gold);flex:0 0 auto;}
 </style>
 </head>
 <body>
@@ -559,7 +603,29 @@
       <span class="t">Track</span><span class="s">Plan a route &amp; GPX</span>
     </button>
   </div>
+  <div class="install-card" id="installCard">
+    <img src="/icon-192.png" alt="">
+    <div class="txt"><b>Install ROOT-Ahead</b><span>Open it from your home screen like a normal app.</span></div>
+    <button class="btn primary" type="button" id="installBtn">Install</button>
+    <button class="x" type="button" id="installDismiss" aria-label="Not now">✕</button>
+  </div>
   <div class="dash-toast" id="dashToast"></div>
+</div>
+
+<!-- iPhone/iPad: Safari has no install prompt, so explain the two taps -->
+<div id="iosInstall" role="dialog" aria-modal="true" aria-labelledby="iosInstallTitle">
+  <div class="ios-sheet">
+    <h3 id="iosInstallTitle">Install on iPhone / iPad</h3>
+    <ol>
+      <li>Tap the <b>Share</b> button
+        <svg class="share" viewBox="0 0 24 24"><path d="M12 15V3M8 7l4-4 4 4M5 11v9h14v-9"/></svg>
+        in the browser bar.</li>
+      <li>Scroll and tap <b>Add to Home Screen</b>.</li>
+      <li>Tap <b>Add</b>. ROOT-Ahead now opens from your home screen.</li>
+    </ol>
+    <p class="note" id="iosInstallNote">Works in Safari. In Chrome on iPhone, use the Share button next to the address bar.</p>
+    <button class="btn primary" type="button" id="iosInstallClose">Got it</button>
+  </div>
 </div>
 
 <!-- First-run registration (stored on this device only) -->
@@ -578,7 +644,7 @@
       <button class="btn ghost" type="button" id="regCancel" style="display:none;">Cancel</button>
       <button class="btn primary" type="submit">Save</button>
     </div>
-    <div class="reg-note">Stored only on this device. It will be used later for team messages.</div>
+    <div class="reg-note">Saved on this device. Your name and team are sent along with the routes you generate, so the team admin can see them; later also used for team messages.</div>
   </form>
 </div>
 
@@ -591,7 +657,7 @@
       <path d="M0,88 C150,55 300,100 450,68 S750,35 900,72 S1100,95 1200,60" fill="none" stroke="#d9b556" stroke-width="1"/>
     </svg>
     <div class="inner">
-      <button class="home-btn" id="homeBtn" type="button" title="Dashboard" aria-label="Back to dashboard">&#8962;</button>
+      <button class="home-btn" id="homeBtn" type="button" title="Back to dashboard" aria-label="Back to dashboard">‹ Home</button>
       <h1>ROOT-<span>Ahead</span></h1>
       <div class="tagline">Plot-it, Ride-it</div>
       <button class="sidebar-toggle" id="sidebarToggle" title="Show/hide controls" aria-label="Show/hide controls">☰</button>
@@ -602,6 +668,7 @@
 
   <div class="body">
     <aside class="controls" id="sidebarControls">
+      <button class="btn small sidebar-home" id="sidebarHomeBtn" type="button">‹ Dashboard</button>
 
       <div class="section-label">Start</div>
       <div class="field suggestions">
@@ -613,21 +680,7 @@
         <div class="suggest-list" id="startSuggest"></div>
       </div>
       <div class="toggle-row">
-        <button class="btn small" id="startGeoBtn">📍 Use my location</button>
         <button class="btn small" id="startMapBtn">✛ Pick on map</button>
-      </div>
-
-      <div id="radiusSection" style="display:none;">
-        <div class="toggle-row" style="margin-top:8px;">
-          <button class="btn small" id="radiusToggleBtn">⭕ Limit to a radius</button>
-        </div>
-        <div class="field" id="radiusField" style="display:none;margin-top:10px;">
-          <label>Max radius from start <span class="unit" id="radiusVal">5 km</span></label>
-          <input type="range" id="radiusSlider" min="1" max="30" value="5" step="1" class="accent">
-          <div class="hint-text" style="margin-bottom:10px;">The route is built to stay within this circle — useful if you need to be back near a specific point, or don't want to ride into an area you know to avoid.</div>
-          <label>Circle softness <span class="unit" id="radiusSoftVal">60%</span></label>
-          <input type="range" id="radiusSoftSlider" min="0" max="100" value="60" step="5" class="accent">
-        </div>
       </div>
 
       <div class="toggle-row" style="margin-top:8px;">
@@ -660,6 +713,64 @@
         <button class="btn small" id="endMapBtn">✛ Pick on map</button>
       </div>
 
+      <div class="divider"></div>
+
+      <div class="section-label">Ride</div>
+      <div class="field">
+        <label>Target distance <span class="unit" id="distVal">40 km</span></label>
+        <input type="range" id="distSlider" min="3" max="250" value="40" step="1" style="width:100%;accent-color:#c1611d;">
+      </div>
+      <div class="field">
+        <label>Activity <span class="unit">Road</span></label>
+      </div>
+
+      <div class="field">
+        <label>Route shape</label>
+        <div class="diff-select" style="grid-template-columns:repeat(2,1fr);">
+          <div class="diff-btn sel" data-rs="loop">Loop</div>
+          <div class="diff-btn" data-rs="figure">Figure</div>
+        </div>
+        <div class="hint-text" style="margin-top:6px;">
+          Loop sweeps around the start in one steady circuit. Crisscross visits the same via-points in a scrambled order instead — cutting back and forth through the middle rather than tracing a clean perimeter, so it turns up more small/unexpected roads. Figure traces a chosen shape — it'll only ever roughly resemble it, since the route still has to follow real roads. Draw (experimental): sketch any closed shape yourself and it's traced the same way.
+        </div>
+        <select id="figureSelect" style="display:none;margin-top:10px;">
+          <option value="heart" selected>❤️ Heart</option>
+          <option value="infinity">♾️ Infinity</option>
+          <option value="circle">⭕ Circle</option>
+          <option value="star">⭐ Star</option>
+          <option value="triangle">🔺 Triangle</option>
+          <option value="square">⬛ Square</option>
+          <option value="diamond">🔷 Diamond</option>
+          <option value="arrow">⬆️ Arrow</option>
+          <option value="tree">🌲 Tree</option>
+        </select>
+      </div>
+
+      <button class="btn primary" id="generateBtn">Generate Route</button>
+      <div class="status" id="statusMsg"></div>
+
+      <!-- ADMIN CONTROLS: everything the Track screen doesn't use (yet).
+           Kept fully working, only hidden — switch on via Admin → "Admin route
+           controls". Meant to be reused on other screens later. -->
+      <div class="admin-controls" id="adminControls" style="display:none;">
+        <div class="admin-controls-title">Admin controls</div>
+      <div class="toggle-row">
+        <button class="btn small" id="startGeoBtn">📍 Use my location</button>
+      </div>
+
+      <div id="radiusSection" style="display:none;">
+        <div class="toggle-row" style="margin-top:8px;">
+          <button class="btn small" id="radiusToggleBtn">⭕ Limit to a radius</button>
+        </div>
+        <div class="field" id="radiusField" style="display:none;margin-top:10px;">
+          <label>Max radius from start <span class="unit" id="radiusVal">5 km</span></label>
+          <input type="range" id="radiusSlider" min="1" max="30" value="5" step="1" class="accent">
+          <div class="hint-text" style="margin-bottom:10px;">The route is built to stay within this circle — useful if you need to be back near a specific point, or don't want to ride into an area you know to avoid.</div>
+          <label>Circle softness <span class="unit" id="radiusSoftVal">60%</span></label>
+          <input type="range" id="radiusSoftSlider" min="0" max="100" value="60" step="5" class="accent">
+        </div>
+      </div>
+
       <div class="divider" id="wpDivider"></div>
 
       <div id="waypointsSection" style="display:none;">
@@ -678,14 +789,6 @@
           <button class="btn small" id="wpMapBtn">✛ Drop a pin on the map</button>
         </div>
         <div id="wpList"></div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="section-label">Ride</div>
-      <div class="field">
-        <label>Target distance <span class="unit" id="distVal">40 km</span></label>
-        <input type="range" id="distSlider" min="3" max="250" value="40" step="1" style="width:100%;accent-color:#c1611d;">
       </div>
 
       <div class="field">
@@ -744,27 +847,11 @@
       </div>
 
       <div class="field">
-        <label>Route shape</label>
-        <div class="diff-select" style="grid-template-columns:repeat(4,1fr);">
-          <div class="diff-btn sel" data-rs="loop">Loop</div>
+        <label>More route shapes</label>
+        <div class="diff-select" style="grid-template-columns:repeat(2,1fr);">
           <div class="diff-btn" data-rs="crisscross">Crisscross</div>
-          <div class="diff-btn" data-rs="figure">Figure</div>
           <div class="diff-btn" data-rs="draw">✏️ Draw</div>
         </div>
-        <div class="hint-text" style="margin-top:6px;">
-          Loop sweeps around the start in one steady circuit. Crisscross visits the same via-points in a scrambled order instead — cutting back and forth through the middle rather than tracing a clean perimeter, so it turns up more small/unexpected roads. Figure traces a chosen shape — it'll only ever roughly resemble it, since the route still has to follow real roads. Draw (experimental): sketch any closed shape yourself and it's traced the same way.
-        </div>
-        <select id="figureSelect" style="display:none;margin-top:10px;">
-          <option value="heart" selected>❤️ Heart</option>
-          <option value="infinity">♾️ Infinity</option>
-          <option value="circle">⭕ Circle</option>
-          <option value="star">⭐ Star</option>
-          <option value="triangle">🔺 Triangle</option>
-          <option value="square">⬛ Square</option>
-          <option value="diamond">🔷 Diamond</option>
-          <option value="arrow">⬆️ Arrow</option>
-          <option value="tree">🌲 Tree</option>
-        </select>
       </div>
 
       <div class="field">
@@ -808,8 +895,7 @@
         </div>
       </div>
 
-      <button class="btn primary" id="generateBtn">Generate Route</button>
-      <div class="status" id="statusMsg"></div>
+      </div>
 
       <div class="admin-trigger" id="adminTrigger">⚙ Admin</div>
 
@@ -863,7 +949,23 @@
             </div>
             <button class="admin-switch" id="toggleExplanations" data-on="false">OFF</button>
           </div>
+          <div class="admin-toggle-row">
+            <div>
+              <div class="admin-toggle-label">Admin route controls</div>
+              <div class="admin-toggle-sub">Activity, difficulty, extra shapes, generation speed, waypoints, manual editing, favourite upload</div>
+            </div>
+            <button class="admin-switch" id="toggleAdvancedControls" data-on="false">OFF</button>
+          </div>
           <div class="admin-note">Changes apply immediately and are visible above as soon as you toggle them.</div>
+
+          <div class="admin-stats-block">
+            <div class="admin-stats-header">
+              <span>Tracks per user</span>
+              <button class="btn small" id="refreshUserStatsBtn">↻ Refresh</button>
+            </div>
+            <div id="userStatsList"></div>
+            <div class="admin-note" id="userStatsError"></div>
+          </div>
 
           <div class="admin-stats-block">
             <div class="admin-stats-header">
@@ -1055,6 +1157,33 @@
   }
   trackEvent('visit');
 
+  // A generated route is sent once to the backend together with the device
+  // profile (name/team) and the GPX itself, so it is stored per user. Fire-
+  // and-forget, exactly like trackEvent — it never blocks or breaks routing.
+  function trackRoute(){
+    var body = { type:'route', deviceId:deviceId };
+    try{
+      var prof = loadProfile();
+      if (prof) body.profile = { firstName:prof.firstName, lastName:prof.lastName, team:prof.team };
+      if (state.route){
+        var gain = null;
+        try{ if (state.route.elevations) gain = Math.round(computeGain(state.route.elevations).gain); }catch(e){}
+        body.route = {
+          distanceKm: Math.round(state.route.distanceKm * 10) / 10,
+          gainM: gain,
+          loop: !!state.loopMode,
+          shape: state.routeStyle + (state.routeStyle === 'figure' ? ':' + state.figureShape : ''),
+          activity: state.activity,
+          gpx: buildGPX()
+        };
+      }
+    } catch(e){ /* send at least the count */ }
+    fetch('/api/track', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    }).catch(function(){});
+  }
+
   /* ---------------- HOME DASHBOARD & DEVICE PROFILE ---------------- */
   // After the splash the app opens on a dashboard (Train / Food / Race /
   // Track). Track reveals the route planner, which stays mounted underneath
@@ -1159,16 +1288,55 @@
       }
     });
   });
-  document.getElementById('homeBtn').addEventListener('click', function(){
+  function goDashboard(){
     // Going "back" keeps the history tidy; if the page was opened directly on
     // #track there is nothing to go back to, so just clear the hash instead.
     if (openedTrackFromDash){ openedTrackFromDash = false; history.back(); }
     else { location.hash = ''; showDashboard(); }
-  });
+  }
+  document.getElementById('homeBtn').addEventListener('click', goDashboard);
+  document.getElementById('sidebarHomeBtn').addEventListener('click', goDashboard);
 
   renderProfile();
   if (!loadProfile()) openRegistration(false);
   else applyHashView();
+
+  /* ---------------- INSTALL AS APP (PWA) ---------------- */
+  // Android/Chrome/Edge: a real install prompt (captured in <head>).
+  // iPhone/iPad: no prompt exists, so the button opens short instructions.
+  // Hidden when already running as an installed app, or after "not now".
+  (function(){
+    var card = document.getElementById('installCard');
+    var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+              (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); // iPadOS reports as Mac
+    function standalone(){
+      return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+    }
+    function dismissed(){ try{ return localStorage.getItem('rootahead_install_dismissed') === '1'; }catch(e){ return false; } }
+    function refresh(){
+      var can = !standalone() && !dismissed() && (ios || !!window.__installPrompt);
+      card.classList.toggle('show', can);
+    }
+    document.addEventListener('rootahead-installable', refresh);
+    window.addEventListener('appinstalled', function(){ window.__installPrompt = null; refresh(); });
+    document.getElementById('installBtn').addEventListener('click', function(){
+      if (window.__installPrompt){
+        var ev = window.__installPrompt;
+        ev.prompt();
+        ev.userChoice.then(function(){ window.__installPrompt = null; refresh(); }).catch(function(){});
+      } else if (ios){
+        document.getElementById('iosInstall').classList.add('open');
+      }
+    });
+    document.getElementById('installDismiss').addEventListener('click', function(){
+      try{ localStorage.setItem('rootahead_install_dismissed', '1'); }catch(e){}
+      refresh();
+    });
+    document.getElementById('iosInstallClose').addEventListener('click', function(){
+      document.getElementById('iosInstall').classList.remove('open');
+    });
+    refresh();
+  })();
 
   // Registered unconditionally (not just when push is enabled) — a service
   // worker is part of what makes "Add to Home Screen" offer a proper
@@ -3638,9 +3806,10 @@
   /* ---------------- GENERATE ---------------- */
   /* ---------------- ADMIN PANEL ---------------- */
   var ADMIN_PASSWORD = 'Admin123';
-  var featureFlags = { waypoints:false, streetview:true, top10vWeights:false, radiusLimit:false, explanations:false };
+  var featureFlags = { waypoints:false, streetview:true, top10vWeights:false, radiusLimit:false, explanations:false, advancedControls:false };
 
   function applyFeatureVisibility(){
+    document.getElementById('adminControls').style.display = featureFlags.advancedControls ? 'block' : 'none';
     document.getElementById('waypointsSection').style.display = featureFlags.waypoints ? 'block' : 'none';
     document.getElementById('wpDivider').style.display = featureFlags.waypoints ? 'block' : 'none';
     document.getElementById('pegman').style.display = featureFlags.streetview ? 'flex' : 'none';
@@ -3801,7 +3970,10 @@
       setSwitch(document.getElementById('toggleTop10vWeights'), featureFlags.top10vWeights);
       setSwitch(document.getElementById('toggleRadiusLimit'), featureFlags.radiusLimit);
       setSwitch(document.getElementById('toggleExplanations'), featureFlags.explanations);
+      setSwitch(document.getElementById('toggleAdvancedControls'), featureFlags.advancedControls);
+      adminKey = pw;
       loadStats();
+      loadUserStats();
       refreshPushButton();
     } else {
       document.getElementById('adminError').textContent = 'Incorrect password.';
@@ -3831,6 +4003,43 @@
     setSwitch(this, featureFlags.radiusLimit);
     applyFeatureVisibility();
   });
+  document.getElementById('toggleAdvancedControls').addEventListener('click', function(){
+    featureFlags.advancedControls = !featureFlags.advancedControls;
+    setSwitch(this, featureFlags.advancedControls);
+    applyFeatureVisibility();
+  });
+
+  // Tracks per user — read from the backend (api/admin-users), which checks
+  // the password server-side against the ADMIN_PASSWORD env var in Vercel.
+  var adminKey = '';
+  function loadUserStats(){
+    var list = document.getElementById('userStatsList');
+    var errEl = document.getElementById('userStatsError');
+    errEl.textContent = 'Loading…';
+    fetch('/api/admin-users', { headers: { 'x-admin-key': adminKey } })
+      .then(function(r){ return r.json().then(function(d){ return { ok:r.ok, data:d }; }); })
+      .then(function(res){
+        list.innerHTML = '';
+        if (!res.ok){ errEl.textContent = (res.data && res.data.error) || 'Could not load users.'; return; }
+        var users = res.data.users || [];
+        if (!users.length){ errEl.textContent = 'No tracks generated yet.'; return; }
+        users.forEach(function(u){
+          var row = document.createElement('div'); row.className = 'user-stats-row';
+          var who = document.createElement('div'); who.className = 'who';
+          var n = document.createElement('span'); n.className = 'n';
+          n.textContent = (u.firstName || u.lastName) ? ((u.firstName || '') + ' ' + (u.lastName || '')).trim() : '(no profile)';
+          var tm = document.createElement('span'); tm.className = 'tm';
+          tm.textContent = (u.team || '—') + (u.lastRouteAt ? ' · last ' + new Date(u.lastRouteAt).toLocaleDateString() : '');
+          who.appendChild(n); who.appendChild(tm);
+          var c = document.createElement('span'); c.className = 'cnt'; c.textContent = u.routes;
+          row.appendChild(who); row.appendChild(c); list.appendChild(row);
+        });
+        errEl.textContent = users.length + ' user' + (users.length === 1 ? '' : 's') + ' · ' + (res.data.totalRoutes || 0) + ' tracks stored';
+      })
+      .catch(function(){ errEl.textContent = 'Backend not reachable (needs the Vercel deploy).'; });
+  }
+  document.getElementById('refreshUserStatsBtn').addEventListener('click', loadUserStats);
+
   document.getElementById('toggleExplanations').addEventListener('click', function(){
     featureFlags.explanations = !featureFlags.explanations;
     setSwitch(this, featureFlags.explanations);
@@ -4560,7 +4769,7 @@
 
       await applyRouteResult(result, note);
       if (detectMobile()) closeSidebar(); // reveal the map full-screen to show the result
-      trackEvent('route');
+      trackRoute();
     } catch(err){
       setStatus('Could not build that route: ' + err.message, true);
     } finally {

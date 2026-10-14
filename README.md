@@ -76,6 +76,26 @@ and `api/stats.js` are built for.
 - Redeploy (or it picks it up automatically) — the Admin panel's **Usage
   stats** block will now show real numbers.
 
+### 3b. Admin password for "Tracks per user"
+
+Every generated route is stored per user in the same Upstash Redis (no extra
+database needed). The user is the device profile (first name, last name, team)
+typed once on the phone — there is no login.
+
+- `rootahead:users:routecount` — hash, deviceId → number of routes
+- `rootahead:users` — hash, deviceId → `{firstName,lastName,team,lastRouteAt}`
+- `rootahead:user:<deviceId>:routes` — list of route ids, newest first
+- `rootahead:route:<id>` — the route record including the full GPX
+
+The Admin panel shows the count per user via `/api/admin-users`. That endpoint
+only answers when the header matches the `ADMIN_PASSWORD` environment variable:
+in Vercel → Settings → Environment Variables add `ADMIN_PASSWORD` with the same
+value you type in the Admin panel (currently `Admin123`, set in `index.html` as
+`ADMIN_PASSWORD`), then redeploy. Without it the table says the variable is missing.
+
+Size: one GPX is roughly 50–500 KB depending on distance. Upstash's free tier
+holds 256 MB, so a few thousand routes. A GPX over ~900 KB is counted but not stored.
+
 ### 4. (Optional) Push notifications when someone opens the app
 
 Lets you get a notification on your own phone whenever anyone opens the
@@ -142,6 +162,25 @@ drawer (☰ button in the header). On phones the menu opens by default after
 the splash screen; generating a route collapses it automatically so the map
 fills the screen. **Generate**, **Clear**, and **.gpx** live in the map's
 own bottom bar, not inside the drawer, so they're always reachable.
+
+## Install as an app (PWA)
+
+Works only on the HTTPS Vercel URL (not from a local file).
+
+- **Android (Chrome/Edge/Samsung Internet):** the dashboard shows an *Install*
+  card that opens the system install prompt. Also via browser menu → *Install app*.
+- **iPhone/iPad:** Safari has no install prompt. The *Install* card shows the
+  steps: Share → *Add to Home Screen* → *Add*.
+- Files: `manifest.json` (name, colours, icons incl. maskable, Track shortcut),
+  `sw.js` (offline app shell + push), `apple-touch-icon.png`,
+  `icon-maskable-192/512.png`. `vercel.json` serves `sw.js` and the manifest
+  uncached so updates arrive.
+- After a deploy the installed app picks up the new version on its next
+  online start (page is fetched network-first). If `sw.js`'s pre-cache list
+  changes, bump `CACHE` in `sw.js`.
+- Offline: the app opens, but maps, routing and route storage need a connection.
+- iPhone keeps the installed app's storage separate from Safari: the first
+  start of the installed app asks for name/team again and gets its own device id.
 
 ## Known limitations, stated plainly
 

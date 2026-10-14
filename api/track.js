@@ -36,6 +36,48 @@ async function notifySubscribers(redis){
   }));
 }
 
+// Per-user route storage. Keys (all in the same Upstash Redis):
+//   rootahead:users:routecount   hash  deviceId -> number of routes generated
+//   rootahead:users              hash  deviceId -> JSON {firstName,lastName,team,lastRouteAt}
+//   rootahead:user:<deviceId>:routes   list of route ids, newest first
+//   rootahead:route:<id>         JSON {id,deviceId,createdAt,distanceKm,gainM,loop,shape,activity,gpx}
+// "User" = one device: the profile is typed once on the phone, there is no login.
+var MAX_GPX_CHARS = 900000; // stay under Upstash's 1 MB request limit; bigger GPX is counted but not stored
+
+function clean(v, max){ return String(v == null ? '' : v).trim().slice(0, max || 40); }
+
+async function storeRouteForUser(redis, deviceId, body){
+  var now = new Date().toISOString();
+  await redis.hincrby('rootahead:users:routecount', deviceId, 1);
+
+  var prof = body.profile;
+  if (prof && typeof prof === 'object'){
+    var user = { firstName: clean(prof.firstName), lastName: clean(prof.lastName), team: clean(prof.team), lastRouteAt: now };
+    if (user.firstName || user.lastName || user.team){
+      var entry = {}; entry[deviceId] = JSON.stringify(user);
+      await redis.hset('rootahead:users', entry);
+    }
+  }
+
+  var r = body.route;
+  if (r && typeof r === 'object'){
+    var gpx = typeof r.gpx === 'string' ? r.gpx : '';
+    var id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    var rec = {
+      id: id, deviceId: deviceId, createdAt: now,
+      distanceKm: Number(r.distanceKm) || null,
+      gainM: (r.gainM == null ? null : Number(r.gainM)),
+      loop: !!r.loop,
+      shape: clean(r.shape, 40),
+      activity: clean(r.activity, 20),
+      gpx: gpx.length <= MAX_GPX_CHARS ? gpx : null,
+      gpxTooLarge: gpx.length > MAX_GPX_CHARS
+    };
+    await redis.set('rootahead:route:' + id, JSON.stringify(rec));
+    await redis.lpush('rootahead:user:' + deviceId + ':routes', id);
+  }
+}
+
 module.exports = async function handler(req, res){
   if (req.method !== 'POST'){
     res.status(405).json({ error: 'Use POST' });
@@ -58,6 +100,7 @@ module.exports = async function handler(req, res){
       notifySubscribers(redis).catch(function(){}); // never let a push failure affect the response below
     } else if (type === 'route'){
       await redis.incr('rootahead:routes:total');
+      await storeRouteForUser(redis, deviceId, body);
     } else {
       res.status(400).json({ error: 'Unknown type — expected "visit" or "route"' });
       return;
