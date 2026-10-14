@@ -429,6 +429,71 @@
   body.is-mobile #downloadBtn, body.is-mobile #clearRouteBtn, body.is-mobile #generateBtnMap{flex:1 1 auto;width:auto;margin:8px;}
   body.is-mobile #undoBtn, body.is-mobile #redoBtn{flex:0 0 auto;margin:8px 2px;}
   body.is-mobile #manualEditingField{display:none;} /* Drag Route / Select Segment rely on precise mouse-drag gestures not yet tuned for touch — hidden on mobile until that's solid */
+
+  /* ---------- HOME DASHBOARD (after splash) ---------- */
+  #homeDash{
+    position:fixed;inset:0;z-index:4000;overflow-y:auto;
+    background:radial-gradient(circle at 50% 25%, #182620 0%, #0d1712 100%);
+    display:flex;flex-direction:column;
+    padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);
+  }
+  #homeDash.hidden{display:none;}
+  .dash-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+    padding:22px 22px 6px;max-width:960px;width:100%;margin:0 auto;}
+  .dash-head .tagline{margin-top:2px;}
+  .dash-user{text-align:right;min-width:0;}
+  .dash-user .name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw;}
+  .dash-user .team{font-size:11px;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;margin-top:2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw;}
+  .dash-user .edit{background:none;border:none;color:var(--text-muted);font:inherit;font-size:11px;
+    text-decoration:underline;cursor:pointer;padding:4px 0 0;}
+  .dash-greet{max-width:960px;width:100%;margin:10px auto 18px;padding:0 22px;color:var(--text-muted);font-size:14px;}
+  .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:0 22px 28px;
+    max-width:960px;width:100%;margin:0 auto;align-content:start;}
+  @media (min-width:760px){ .dash-grid{grid-template-columns:repeat(4,1fr);} }
+  .dash-tile{
+    position:relative;aspect-ratio:1/1;overflow:hidden;cursor:pointer;
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--text);
+    display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;
+    padding:16px;font-family:inherit;text-align:left;
+    transition:border-color .15s, transform .12s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .dash-tile:hover{border-color:var(--accent);}
+  .dash-tile:active{transform:scale(.97);}
+  .dash-tile.primary{border-color:var(--accent);background:linear-gradient(160deg,#2a2015 0%,var(--panel) 70%);}
+  .dash-tile .icon{position:absolute;top:16px;left:16px;width:40px;height:40px;
+    fill:none;stroke:var(--gold);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+  .dash-tile.primary .icon{stroke:var(--accent);}
+  .dash-tile .t{font-family:'Fjalla One',sans-serif;font-size:24px;letter-spacing:.06em;text-transform:uppercase;line-height:1.1;}
+  .dash-tile .s{font-size:12px;color:var(--text-muted);margin-top:3px;}
+  .dash-tile .soon{position:absolute;top:14px;right:14px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--text-muted);border:1px solid var(--line);border-radius:10px;padding:2px 8px;}
+  .dash-toast{position:fixed;left:50%;bottom:calc(36px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);
+    background:var(--panel-alt);border:1px solid var(--line);color:var(--text);font-size:13px;
+    padding:8px 14px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;z-index:4100;}
+  .dash-toast.show{opacity:1;transform:translate(-50%,0);}
+
+  /* ---------- FIRST-RUN REGISTRATION ---------- */
+  #regOverlay{position:fixed;inset:0;z-index:4500;display:none;align-items:center;justify-content:center;
+    padding:20px;background:rgba(6,10,8,.92);}
+  #regOverlay.open{display:flex;}
+  .reg-card{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:22px;}
+  .reg-card h2{font-family:'Fjalla One',sans-serif;font-weight:400;letter-spacing:.06em;text-transform:uppercase;
+    font-size:20px;margin:0 0 4px;}
+  .reg-card .intro{font-size:13px;color:var(--text-muted);margin:0 0 16px;line-height:1.45;}
+  .reg-card label{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin:12px 0 5px;}
+  .reg-card input[type=text]{width:100%;font-size:16px;} /* 16px stops iOS zooming on focus */
+  .reg-err{color:#e07a5f;font-size:12px;min-height:16px;margin-top:10px;}
+  .reg-actions{display:flex;gap:10px;align-items:center;}
+  .reg-actions .btn.primary{flex:1 1 auto;}
+  .reg-note{font-size:11px;color:var(--text-muted);margin-top:12px;line-height:1.4;}
+
+  /* home button in the planner header */
+  .home-btn{align-self:center;display:flex;align-items:center;justify-content:center;
+    width:34px;height:34px;flex:0 0 auto;cursor:pointer;font-size:18px;line-height:1;
+    background:var(--panel-alt);border:1px solid var(--line);border-radius:var(--radius);color:var(--text);}
+  .home-btn:hover{border-color:var(--accent);}
 </style>
 </head>
 <body>
@@ -459,6 +524,64 @@
   <div class="splash-credit">cc: designed by Manifold</div>
 </div>
 
+<!-- Home dashboard: shown after the splash; Track opens the route planner below -->
+<div id="homeDash">
+  <div class="dash-head">
+    <div>
+      <h1>ROOT-<span>Ahead</span></h1>
+      <div class="tagline">Manage-Plot-Train</div>
+    </div>
+    <div class="dash-user" id="dashUser">
+      <div class="name" id="dashUserName"></div>
+      <div class="team" id="dashUserTeam"></div>
+      <button class="edit" id="dashEditProfile" type="button">Edit profile</button>
+    </div>
+  </div>
+  <div class="dash-greet" id="dashGreet"></div>
+  <div class="dash-grid">
+    <button class="dash-tile" type="button" data-view="train">
+      <svg class="icon" viewBox="0 0 24 24"><polyline points="2,12 6,12 9,5 13,19 16,12 22,12"/></svg>
+      <span class="soon">Soon</span>
+      <span class="t">Train</span><span class="s">Sessions &amp; schedule</span>
+    </button>
+    <button class="dash-tile" type="button" data-view="food">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M7 2v20M4 2v6a3 3 0 0 0 6 0V2M17 22V2c-2.5 1-4 4-4 8h4"/></svg>
+      <span class="soon">Soon</span>
+      <span class="t">Food</span><span class="s">Fuel &amp; nutrition</span>
+    </button>
+    <button class="dash-tile" type="button" data-view="race">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M5 22V3M5 4h13l-2.5 4.5L18 13H5"/></svg>
+      <span class="soon">Soon</span>
+      <span class="t">Race</span><span class="s">Calendar &amp; results</span>
+    </button>
+    <button class="dash-tile primary" type="button" data-view="track">
+      <svg class="icon" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h8a3.5 3.5 0 0 0 0-7H8a3.5 3.5 0 0 1 0-7h8"/></svg>
+      <span class="t">Track</span><span class="s">Plan a route &amp; GPX</span>
+    </button>
+  </div>
+  <div class="dash-toast" id="dashToast"></div>
+</div>
+
+<!-- First-run registration (stored on this device only) -->
+<div id="regOverlay" role="dialog" aria-modal="true" aria-labelledby="regTitle">
+  <form class="reg-card" id="regForm" novalidate autocomplete="on">
+    <h2 id="regTitle">Welcome</h2>
+    <p class="intro" id="regIntro">Tell us who you are. This is asked only once.</p>
+    <label for="regFirstName">First name</label>
+    <input type="text" id="regFirstName" maxlength="40" autocomplete="given-name">
+    <label for="regLastName">Last name</label>
+    <input type="text" id="regLastName" maxlength="40" autocomplete="family-name">
+    <label for="regTeam">Team</label>
+    <input type="text" id="regTeam" maxlength="40" autocomplete="organization">
+    <div class="reg-err" id="regErr"></div>
+    <div class="reg-actions">
+      <button class="btn ghost" type="button" id="regCancel" style="display:none;">Cancel</button>
+      <button class="btn primary" type="submit">Save</button>
+    </div>
+    <div class="reg-note">Stored only on this device. It will be used later for team messages.</div>
+  </form>
+</div>
+
 <div class="app">
 
   <header class="top">
@@ -468,6 +591,7 @@
       <path d="M0,88 C150,55 300,100 450,68 S750,35 900,72 S1100,95 1200,60" fill="none" stroke="#d9b556" stroke-width="1"/>
     </svg>
     <div class="inner">
+      <button class="home-btn" id="homeBtn" type="button" title="Dashboard" aria-label="Back to dashboard">&#8962;</button>
       <h1>ROOT-<span>Ahead</span></h1>
       <div class="tagline">Plot-it, Ride-it</div>
       <button class="sidebar-toggle" id="sidebarToggle" title="Show/hide controls" aria-label="Show/hide controls">☰</button>
@@ -930,6 +1054,121 @@
     }).catch(function(){}); // silently ignore — tracking never breaks the app
   }
   trackEvent('visit');
+
+  /* ---------------- HOME DASHBOARD & DEVICE PROFILE ---------------- */
+  // After the splash the app opens on a dashboard (Train / Food / Race /
+  // Track). Track reveals the route planner, which stays mounted underneath
+  // the whole time so its state survives going back and forth. Navigation
+  // uses the URL hash (#track) so the phone's Back button returns to the
+  // dashboard instead of leaving the app.
+  // The profile (first name, last name, team) lives only in localStorage on
+  // this device; nothing is sent to the server yet. It is meant for team
+  // messaging later.
+  var PROFILE_KEY = 'rootahead_profile';
+  var homeDash = document.getElementById('homeDash');
+  var regOverlay = document.getElementById('regOverlay');
+  var regForm = document.getElementById('regForm');
+  var regErr = document.getElementById('regErr');
+  var dashToast = document.getElementById('dashToast');
+  var openedTrackFromDash = false;
+  var toastTimer = null;
+
+  function loadProfile(){
+    try{
+      var p = JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null');
+      return (p && p.firstName && p.lastName && p.team) ? p : null;
+    } catch(e){ return null; }
+  }
+  function saveProfile(p){
+    try{ localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); return true; }
+    catch(e){ return false; }
+  }
+  function renderProfile(){
+    var p = loadProfile();
+    document.getElementById('dashUser').style.visibility = p ? 'visible' : 'hidden';
+    document.getElementById('dashUserName').textContent = p ? (p.firstName + ' ' + p.lastName) : '';
+    document.getElementById('dashUserTeam').textContent = p ? p.team : '';
+    document.getElementById('dashGreet').textContent = p ? ('Hi ' + p.firstName + ', what are we doing today?') : '';
+  }
+  function openRegistration(isEdit){
+    var p = loadProfile();
+    document.getElementById('regTitle').textContent = isEdit ? 'Your profile' : 'Welcome';
+    document.getElementById('regIntro').textContent = isEdit
+      ? 'Update your name or team.'
+      : 'Tell us who you are. This is asked only once.';
+    document.getElementById('regFirstName').value = p ? p.firstName : '';
+    document.getElementById('regLastName').value = p ? p.lastName : '';
+    document.getElementById('regTeam').value = p ? p.team : '';
+    document.getElementById('regCancel').style.display = (isEdit && p) ? '' : 'none';
+    regErr.textContent = '';
+    regOverlay.classList.add('open');
+  }
+  function closeRegistration(){ regOverlay.classList.remove('open'); }
+
+  regForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    var first = document.getElementById('regFirstName').value.trim().replace(/\s+/g, ' ');
+    var last = document.getElementById('regLastName').value.trim().replace(/\s+/g, ' ');
+    var team = document.getElementById('regTeam').value.trim().replace(/\s+/g, ' ');
+    if (!first || !last || !team){
+      regErr.textContent = 'Please fill in all three fields.';
+      (!first ? document.getElementById('regFirstName') : !last ? document.getElementById('regLastName') : document.getElementById('regTeam')).focus();
+      return;
+    }
+    var prev = loadProfile();
+    var now = new Date().toISOString();
+    var ok = saveProfile({
+      firstName: first, lastName: last, team: team,
+      deviceId: deviceId,
+      registeredAt: prev && prev.registeredAt ? prev.registeredAt : now,
+      updatedAt: now
+    });
+    if (!ok){
+      regErr.textContent = 'Could not save on this device (storage is blocked, e.g. private browsing).';
+      return;
+    }
+    renderProfile();
+    closeRegistration();
+  });
+  document.getElementById('regCancel').addEventListener('click', closeRegistration);
+  document.getElementById('dashEditProfile').addEventListener('click', function(){ openRegistration(true); });
+
+  function showDashboard(){ homeDash.classList.remove('hidden'); }
+  function showTrack(){
+    homeDash.classList.add('hidden');
+    // the map was laid out while covered — let Leaflet re-measure it
+    setTimeout(function(){ if (typeof map !== 'undefined' && map) map.invalidateSize(); }, 60);
+  }
+  function applyHashView(){ if (location.hash === '#track') showTrack(); else showDashboard(); }
+  window.addEventListener('hashchange', applyHashView);
+
+  function showDashToast(msg){
+    dashToast.textContent = msg;
+    dashToast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ dashToast.classList.remove('show'); }, 1800);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.dash-tile'), function(tile){
+    tile.addEventListener('click', function(){
+      var view = tile.getAttribute('data-view');
+      if (view === 'track'){
+        openedTrackFromDash = true;
+        if (location.hash === '#track') showTrack(); else location.hash = 'track';
+      } else {
+        showDashToast(tile.querySelector('.t').textContent + ' is coming soon.');
+      }
+    });
+  });
+  document.getElementById('homeBtn').addEventListener('click', function(){
+    // Going "back" keeps the history tidy; if the page was opened directly on
+    // #track there is nothing to go back to, so just clear the hash instead.
+    if (openedTrackFromDash){ openedTrackFromDash = false; history.back(); }
+    else { location.hash = ''; showDashboard(); }
+  });
+
+  renderProfile();
+  if (!loadProfile()) openRegistration(false);
+  else applyHashView();
 
   // Registered unconditionally (not just when push is enabled) — a service
   // worker is part of what makes "Add to Home Screen" offer a proper
