@@ -11,8 +11,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="ROOT-Ahead">
 <meta name="application-name" content="ROOT-Ahead">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon-v2.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192-v2.png">
 <script>
   // Android/Chrome fire this once, possibly before the app script runs —
   // keep it so the dashboard's Install button can show the real prompt.
@@ -23,7 +23,7 @@
     document.dispatchEvent(new Event('rootahead-installable'));
   });
 </script>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fjalla+One&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -54,6 +54,10 @@
     --radius:3px;
   }
   *{box-sizing:border-box;}
+  /* The app itself never zooms (pinch, double-tap, ctrl+wheel); only the
+     map does, through Leaflet's own gestures. See also the JS guard below. */
+  html,body{touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+  #map, #map *{touch-action:none;}
   html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;}
   /* ---------- SPLASH ---------- */
   #splashScreen{
@@ -530,10 +534,29 @@
     background:var(--panel-alt);border:1px solid var(--line);border-radius:var(--radius);color:var(--text);}
   .home-btn:hover{border-color:var(--accent);}
 
+  /* The ROOT Ahead logo is always the original artwork (an image), never
+     re-typed — only its size changes per screen, never its proportions. */
+  .brand-logo{display:block;height:auto;max-width:100%;object-fit:contain;
+    -webkit-user-select:none;user-select:none;-webkit-user-drag:none;pointer-events:none;}
+  .splash-brand{width:min(300px,72vw);margin:0 auto 14px;filter:drop-shadow(0 6px 18px rgba(0,0,0,.55));}
+  .dash-brand{width:150px;margin-bottom:4px;}
+  .header-brand{height:40px;width:auto;align-self:center;}
+  body.is-mobile .header-brand{height:34px;}
+  .reg-brand{width:140px;margin:0 auto 14px;}
+
+  /* "New route" sits right above ".gpx" in the stat bar */
+  .route-actions{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;gap:6px;margin:8px 16px 8px 12px;}
+  .route-actions #generateBtnMap, .route-actions #downloadBtn,
+  body.is-mobile .route-actions #generateBtnMap, body.is-mobile .route-actions #downloadBtn{
+    display:block;flex:none;width:100%;margin:0;padding:8px 16px;min-height:38px;}
+  .route-actions #generateBtnMap{background:var(--panel-alt);border-color:var(--gold);color:var(--gold);}
+  .route-actions #generateBtnMap:disabled, .route-actions #downloadBtn:disabled{opacity:.4;cursor:not-allowed;}
+  body.is-mobile .route-actions{flex:1 1 100%;flex-direction:row;margin:8px;}
+  body.is-mobile .route-actions #generateBtnMap, body.is-mobile .route-actions #downloadBtn{flex:1 1 0;width:auto;}
+
   /* One Generate button: the one in the sidebar, kept in view at the bottom
      of the panel while scrolling (PC and phone). The stat-bar copy stays in
      the markup with its handler but is hidden. */
-  #generateBtnMap{display:none !important;}
   aside.controls{padding-bottom:0 !important;} /* so the sticky dock sits flush with the panel's bottom edge */
   .gen-dock{position:sticky;bottom:0;z-index:5;margin:18px -18px 0;padding:12px 18px 14px;
     background:linear-gradient(180deg,rgba(22,34,27,0) 0,var(--panel) 14px);}
@@ -583,7 +606,7 @@
 
 <div id="splashScreen">
   <div class="splash-inner">
-    <h1 class="splash-title">ROOT-<span>Ahead</span></h1>
+    <img class="brand-logo splash-brand" src="/logo-rootahead.png" alt="ROOT Ahead">
     <div class="splash-tagline">Manage-Plot-Train</div>
     <div class="splash-stats" id="splashStats">
       <div class="splash-stat"><span class="n" id="splashStatUsers">—</span><span class="l">#Users</span></div>
@@ -598,7 +621,7 @@
 <div id="homeDash">
   <div class="dash-head">
     <div>
-      <h1>ROOT-<span>Ahead</span></h1>
+      <img class="brand-logo dash-brand" src="/logo-rootahead.png" alt="ROOT Ahead">
       <div class="tagline">Manage-Plot-Train</div>
     </div>
     <div class="dash-user" id="dashUser">
@@ -630,7 +653,7 @@
     </button>
   </div>
   <div class="install-card" id="installCard">
-    <img src="/icon-192.png" alt="">
+    <img src="/icon-192-v2.png" alt="">
     <div class="txt"><b>Install ROOT-Ahead</b><span>Open it from your home screen like a normal app.</span></div>
     <button class="btn primary" type="button" id="installBtn">Install</button>
     <button class="x" type="button" id="installDismiss" aria-label="Not now">✕</button>
@@ -657,6 +680,7 @@
 <!-- First-run registration (stored on this device only) -->
 <div id="regOverlay" role="dialog" aria-modal="true" aria-labelledby="regTitle">
   <form class="reg-card" id="regForm" novalidate autocomplete="on">
+    <img class="brand-logo reg-brand" src="/logo-rootahead.png" alt="ROOT Ahead">
     <h2 id="regTitle">Welcome</h2>
     <p class="intro" id="regIntro">Tell us who you are. This is asked only once.</p>
     <label for="regFirstName">First name</label>
@@ -684,7 +708,7 @@
     </svg>
     <div class="inner">
       <button class="home-btn" id="homeBtn" type="button" title="Back to dashboard" aria-label="Back to dashboard">‹ Home</button>
-      <h1>ROOT-<span>Ahead</span></h1>
+      <img class="brand-logo header-brand" src="/logo-rootahead.png" alt="ROOT Ahead">
       <div class="tagline">Plot-it, Ride-it</div>
       <button class="sidebar-toggle" id="sidebarToggle" title="Show/hide controls" aria-label="Show/hide controls">☰</button>
     </div>
@@ -1098,8 +1122,10 @@
         <button class="btn" id="undoBtn" disabled title="Undo (up to 5 steps)">↶</button>
         <button class="btn" id="redoBtn" disabled title="Redo (up to 5 steps)">↷</button>
         <button class="btn" id="clearRouteBtn" disabled>✕ Clear</button>
-        <button class="btn primary" id="generateBtnMap">Generate Route</button><!-- hidden: single Generate lives in the sidebar -->
-        <button class="btn primary" id="downloadBtn" disabled>⬇ .gpx</button>
+        <div class="route-actions">
+          <button class="btn primary" id="generateBtnMap" disabled title="Same settings, a different route">↻ New route</button>
+          <button class="btn primary" id="downloadBtn" disabled>⬇ .gpx</button>
+        </div>
       </div>
     </main>
   </div>
@@ -1340,6 +1366,26 @@
   if (!loadProfile()) openRegistration(false);
   else applyHashView();
 
+  /* ---------------- NO PAGE ZOOM (map excepted) ---------------- */
+  // iOS Safari ignores user-scalable=no, so pinch is also blocked here;
+  // desktop ctrl/⌘+wheel, trackpad pinch and ctrl +/- are blocked outside
+  // the map. Leaflet zooms the map with its own handlers, unaffected.
+  (function(){
+    function inMap(t){ return !!(t && t.closest && t.closest('#map')); }
+    ['gesturestart','gesturechange','gestureend'].forEach(function(n){
+      document.addEventListener(n, function(e){ e.preventDefault(); }, { passive:false });
+    });
+    document.addEventListener('touchmove', function(e){
+      if (e.touches && e.touches.length > 1 && !inMap(e.target)) e.preventDefault();
+    }, { passive:false });
+    document.addEventListener('wheel', function(e){
+      if ((e.ctrlKey || e.metaKey) && !inMap(e.target)) e.preventDefault();
+    }, { passive:false });
+    document.addEventListener('keydown', function(e){
+      if ((e.ctrlKey || e.metaKey) && ['+','-','=','0','_'].indexOf(e.key) !== -1) e.preventDefault();
+    });
+  })();
+
   /* ---------------- INSTALL AS APP (PWA) ---------------- */
   // Android/Chrome/Edge: a real install prompt (captured in <head>).
   // iPhone/iPad: no prompt exists, so the button opens short instructions.
@@ -1404,6 +1450,7 @@
     radiusKm:5,
     radiusSoftness:0.6,
     top10vWeights: { gravelroad:1.6, dirtroad:1.6, path:1.7 }, // adjustable; defaults reset per activity
+    reroll: false,        // true only while "New route" is generating
     routeStyle: 'loop', // 'loop' | 'crisscross' | 'figure'
     figureShape: 'heart',
     dragRouteMode: false,
@@ -3447,6 +3494,13 @@
     var maker = FIGURE_SHAPES[figureKey] || FIGURE_SHAPES.heart;
     var nPts = Math.max(14, Math.min(28, Math.round(targetKm / 2) + 12));
     var raw = maker(nPts);
+    if (state.reroll){
+      // New route: tilt the figure a little and vary its size, so the router
+      // is pulled onto different roads while the shape stays recognisable
+      var rot = (Math.random() - 0.5) * 60 * Math.PI / 180, sc = 0.9 + Math.random() * 0.2;
+      var cr = Math.cos(rot), sr = Math.sin(rot);
+      raw = raw.map(function(p){ return [ (p[0]*cr - p[1]*sr) * sc, (p[0]*sr + p[1]*cr) * sc ]; });
+    }
 
     // measure the template's own perimeter in unit space, so scaling to km
     // targets the requested distance directly rather than guessing a radius
@@ -3705,13 +3759,16 @@
     // Fast mode: try only the first shape, one shot, no refinement — the
     // 4-shapes × 3-refinements loop below is the main cost for a stretched
     // point-to-point route.
-    var shapes = effectiveFastMode(activity) ? [ {side:1,off:90} ] : [ {side:1,off:90}, {side:-1,off:90}, {side:1,off:60}, {side:-1,off:60} ];
+    var allShapes = [ {side:1,off:90}, {side:-1,off:90}, {side:1,off:60}, {side:-1,off:60} ];
+    var shapes = effectiveFastMode(activity)
+      ? [ state.reroll ? allShapes[Math.floor(Math.random() * allShapes.length)] : allShapes[0] ]
+      : allShapes;
     var maxIter = effectiveFastMode(activity) ? 1 : 3;
     var candidates = [];
 
     for (var s=0; s<shapes.length; s++){
       var side = shapes[s].side, bOff = shapes[s].off;
-      var offset = extra / 2.2;
+      var offset = extra / 2.2 * (state.reroll ? (0.8 + Math.random() * 0.45) : 1);
       var best = null;
       for (var iter=0; iter<maxIter; iter++){
         var viaPoint = destPoint(mid[0], mid[1], brng + bOff*side, Math.max(offset,0.2));
@@ -4891,7 +4948,20 @@
     }
   }
   document.getElementById('generateBtn').addEventListener('click', handleGenerateClick);
-  document.getElementById('generateBtnMap').addEventListener('click', handleGenerateClick);
+  // "New route": same settings, but asks the generators for a different
+  // result (loops already vary per run; figure + point-to-point add a
+  // random twist only when this flag is set, so the first route is unchanged).
+  document.getElementById('generateBtnMap').addEventListener('click', async function(){
+    state.reroll = true;
+    try{ await handleGenerateClick(); } finally { state.reroll = false; }
+  });
+  // New route is only usable once there is a route — follows the .gpx button.
+  (function(){
+    var dl = document.getElementById('downloadBtn'), nr = document.getElementById('generateBtnMap');
+    function sync(){ nr.disabled = dl.disabled; }
+    sync();
+    new MutationObserver(sync).observe(dl, { attributes:true, attributeFilter:['disabled'] });
+  })();
 
   /* ---------------- GPX EXPORT ---------------- */
   function buildGPX(){

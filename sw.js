@@ -8,8 +8,8 @@
 // 2. Push notifications (unchanged from before): shows them and focuses or
 //    opens the app when one is tapped.
 
-var CACHE = 'rootahead-shell-v3'; // bump when the list below changes
-var SHELL = ['/', '/manifest.json', '/icon-192.png', '/icon-512.png', '/apple-touch-icon.png'];
+var CACHE = 'rootahead-shell-v4'; // bump when the list below changes
+var SHELL = ['/', '/manifest.json', '/logo-rootahead.png', '/icon-192-v2.png', '/icon-512-v2.png', '/apple-touch-icon-v2.png'];
 
 self.addEventListener('install', function(event){
   event.waitUntil(
@@ -70,8 +70,8 @@ self.addEventListener('push', function(event){
   var title = data.title || 'ROOT-Ahead';
   var options = {
     body: data.body || 'Someone opened the app.',
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
+    icon: '/icon-192-v2.png',
+    badge: '/icon-192-v2.png',
     tag: 'rootahead-visit', // collapses rapid repeat notifications into one instead of stacking
     renotify: false
   };
