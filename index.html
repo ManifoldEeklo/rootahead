@@ -4265,7 +4265,13 @@
   function serverPushKey(){
     if (!pushKeyPromise){
       pushKeyPromise = fetch('/api/vapid-public-key', { cache:'no-store' })
-        .then(function(r){ return r.json().then(function(d){ if (!r.ok || !d.key) throw new Error('Push is not set up on the server.'); return d.key; }); })
+        .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(d){
+          if (r.ok && d.key) return d.key;
+          // Say where it failed: a copy installed from a test (preview) address has no settings
+          if (d.environment === 'preview' && d.productionUrl)
+            throw new Error('This copy of the app was installed from a test address (' + location.host + '). Remove it and install ROOT-Ahead again from ' + d.productionUrl + '.');
+          throw new Error('Push is not set up on the server (code ' + r.status + ', ' + location.host + ').');
+        }); })
         .catch(function(e){ pushKeyPromise = null; throw e; });
     }
     return pushKeyPromise;
@@ -4346,7 +4352,7 @@
           icon: '/icon-192-v2.png', badge: '/icon-192-v2.png', tag: 'rootahead-welcome' });
       } catch(e){}
     } catch(err){
-      showDashToast((err && err.message) || 'Notifications could not be turned on.', 6000);
+      showDashToast((err && err.message) || 'Notifications could not be turned on.', 9000);
     } finally {
       b.disabled = false; updateNotifyBtn();
     }

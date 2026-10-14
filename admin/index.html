@@ -74,6 +74,8 @@
   .people .sub{display:block;font-size:13px;color:var(--muted);}
   .count{margin-top:10px;font-size:14px;color:var(--muted);}
   .row2{display:grid;grid-template-columns:1fr;gap:0;}
+  .link-hint{font-size:13px;color:var(--muted);margin-top:6px;word-break:break-all;}
+  .link-hint.bad{color:var(--bad);}
   .chars{text-align:right;font-size:13px;color:var(--muted);margin-top:4px;}
 
   /* the one memorable piece: the message as it will appear on a locked phone */
@@ -151,7 +153,8 @@
       <option value="/#track">Track (route planner)</option>
       <option value="custom">A web address…</option>
     </select>
-    <input type="text" id="linkCustom" placeholder="https://…" inputmode="url" hidden style="margin-top:8px;">
+    <input type="text" id="linkCustom" placeholder="www.example.com" inputmode="url" autocapitalize="off" spellcheck="false" hidden style="margin-top:8px;">
+    <div class="link-hint" id="linkHint" hidden></div>
   </section>
 
   <section aria-labelledby="prevTitle">
@@ -276,13 +279,24 @@
       (mode === 'all' ? '.' : mode === 'team' ? (team ? '. Team ' + team + ': ' + n + '.' : '.') : '. Chosen: ' + n + '.');
     $('sendBtn').textContent = n ? 'Send to ' + n + ' device' + (n === 1 ? '' : 's') : 'Send';
     $('sendBtn').disabled = !n || !body.trim() || !linkValue();
+    updateLinkHint();
   }
   ['title', 'body', 'linkCustom'].forEach(function(id){ $(id).addEventListener('input', update); });
   $('link').addEventListener('change', function(){ $('linkCustom').hidden = this.value !== 'custom'; update(); });
+  // Accepts "www.winsol.eu", "winsol.eu/page" or a full https:// address
   function linkValue(){
     if ($('link').value !== 'custom') return $('link').value;
     var v = $('linkCustom').value.trim();
-    return /^https:\/\/\S+\.\S+/i.test(v) ? v : '';
+    if (/^http:\/\//i.test(v)) v = 'https://' + v.slice(7);          // phones block plain http
+    else if (!/^https:\/\//i.test(v)) v = 'https://' + v;
+    return /^https:\/\/[^\s\/]+\.[a-z]{2,}(\/\S*)?$/i.test(v) ? v : '';
+  }
+  function updateLinkHint(){
+    var h = $('linkHint'), custom = $('link').value === 'custom', raw = $('linkCustom').value.trim(), v = linkValue();
+    h.hidden = !custom;
+    if (!custom) return;
+    h.className = 'link-hint' + (raw && !v ? ' bad' : '');
+    h.textContent = !raw ? 'Type an address, for example www.winsol.eu' : v ? 'Opens ' + v : 'That doesn\u2019t look like a web address.';
   }
   (function clock(){
     var d = new Date();
