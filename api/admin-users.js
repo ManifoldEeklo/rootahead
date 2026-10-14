@@ -54,8 +54,11 @@ module.exports = async function handler(req, res){
 
     var counts = (await redis.hgetall('rootahead:users:routecount')) || {};
     var profiles = (await redis.hgetall('rootahead:users')) || {};
+    var pushSubs = (await redis.hgetall('rootahead:push:users')) || {};
     var total = 0;
-    var users = Object.keys(counts).map(function(id){
+    var ids = Object.keys(counts);
+    Object.keys(profiles).concat(Object.keys(pushSubs)).forEach(function(id){ if (ids.indexOf(id) === -1) ids.push(id); });
+    var users = ids.map(function(id){
       var p = parse(profiles[id]) || {};
       var n = Number(counts[id]) || 0;
       total += n;
@@ -65,7 +68,8 @@ module.exports = async function handler(req, res){
         lastName: p.lastName || null,
         team: p.team || null,
         lastRouteAt: p.lastRouteAt || null,
-        routes: n
+        routes: n,
+        pushEnabled: !!pushSubs[id]
       };
     }).sort(function(a, b){ return b.routes - a.routes; });
     res.status(200).json({ users: users, totalRoutes: total });

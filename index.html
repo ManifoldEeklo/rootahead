@@ -381,6 +381,34 @@
   .uh-row .d b{display:block;font-family:'IBM Plex Mono',monospace;color:var(--gold);font-weight:600;}
   .uh-row .d span{display:block;font-size:11px;color:var(--text-muted);}
   .uh-row .btn{flex:0 0 auto;}
+  .team-card{max-width:960px;width:calc(100% - 44px);margin:0 auto 14px;display:none;align-items:center;gap:12px;
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;}
+  .team-card.show{display:flex;}
+  .team-card .ic{font-size:24px;flex:0 0 auto;}
+  .team-card .txt{flex:1 1 auto;min-width:0;font-size:13px;line-height:1.35;}
+  .team-card .txt b{display:block;font-size:14px;}
+  .team-card .txt span{color:var(--text-muted);font-size:12px;}
+  .team-card .btn{flex:0 0 auto;width:auto;margin:0;padding:9px 14px;font-size:13px;}
+  .msg-teams{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px;}
+  .msg-chip{background:var(--panel-alt);border:1px solid var(--line);color:var(--text);border-radius:14px;
+    font:inherit;font-size:11.5px;padding:4px 10px;cursor:pointer;}
+  .msg-chip:hover{border-color:var(--gold);}
+  .msg-recip{max-height:210px;overflow-y:auto;border:1px solid var(--line);border-radius:6px;padding:2px 10px;}
+  .msg-recip label{display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid var(--line);font-size:12.5px;cursor:pointer;}
+  .msg-recip label:last-child{border-bottom:none;}
+  .msg-recip label.off{opacity:.45;cursor:not-allowed;}
+  .msg-recip input{width:16px;height:16px;accent-color:var(--accent);flex:0 0 auto;}
+  .msg-recip .who{flex:1 1 auto;min-width:0;}
+  .msg-recip .who span{display:block;font-size:10.5px;color:var(--text-muted);}
+  .msg-form input[type=text], .msg-form textarea{width:100%;margin-top:8px;}
+  .msg-form textarea{background:var(--panel-alt);border:1px solid var(--line);color:var(--text);border-radius:var(--radius);
+    padding:9px 10px;font:inherit;font-size:14px;resize:vertical;min-height:70px;}
+  .msg-form textarea:focus{outline:none;border-color:var(--accent);}
+  .msg-form .btn.primary{margin-top:10px;}
+  .msg-log-row{padding:7px 0;border-bottom:1px solid var(--line);font-size:12.5px;}
+  .msg-log-row:last-child{border-bottom:none;}
+  .msg-log-row b{display:block;}
+  .msg-log-row span{display:block;font-size:11px;color:var(--text-muted);}
   .admin-stats-row span:last-child{font-family:'IBM Plex Mono',monospace;color:var(--gold);}
 
   .status.ok{color:var(--gold);}
@@ -669,6 +697,11 @@
       <svg class="icon" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h8a3.5 3.5 0 0 0 0-7H8a3.5 3.5 0 0 1 0-7h8"/></svg>
       <span class="t">Track</span><span class="s">Plan a route &amp; GPX</span>
     </button>
+  </div>
+  <div class="team-card" id="teamCard">
+    <div class="ic">🔔</div>
+    <div class="txt"><b>Team messages</b><span id="teamCardSub">Get messages from your team admin.</span></div>
+    <button class="btn primary" type="button" id="teamCardBtn">Turn on</button>
   </div>
   <div class="install-card" id="installCard">
     <img src="/icon-192-v2.png" alt="">
@@ -986,6 +1019,7 @@
         <div id="adminSettingsView" style="display:none;">
           <div class="admin-tabs" role="tablist">
             <button class="admin-tab active" type="button" data-tab="users" role="tab">Users</button>
+            <button class="admin-tab" type="button" data-tab="messages" role="tab">Messages</button>
             <button class="admin-tab" type="button" data-tab="stats" role="tab">Stats</button>
             <button class="admin-tab" type="button" data-tab="features" role="tab">Hidden features</button>
           </div>
@@ -1006,6 +1040,26 @@
             <div class="admin-note" id="userStatsError"></div>
           </div>
 
+          </div>
+
+          <div class="admin-tabpane" data-pane="messages" style="display:none;">
+            <div class="admin-stats-block first msg-form">
+              <div class="admin-stats-header">
+                <span>Send a message</span>
+                <button class="btn small" id="msgRefreshBtn" type="button">↻ Refresh</button>
+              </div>
+              <div class="msg-teams" id="msgTeams"></div>
+              <div class="msg-recip" id="msgRecipients"></div>
+              <div class="admin-note" id="msgRecipCount" style="margin-top:6px;"></div>
+              <input type="text" id="msgTitle" maxlength="60" placeholder="Title (optional, default: ROOT Ahead)">
+              <textarea id="msgBody" maxlength="300" rows="3" placeholder="Your message to the team…"></textarea>
+              <button class="btn primary" type="button" id="msgSendBtn">Send message</button>
+              <div class="admin-note" id="msgResult"></div>
+            </div>
+            <div class="admin-stats-block">
+              <div class="admin-stats-header"><span>Sent messages</span></div>
+              <div id="msgLog"></div>
+            </div>
           </div>
 
           <div class="admin-tabpane" data-pane="stats" style="display:none;">
@@ -4117,7 +4171,8 @@
       return;
     }
     var sub = await getExistingPushSubscription();
-    btn.textContent = sub ? '🔕 Stop notifying this device' : '🔔 Notify me on new visits';
+    var adminOn = !!sub && localStorage.getItem('rootahead_admin_push') === '1';
+    btn.textContent = adminOn ? '🔕 Stop notifying this device' : '🔔 Notify me on new visits';
   }
 
   document.getElementById('pushSubscribeBtn').addEventListener('click', async function(){
@@ -4131,13 +4186,14 @@
         return;
       }
       var existing = await getExistingPushSubscription();
-      if (existing){
-        // Unsubscribe
+      if (existing && localStorage.getItem('rootahead_admin_push') === '1'){
+        // Unsubscribe (visit pings only — keep the browser subscription if team messages use it)
         await fetch('/api/subscribe', {
           method:'DELETE', headers:{'Content-Type':'application/json'},
           body: JSON.stringify({ endpoint: existing.endpoint })
         }).catch(function(){});
-        await existing.unsubscribe();
+        try{ localStorage.removeItem('rootahead_admin_push'); }catch(e){}
+        if (localStorage.getItem('rootahead_team_push') !== '1') await existing.unsubscribe();
         errEl.textContent = 'Notifications turned off for this device.';
       } else {
         var permission = await Notification.requestPermission();
@@ -4147,7 +4203,7 @@
         }
         var reg = await navigator.serviceWorker.register('/sw.js');
         await navigator.serviceWorker.ready;
-        var sub = await reg.pushManager.subscribe({
+        var sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
         });
@@ -4157,6 +4213,7 @@
         });
         var data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Could not save subscription');
+        try{ localStorage.setItem('rootahead_admin_push', '1'); }catch(e){}
         errEl.textContent = 'Done — this device will now notify you when someone opens the app.';
       }
     } catch(err){
@@ -4165,6 +4222,185 @@
       btn.disabled = false;
       refreshPushButton();
     }
+  });
+
+  /* ---------------- TEAM MESSAGES — user side ----------------
+     A user turns this on once (the phone asks permission). The device's push
+     subscription is stored with their profile, so the admin can send to them.
+     iPhone: push only works in the installed app (Add to Home Screen, iOS 16.4+). */
+  var teamCard = document.getElementById('teamCard');
+  function teamPushSupported(){ return ('serviceWorker' in navigator) && ('PushManager' in window) && ('Notification' in window); }
+  function isIOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
+  function isStandalone(){ return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true; }
+  function teamFlag(){ try{ return localStorage.getItem('rootahead_team_push') === '1'; }catch(e){ return false; } }
+
+  async function sendTeamSubscription(sub){
+    var prof = loadProfile();
+    var r = await fetch('/api/subscribe', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ kind:'user', deviceId: deviceId, subscription: sub.toJSON(),
+        profile: prof ? { firstName: prof.firstName, lastName: prof.lastName, team: prof.team } : null })
+    });
+    var d = await r.json().catch(function(){ return {}; });
+    if (!r.ok) throw new Error(d.error || 'Could not save the subscription.');
+  }
+  async function refreshTeamCard(){
+    var sub = document.getElementById('teamCardSub'), btn = document.getElementById('teamCardBtn');
+    if (!loadProfile()){ teamCard.classList.remove('show'); return; }
+    if (!teamPushSupported()){
+      if (isIOS() && !isStandalone()){
+        sub.textContent = 'On iPhone, install the app first to receive team messages.';
+        btn.textContent = 'How'; btn.dataset.action = 'ios'; btn.className = 'btn';
+        teamCard.classList.add('show');
+      } else teamCard.classList.remove('show');
+      return;
+    }
+    teamCard.classList.add('show');
+    if (Notification.permission === 'denied'){
+      sub.textContent = 'Notifications are blocked — allow them for this app in your phone or browser settings.';
+      btn.style.display = 'none'; return;
+    }
+    btn.style.display = '';
+    var existing = await getExistingPushSubscription();
+    if (existing && teamFlag()){
+      sub.textContent = 'On — you\'ll receive messages from your team admin.';
+      btn.textContent = 'Turn off'; btn.dataset.action = 'off'; btn.className = 'btn';
+    } else {
+      sub.textContent = 'Get messages from your team admin on this device.';
+      btn.textContent = 'Turn on'; btn.dataset.action = 'on'; btn.className = 'btn primary';
+    }
+  }
+  document.getElementById('teamCardBtn').addEventListener('click', async function(){
+    var btn = this, sub = document.getElementById('teamCardSub');
+    if (btn.dataset.action === 'ios'){ document.getElementById('iosInstall').classList.add('open'); return; }
+    btn.disabled = true;
+    try{
+      if (btn.dataset.action === 'off'){
+        await fetch('/api/subscribe', { method:'DELETE', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ kind:'user', deviceId: deviceId }) }).catch(function(){});
+        try{ localStorage.removeItem('rootahead_team_push'); }catch(e){}
+        var ex = await getExistingPushSubscription();
+        if (ex && localStorage.getItem('rootahead_admin_push') !== '1') await ex.unsubscribe();
+      } else {
+        var perm = await Notification.requestPermission();
+        if (perm !== 'granted'){ sub.textContent = 'Notifications were not allowed.'; return; }
+        var reg = await navigator.serviceWorker.register('/sw.js');
+        await navigator.serviceWorker.ready;
+        var s2 = (await reg.pushManager.getSubscription()) ||
+          await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) });
+        await sendTeamSubscription(s2);
+        try{ localStorage.setItem('rootahead_team_push', '1'); }catch(e){}
+      }
+    } catch(err){
+      sub.textContent = (err && err.message) ? err.message : 'Could not change team messages.';
+      btn.disabled = false; return;
+    }
+    btn.disabled = false;
+    refreshTeamCard();
+  });
+  // Keep the server copy fresh (push endpoints can change; name/team edits)
+  async function resyncTeamSubscription(){
+    if (!teamFlag() || !teamPushSupported() || Notification.permission !== 'granted') return;
+    var ex = await getExistingPushSubscription();
+    if (ex) sendTeamSubscription(ex).catch(function(){});
+  }
+  document.getElementById('regForm').addEventListener('submit', function(){ setTimeout(function(){ refreshTeamCard(); resyncTeamSubscription(); }, 0); });
+  refreshTeamCard();
+  resyncTeamSubscription();
+
+  /* ---------------- TEAM MESSAGES — admin side ---------------- */
+  var msgUsers = [];
+  function msgUserName(u){ return (u.firstName || u.lastName) ? ((u.firstName || '') + ' ' + (u.lastName || '')).trim() : '(no profile)'; }
+  function msgSelected(){
+    return Array.prototype.map.call(document.querySelectorAll('#msgRecipients input:checked'), function(c){ return c.value; });
+  }
+  function updateMsgCount(){
+    var n = msgSelected().length, reach = msgUsers.filter(function(u){ return u.pushEnabled; }).length;
+    document.getElementById('msgRecipCount').textContent = n + ' selected · ' + reach + ' of ' + msgUsers.length + ' users have messages turned on';
+  }
+  function renderMsgRecipients(){
+    var box = document.getElementById('msgRecipients'), teamsBox = document.getElementById('msgTeams');
+    box.innerHTML = ''; teamsBox.innerHTML = '';
+    var sorted = msgUsers.slice().sort(function(a, b){
+      return (b.pushEnabled - a.pushEnabled) || String(a.team || '').localeCompare(String(b.team || '')) || msgUserName(a).localeCompare(msgUserName(b));
+    });
+    sorted.forEach(function(u){
+      var lab = document.createElement('label'); if (!u.pushEnabled) lab.className = 'off';
+      var cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = u.deviceId; cb.disabled = !u.pushEnabled;
+      cb.dataset.team = u.team || '';
+      cb.addEventListener('change', updateMsgCount);
+      var who = document.createElement('div'); who.className = 'who';
+      who.appendChild(document.createTextNode(msgUserName(u)));
+      var sp = document.createElement('span'); sp.textContent = (u.team || '—') + (u.pushEnabled ? '' : ' · messages not turned on');
+      who.appendChild(sp); lab.appendChild(cb); lab.appendChild(who); box.appendChild(lab);
+    });
+    if (!sorted.length) box.innerHTML = '<div class="admin-note">No users yet.</div>';
+    function chip(label, fn){
+      var c = document.createElement('button'); c.type = 'button'; c.className = 'msg-chip'; c.textContent = label;
+      c.addEventListener('click', function(){ fn(); updateMsgCount(); }); teamsBox.appendChild(c);
+    }
+    var boxes = function(){ return Array.prototype.slice.call(box.querySelectorAll('input:not(:disabled)')); };
+    chip('Select all', function(){ boxes().forEach(function(c){ c.checked = true; }); });
+    chip('None', function(){ boxes().forEach(function(c){ c.checked = false; }); });
+    var teams = [];
+    msgUsers.forEach(function(u){ if (u.pushEnabled && u.team && teams.indexOf(u.team) === -1) teams.push(u.team); });
+    teams.sort().forEach(function(t){
+      chip('Team ' + t, function(){ boxes().forEach(function(c){ c.checked = (c.dataset.team === t); }); });
+    });
+    updateMsgCount();
+  }
+  function loadMessageLog(){
+    var logBox = document.getElementById('msgLog');
+    fetch('/api/admin-message', { headers: { 'x-admin-key': adminKey } })
+      .then(function(r){ return r.json().then(function(d){ return { ok:r.ok, data:d }; }); })
+      .then(function(res){
+        logBox.innerHTML = '';
+        if (!res.ok){ logBox.innerHTML = '<div class="admin-note"></div>'; logBox.firstChild.textContent = (res.data && res.data.error) || 'Could not load sent messages.'; return; }
+        var msgs = res.data.messages || [];
+        if (!msgs.length){ logBox.innerHTML = '<div class="admin-note">Nothing sent yet.</div>'; return; }
+        var names = {}; msgUsers.forEach(function(u){ names[u.deviceId] = msgUserName(u); });
+        msgs.forEach(function(m){
+          var row = document.createElement('div'); row.className = 'msg-log-row';
+          var b = document.createElement('b'); b.textContent = (m.title && m.title !== 'ROOT Ahead' ? m.title + ': ' : '') + m.body;
+          var sp = document.createElement('span');
+          var to = (m.to || []).map(function(id){ return names[id] || 'unknown device'; });
+          sp.textContent = new Date(m.at).toLocaleString() + ' · delivered to ' + m.sent + ' of ' + (m.to || []).length +
+            ' · ' + (to.length > 4 ? to.slice(0, 4).join(', ') + ' +' + (to.length - 4) : to.join(', '));
+          row.appendChild(b); row.appendChild(sp); logBox.appendChild(row);
+        });
+      }).catch(function(){ logBox.innerHTML = '<div class="admin-note">Backend not reachable (needs the Vercel deploy).</div>'; });
+  }
+  function loadMessaging(){
+    document.getElementById('msgRecipCount').textContent = 'Loading…';
+    fetch('/api/admin-users', { headers: { 'x-admin-key': adminKey } })
+      .then(function(r){ return r.json().then(function(d){ return { ok:r.ok, data:d }; }); })
+      .then(function(res){
+        if (!res.ok){ document.getElementById('msgRecipCount').textContent = (res.data && res.data.error) || 'Could not load users.'; return; }
+        msgUsers = res.data.users || [];
+        renderMsgRecipients();
+        loadMessageLog();
+      }).catch(function(){ document.getElementById('msgRecipCount').textContent = 'Backend not reachable (needs the Vercel deploy).'; });
+  }
+  document.getElementById('msgRefreshBtn').addEventListener('click', loadMessaging);
+  document.getElementById('msgSendBtn').addEventListener('click', function(){
+    var btn = this, out = document.getElementById('msgResult');
+    var ids = msgSelected(), body = document.getElementById('msgBody').value.trim();
+    if (!ids.length){ out.textContent = 'Pick at least one recipient.'; return; }
+    if (!body){ out.textContent = 'Write a message first.'; return; }
+    btn.disabled = true; out.textContent = 'Sending…';
+    fetch('/api/admin-message', {
+      method:'POST', headers:{ 'Content-Type':'application/json', 'x-admin-key': adminKey },
+      body: JSON.stringify({ deviceIds: ids, title: document.getElementById('msgTitle').value.trim(), body: body })
+    }).then(function(r){ return r.json().then(function(d){ return { ok:r.ok, data:d }; }); })
+      .then(function(res){
+        btn.disabled = false;
+        if (!res.ok){ out.textContent = (res.data && res.data.error) || 'Could not send.'; return; }
+        var d = res.data;
+        out.textContent = 'Delivered to ' + d.sent + ' of ' + ids.length + (d.failed ? ' · ' + d.failed + ' failed' : '') +
+          (d.removed ? ' (' + d.removed + ' device' + (d.removed === 1 ? '' : 's') + ' no longer reachable, removed)' : '') + '.';
+        if (d.sent) document.getElementById('msgBody').value = '';
+        loadMessaging();
+      }).catch(function(){ btn.disabled = false; out.textContent = 'Backend not reachable (needs the Vercel deploy).'; });
   });
 
   function tryUnlock(){
@@ -4238,7 +4474,7 @@
           var n = document.createElement('span'); n.className = 'n';
           n.textContent = (u.firstName || u.lastName) ? ((u.firstName || '') + ' ' + (u.lastName || '')).trim() : '(no profile)';
           var tm = document.createElement('span'); tm.className = 'tm';
-          tm.textContent = (u.team || '—') + (u.lastRouteAt ? ' · last ' + new Date(u.lastRouteAt).toLocaleDateString() : '');
+          tm.textContent = (u.team || '—') + (u.lastRouteAt ? ' · last ' + new Date(u.lastRouteAt).toLocaleDateString() : '') + (u.pushEnabled ? ' · 🔔' : '');
           who.appendChild(n); who.appendChild(tm);
           var c = document.createElement('span'); c.className = 'cnt'; c.textContent = u.routes;
           row.appendChild(who); row.appendChild(c); list.appendChild(row);
@@ -4258,6 +4494,7 @@
   function showAdminTab(name){
     Array.prototype.forEach.call(document.querySelectorAll('.admin-tab'), function(t){ t.classList.toggle('active', t.getAttribute('data-tab') === name); });
     Array.prototype.forEach.call(document.querySelectorAll('.admin-tabpane'), function(p){ p.style.display = p.getAttribute('data-pane') === name ? 'block' : 'none'; });
+    if (name === 'messages') loadMessaging();
   }
 
   // Route history of one user (newest first), each with its stored GPX

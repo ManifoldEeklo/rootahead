@@ -129,6 +129,20 @@ no public UI for it; it's a button inside the Admin panel).
   from there → Admin panel (password) → **🔔 Notify me on new visits** →
   allow notifications when your browser asks.
 
+### 4b. Team messages (admin → users)
+
+Uses the same VAPID keys as section 4 (no extra setup).
+
+- Users turn it on once: dashboard → **Team messages → Turn on** → allow
+  notifications. iPhone: only inside the installed app (iOS 16.4+).
+- Admin → **Messages** tab: tick users, or use *Select all* / *Team …*, write
+  the message, **Send**. Users without messages turned on are greyed out.
+- Delivery: if a phone is offline the push service keeps it up to 24 h.
+  Devices that removed the app or blocked notifications are cleaned up
+  automatically on the next send.
+- Storage: `rootahead:push:users` (deviceId → subscription),
+  `rootahead:messages` (last 200 sent messages).
+
 ### 5. (Optional) Turn on Vercel Web Analytics
 
 The page already ships the plain-HTML tracking snippet (no `@vercel/analytics`
