@@ -17,12 +17,20 @@ module.exports = async function handler(req, res){
       tokenVariable: c.token ? c.token.name : 'missing',
       reachable: false
     },
-    adminPasswordSet: !!env.ADMIN_PASSWORD,
+    adminPasswordSet: !!(env.ADMIN_PASSWORD || env.ADMIN_TOKEN),
     vapidKeysSet: !!(env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY)
   };
   try{
     var redis = redisHelper.getRedis();
     out.database.reachable = (await redis.ping()) === 'PONG';
+    // Can it also WRITE? (a read-only token answers ping but refuses writes)
+    try{
+      await redis.set('rootahead:health:lastcheck', new Date().toISOString());
+      out.database.writable = true;
+    } catch(werr){
+      out.database.writable = false;
+      out.database.writeError = werr && werr.message ? werr.message : String(werr);
+    }
   } catch(err){
     out.database.error = err && err.message ? err.message : String(err);
   }

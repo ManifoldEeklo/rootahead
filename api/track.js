@@ -9,7 +9,7 @@ var webpush = require('web-push');
 var vapidReady = !!(process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY);
 if (vapidReady){
   webpush.setVapidDetails(
-    process.env.VAPID_CONTACT || 'mailto:admin@example.com',
+    process.env.VAPID_SUBJECT || process.env.VAPID_CONTACT || 'mailto:admin@example.com',
     process.env.VAPID_PUBLIC_KEY,
     process.env.VAPID_PRIVATE_KEY
   );

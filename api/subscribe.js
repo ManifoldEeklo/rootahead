@@ -33,6 +33,8 @@ module.exports = async function handler(req, res){
           var prev = await redis.hget('rootahead:users', deviceId);
           if (prev && typeof prev === 'string'){ try{ prev = JSON.parse(prev); } catch(e){ prev = null; } }
           var user = Object.assign({}, prev || {}, { firstName: clean(prof.firstName), lastName: clean(prof.lastName), team: clean(prof.team) });
+          if (body.device) user.device = clean(body.device);
+          user.pushSince = user.pushSince || new Date().toISOString();
           var userEntry = {}; userEntry[deviceId] = JSON.stringify(user);
           await redis.hset('rootahead:users', userEntry);
         }

@@ -4,6 +4,7 @@
 // the ADMIN_PASSWORD environment variable set in Vercel. Without that env
 // var the endpoint refuses to answer, so names are never exposed by default.
 var getRedis = require('./_redis').getRedis;
+var requireAdmin = require('./_admin').requireAdmin;
 
 var HISTORY_LIMIT = 100; // newest routes shown per user
 
@@ -17,15 +18,7 @@ module.exports = async function handler(req, res){
     res.status(405).json({ error: 'Use GET' });
     return;
   }
-  var expected = process.env.ADMIN_PASSWORD;
-  if (!expected){
-    res.status(503).json({ error: 'ADMIN_PASSWORD is not set yet. Vercel → your project → Settings → Environment Variables → add ADMIN_PASSWORD (same value as the Admin password) → Save → Deployments → Redeploy.' });
-    return;
-  }
-  if (req.headers['x-admin-key'] !== expected){
-    res.status(401).json({ error: 'Wrong admin password for the backend.' });
-    return;
-  }
+  if (!requireAdmin(req, res)) return;
   try{
     var redis = getRedis();
     var q = req.query || {};
@@ -69,7 +62,8 @@ module.exports = async function handler(req, res){
         team: p.team || null,
         lastRouteAt: p.lastRouteAt || null,
         routes: n,
-        pushEnabled: !!pushSubs[id]
+        pushEnabled: !!pushSubs[id],
+        device: p.device || null
       };
     }).sort(function(a, b){ return b.routes - a.routes; });
     res.status(200).json({ users: users, totalRoutes: total });

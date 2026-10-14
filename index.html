@@ -381,14 +381,11 @@
   .uh-row .d b{display:block;font-family:'IBM Plex Mono',monospace;color:var(--gold);font-weight:600;}
   .uh-row .d span{display:block;font-size:11px;color:var(--text-muted);}
   .uh-row .btn{flex:0 0 auto;}
-  .team-card{max-width:960px;width:calc(100% - 44px);margin:0 auto 14px;display:none;align-items:center;gap:12px;
-    background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;}
-  .team-card.show{display:flex;}
-  .team-card .ic{font-size:24px;flex:0 0 auto;}
-  .team-card .txt{flex:1 1 auto;min-width:0;font-size:13px;line-height:1.35;}
-  .team-card .txt b{display:block;font-size:14px;}
-  .team-card .txt span{color:var(--text-muted);font-size:12px;}
-  .team-card .btn{flex:0 0 auto;width:auto;margin:0;padding:9px 14px;font-size:13px;}
+  .notify-btn{display:inline-block;margin-top:8px;background:var(--panel-alt);border:1px solid var(--gold);color:var(--gold);
+    border-radius:16px;font:inherit;font-size:12px;font-weight:600;padding:5px 12px;cursor:pointer;}
+  .notify-btn[aria-pressed="true"]{border-color:var(--easy);color:var(--easy);}
+  .notify-btn.blocked{border-color:var(--line);color:var(--text-muted);}
+  .dash-user .edit{display:block;margin-left:auto;}
   .msg-teams{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px;}
   .msg-chip{background:var(--panel-alt);border:1px solid var(--line);color:var(--text);border-radius:14px;
     font:inherit;font-size:11.5px;padding:4px 10px;cursor:pointer;}
@@ -537,7 +534,7 @@
   .dash-tile .s{font-size:12px;color:var(--text-muted);margin-top:3px;}
   .dash-tile .soon{position:absolute;top:14px;right:14px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
     color:var(--text-muted);border:1px solid var(--line);border-radius:10px;padding:2px 8px;}
-  .dash-toast{position:fixed;left:50%;bottom:calc(36px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);
+  .dash-toast{max-width:calc(100% - 32px);text-align:center;line-height:1.4;position:fixed;left:50%;bottom:calc(36px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);
     background:var(--panel-alt);border:1px solid var(--line);color:var(--text);font-size:13px;
     padding:8px 14px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;z-index:4100;}
   .install-card{max-width:960px;width:calc(100% - 44px);margin:0 auto 28px;display:none;align-items:center;gap:12px;
@@ -673,6 +670,7 @@
     <div class="dash-user" id="dashUser">
       <div class="name" id="dashUserName"></div>
       <div class="team" id="dashUserTeam"></div>
+      <button class="notify-btn" id="notifyBtn" type="button" hidden>🔔 Notifications</button>
       <button class="edit" id="dashEditProfile" type="button">Edit profile</button>
     </div>
   </div>
@@ -697,11 +695,6 @@
       <svg class="icon" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h8a3.5 3.5 0 0 0 0-7H8a3.5 3.5 0 0 1 0-7h8"/></svg>
       <span class="t">Track</span><span class="s">Plan a route &amp; GPX</span>
     </button>
-  </div>
-  <div class="team-card" id="teamCard">
-    <div class="ic">🔔</div>
-    <div class="txt"><b>Team messages</b><span id="teamCardSub">Get messages from your team admin.</span></div>
-    <button class="btn primary" type="button" id="teamCardBtn">Turn on</button>
   </div>
   <div class="install-card" id="installCard">
     <img src="/icon-192-v2.png" alt="">
@@ -1043,6 +1036,7 @@
           </div>
 
           <div class="admin-tabpane" data-pane="messages" style="display:none;">
+            <a class="btn small" href="/admin/" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;margin:8px 0 2px;">📨 Open the RA Messages app (install it on your phone)</a>
             <div class="admin-stats-block first msg-form">
               <div class="admin-stats-header">
                 <span>Send a message</span>
@@ -1358,6 +1352,32 @@
   var openedTrackFromDash = false;
   var toastTimer = null;
 
+  // Name tidying + real-name check, same rules as Blendroom
+  var NAME_PARTICLES = ['van','de','der','den','het','ten','ter','te','le','la','du','des','von','di','da','del','dos','op',"'t",'in'];
+  var FAKE_NAMES = ['test','tester','testing','admin','user','username','anonymous','anon','unknown','nobody','none','nothing','xxx','xx','asdf','qwerty','azerty','fake','naam','name','voornaam','achternaam','blabla','bla','lol','haha','hihi','me','ik','jij'];
+  function niceName(v, last){
+    v = String(v || '').trim().replace(/\s+/g, ' ');
+    if (!v) return v;
+    var words = v.split(' '), mixed = v !== v.toLowerCase() && v !== v.toUpperCase();
+    if (mixed) return v.charAt(0).toUpperCase() + v.slice(1);
+    return words.map(function(w, i){
+      return (last && i < words.length - 1 && NAME_PARTICLES.indexOf(w.toLowerCase()) !== -1) ? w.toLowerCase()
+        : w.toLowerCase().replace(/(^|[-'])(\p{L})/gu, function(m, a, c){ return a + c.toUpperCase(); });
+    }).join(' ');
+  }
+  function nameProblem(first, last){
+    var ok = /^\p{L}[\p{L}'\u2019 -]*\p{L}$/u, pairs = [[first, 'first name'], [last, 'last name']];
+    for (var i = 0; i < pairs.length; i++){
+      var v = pairs[i][0], what = pairs[i][1];
+      if (v.length < 2) return 'Please enter your ' + what + '.';
+      if (!ok.test(v)) return 'Your ' + what + ' can only contain letters, spaces, hyphens and apostrophes.';
+      if (/(\p{L})\1\1/iu.test(v)) return 'That ' + what + ' doesn\u2019t look like a real name.';
+      if (!/[aeiouy\u00e0-\u00ff]/i.test(v)) return 'That ' + what + ' doesn\u2019t look like a real name.';
+      if (FAKE_NAMES.indexOf(v.toLowerCase()) !== -1) return 'Please use your real ' + what + '.';
+    }
+    if (first.toLowerCase() === last.toLowerCase()) return 'Please enter your real first and last name.';
+    return '';
+  }
   function loadProfile(){
     try{
       var p = JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null');
@@ -1392,14 +1412,16 @@
 
   regForm.addEventListener('submit', function(e){
     e.preventDefault();
-    var first = document.getElementById('regFirstName').value.trim().replace(/\s+/g, ' ');
-    var last = document.getElementById('regLastName').value.trim().replace(/\s+/g, ' ');
+    var first = niceName(document.getElementById('regFirstName').value, false);
+    var last = niceName(document.getElementById('regLastName').value, true);
     var team = document.getElementById('regTeam').value.trim().replace(/\s+/g, ' ');
     if (!first || !last || !team){
       regErr.textContent = 'Please fill in all three fields.';
       (!first ? document.getElementById('regFirstName') : !last ? document.getElementById('regLastName') : document.getElementById('regTeam')).focus();
       return;
     }
+    var nameErr = nameProblem(first, last);
+    if (nameErr){ regErr.textContent = nameErr; return; }
     var prev = loadProfile();
     var now = new Date().toISOString();
     var ok = saveProfile({
@@ -1427,11 +1449,11 @@
   function applyHashView(){ if (location.hash === '#track') showTrack(); else showDashboard(); }
   window.addEventListener('hashchange', applyHashView);
 
-  function showDashToast(msg){
+  function showDashToast(msg, ms){
     dashToast.textContent = msg;
     dashToast.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function(){ dashToast.classList.remove('show'); }, 1800);
+    toastTimer = setTimeout(function(){ dashToast.classList.remove('show'); }, ms || 1800);
   }
   Array.prototype.forEach.call(document.querySelectorAll('.dash-tile'), function(tile){
     tile.addEventListener('click', function(){
@@ -4145,7 +4167,8 @@
   // Public key only — safe to embed client-side, it's just this app's
   // identity for the push service. The matching private key lives only in
   // Vercel's environment variables (see README), never in this file.
-  var VAPID_PUBLIC_KEY = 'BAjCCG18Pb7QyXl0JUgYNRbvSh4leZQV5Pv5Lg5sT9eoQTbEDlgy5aD4jzF0D3Uiz9GLQ3kLrsHAKB5TcpUuYkA';
+  // (Old hardcoded key, no longer used: the key now comes from /api/vapid-public-key)
+  // var VAPID_PUBLIC_KEY = 'BAjCCG18Pb7QyXl0JUgYNRbvSh4leZQV5Pv5Lg5sT9eoQTbEDlgy5aD4jzF0D3Uiz9GLQ3kLrsHAKB5TcpUuYkA';
 
   function urlBase64ToUint8Array(base64String){
     var padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -4193,7 +4216,7 @@
           body: JSON.stringify({ endpoint: existing.endpoint })
         }).catch(function(){});
         try{ localStorage.removeItem('rootahead_admin_push'); }catch(e){}
-        if (localStorage.getItem('rootahead_team_push') !== '1') await existing.unsubscribe();
+        // the browser subscription stays: the same device may receive team messages
         errEl.textContent = 'Notifications turned off for this device.';
       } else {
         var permission = await Notification.requestPermission();
@@ -4201,12 +4224,7 @@
           errEl.textContent = 'Notifications were not allowed — check your browser/phone settings and try again.';
           return;
         }
-        var reg = await navigator.serviceWorker.register('/sw.js');
-        await navigator.serviceWorker.ready;
-        var sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-        });
+        var sub = await getPushSubscription();
         var res = await fetch('/api/subscribe', {
           method:'POST', headers:{'Content-Type':'application/json'},
           body: JSON.stringify({ subscription: sub.toJSON() })
@@ -4224,95 +4242,119 @@
     }
   });
 
-  /* ---------------- TEAM MESSAGES — user side ----------------
-     A user turns this on once (the phone asks permission). The device's push
-     subscription is stored with their profile, so the admin can send to them.
-     iPhone: push only works in the installed app (Add to Home Screen, iOS 16.4+). */
-  var teamCard = document.getElementById('teamCard');
-  function teamPushSupported(){ return ('serviceWorker' in navigator) && ('PushManager' in window) && ('Notification' in window); }
+  /* ---------------- NOTIFICATIONS — user side (same flow as Blendroom) ----------------
+     - The bell shows the state: 🔔 Notifications / 🔔 On / 🔕 Blocked.
+     - Tap → the phone asks permission → this device is registered with the
+       name and team from the profile, and a confirmation notification shows.
+     - On every start, when permission is already granted, the device is
+       re-registered silently (keeps it working after updates/key changes).
+     - The push key comes from the server (/api/vapid-public-key), so it
+       always matches VAPID_PRIVATE_KEY in Vercel.
+     - Turning off is done in the phone's own Settings → Notifications.
+     iPhone: only in the installed app (Add to Home Screen, iOS 16.4+). */
+  function pushSupported(){ return ('serviceWorker' in navigator) && ('PushManager' in window) && ('Notification' in window) && location.protocol !== 'file:'; }
   function isIOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
   function isStandalone(){ return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true; }
-  function teamFlag(){ try{ return localStorage.getItem('rootahead_team_push') === '1'; }catch(e){ return false; } }
-
+  function autoDeviceName(){
+    var ua = navigator.userAgent, touchMac = /Macintosh/.test(ua) && navigator.maxTouchPoints > 1;
+    var os = /iPhone/.test(ua) ? 'iPhone' : (/iPad/.test(ua) || touchMac) ? 'iPad' : /Android/.test(ua) ? 'Android' : /Mac/.test(ua) ? 'Mac' : /Windows/.test(ua) ? 'Windows PC' : /Linux/.test(ua) ? 'Linux' : 'Device';
+    var br = /Edg\//.test(ua) ? 'Edge' : /CriOS|Chrome\//.test(ua) ? 'Chrome' : /FxiOS|Firefox\//.test(ua) ? 'Firefox' : /Safari\//.test(ua) ? 'Safari' : '';
+    return os + (isStandalone() ? ' (app)' : br ? ' (' + br + ')' : '');
+  }
+  var pushKeyPromise = null;
+  function serverPushKey(){
+    if (!pushKeyPromise){
+      pushKeyPromise = fetch('/api/vapid-public-key', { cache:'no-store' })
+        .then(function(r){ return r.json().then(function(d){ if (!r.ok || !d.key) throw new Error('Push is not set up on the server.'); return d.key; }); })
+        .catch(function(e){ pushKeyPromise = null; throw e; });
+    }
+    return pushKeyPromise;
+  }
+  function subscriptionUsesKey(sub, keyB64){
+    try{
+      var have = new Uint8Array(sub.options.applicationServerKey), want = urlBase64ToUint8Array(keyB64);
+      if (have.length !== want.length) return false;
+      for (var i = 0; i < have.length; i++) if (have[i] !== want[i]) return false;
+      return true;
+    } catch(e){ return true; } // browser doesn't expose the key: keep the subscription
+  }
+  // The one place a push subscription is made: right key, created if needed
+  async function getPushSubscription(){
+    var reg = await navigator.serviceWorker.register('/sw.js');
+    await navigator.serviceWorker.ready;
+    var key = await serverPushKey();
+    var sub = await reg.pushManager.getSubscription();
+    if (sub && !subscriptionUsesKey(sub, key)){ await sub.unsubscribe().catch(function(){}); sub = null; } // made with an old key
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(key) });
+    return sub;
+  }
   async function sendTeamSubscription(sub){
     var prof = loadProfile();
     var r = await fetch('/api/subscribe', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ kind:'user', deviceId: deviceId, subscription: sub.toJSON(),
+      body: JSON.stringify({ kind:'user', deviceId: deviceId, subscription: sub.toJSON(), device: autoDeviceName(),
         profile: prof ? { firstName: prof.firstName, lastName: prof.lastName, team: prof.team } : null })
     });
     var d = await r.json().catch(function(){ return {}; });
     if (!r.ok){
-      // Technical details are for the admin (console / Admin panel), not for riders
-      console.warn('Team messages: server said', r.status, d.error);
-      throw new Error(r.status >= 500
-        ? 'Team messages aren\'t available right now. Please try again later.'
-        : 'Could not turn on team messages. Please try again.');
+      console.warn('Notifications: server said', r.status, d.error);
+      throw new Error('Notifications could not be registered right now (code ' + r.status + '). Please try again later.');
     }
   }
-  async function refreshTeamCard(){
-    var sub = document.getElementById('teamCardSub'), btn = document.getElementById('teamCardBtn');
-    if (!loadProfile()){ teamCard.classList.remove('show'); return; }
-    if (!teamPushSupported()){
-      if (isIOS() && !isStandalone()){
-        sub.textContent = 'On iPhone, install the app first to receive team messages.';
-        btn.textContent = 'How'; btn.dataset.action = 'ios'; btn.className = 'btn';
-        teamCard.classList.add('show');
-      } else teamCard.classList.remove('show');
+  // Silent registration, as Blendroom does on every start
+  async function ensurePush(){
+    if (!pushSupported() || Notification.permission !== 'granted' || !loadProfile()) return false;
+    try{ await sendTeamSubscription(await getPushSubscription()); return true; }
+    catch(e){ console.warn('push', e); return false; }
+  }
+  function updateNotifyBtn(){
+    var b = document.getElementById('notifyBtn');
+    if (!pushSupported()){
+      // iPhone in Safari: explain how to get notifications instead of hiding the bell
+      b.hidden = !(isIOS() && !isStandalone());
+      b.textContent = '🔔 Notifications'; b.setAttribute('aria-pressed', 'false'); b.classList.remove('blocked');
       return;
     }
-    teamCard.classList.add('show');
-    if (Notification.permission === 'denied'){
-      sub.textContent = 'Notifications are blocked — allow them for this app in your phone or browser settings.';
-      btn.style.display = 'none'; return;
-    }
-    btn.style.display = '';
-    var existing = await getExistingPushSubscription();
-    if (existing && teamFlag()){
-      sub.textContent = 'On — you\'ll receive messages from your team admin.';
-      btn.textContent = 'Turn off'; btn.dataset.action = 'off'; btn.className = 'btn';
-    } else {
-      sub.textContent = 'Get messages from your team admin on this device.';
-      btn.textContent = 'Turn on'; btn.dataset.action = 'on'; btn.className = 'btn primary';
-    }
+    b.hidden = false;
+    var st = Notification.permission;
+    b.textContent = st === 'granted' ? '🔔 On' : st === 'denied' ? '🔕 Blocked' : '🔔 Notifications';
+    b.setAttribute('aria-pressed', String(st === 'granted'));
+    b.classList.toggle('blocked', st === 'denied');
   }
-  document.getElementById('teamCardBtn').addEventListener('click', async function(){
-    var btn = this, sub = document.getElementById('teamCardSub');
-    if (btn.dataset.action === 'ios'){ document.getElementById('iosInstall').classList.add('open'); return; }
-    btn.disabled = true;
+  document.getElementById('notifyBtn').addEventListener('click', async function(){
+    var b = this;
+    if (!pushSupported()){ document.getElementById('iosInstall').classList.add('open'); return; }
+    var settingsHint = isIOS() ? 'Settings → Notifications → ROOT-Ahead' : 'your phone or browser settings';
+    if (Notification.permission === 'denied'){ showDashToast('Notifications are blocked. Turn them on in ' + settingsHint + '.', 5000); return; }
+    var p = loadProfile(), who = p ? p.firstName + ' ' + p.lastName : autoDeviceName();
+    b.disabled = true;
     try{
-      if (btn.dataset.action === 'off'){
-        await fetch('/api/subscribe', { method:'DELETE', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ kind:'user', deviceId: deviceId }) }).catch(function(){});
-        try{ localStorage.removeItem('rootahead_team_push'); }catch(e){}
-        var ex = await getExistingPushSubscription();
-        if (ex && localStorage.getItem('rootahead_admin_push') !== '1') await ex.unsubscribe();
-      } else {
-        var perm = await Notification.requestPermission();
-        if (perm !== 'granted'){ sub.textContent = 'Notifications were not allowed.'; return; }
-        var reg = await navigator.serviceWorker.register('/sw.js');
-        await navigator.serviceWorker.ready;
-        var s2 = (await reg.pushManager.getSubscription()) ||
-          await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) });
-        await sendTeamSubscription(s2);
-        try{ localStorage.setItem('rootahead_team_push', '1'); }catch(e){}
+      if (Notification.permission === 'granted'){
+        var ok = await ensurePush();
+        showDashToast(ok ? 'Notifications are on for ' + who + '. Manage them in ' + settingsHint + '.'
+                         : 'Notifications could not be registered right now. Please try again later.', 5000);
+        return;
       }
+      var r = await Notification.requestPermission();
+      updateNotifyBtn();
+      if (r !== 'granted') return;
+      await sendTeamSubscription(await getPushSubscription());
+      showDashToast('Notifications are on. You\'ll get messages from your team here.', 5000);
+      try{
+        var reg = await navigator.serviceWorker.ready;
+        await reg.showNotification('ROOT Ahead', { body: 'Notifications are on. Messages from your team will show up here.',
+          icon: '/icon-192-v2.png', badge: '/icon-192-v2.png', tag: 'rootahead-welcome' });
+      } catch(e){}
     } catch(err){
-      sub.textContent = (err && err.message && err.message.length < 120) ? err.message : 'Could not change team messages. Please try again later.';
-      btn.disabled = false; return;
+      showDashToast((err && err.message) || 'Notifications could not be turned on.', 6000);
+    } finally {
+      b.disabled = false; updateNotifyBtn();
     }
-    btn.disabled = false;
-    refreshTeamCard();
   });
-  // Keep the server copy fresh (push endpoints can change; name/team edits)
-  async function resyncTeamSubscription(){
-    if (!teamFlag() || !teamPushSupported() || Notification.permission !== 'granted') return;
-    var ex = await getExistingPushSubscription();
-    if (ex) sendTeamSubscription(ex).catch(function(){});
-  }
-  document.getElementById('regForm').addEventListener('submit', function(){ setTimeout(function(){ refreshTeamCard(); resyncTeamSubscription(); }, 0); });
-  refreshTeamCard();
-  resyncTeamSubscription();
+  // after the first registration / a profile edit: register (if allowed) with the new name
+  document.getElementById('regForm').addEventListener('submit', function(){ setTimeout(function(){ updateNotifyBtn(); ensurePush(); }, 0); });
+  updateNotifyBtn();
+  ensurePush();
 
   /* ---------------- TEAM MESSAGES — admin side ---------------- */
   var msgUsers = [];
@@ -4337,7 +4379,7 @@
       cb.addEventListener('change', updateMsgCount);
       var who = document.createElement('div'); who.className = 'who';
       who.appendChild(document.createTextNode(msgUserName(u)));
-      var sp = document.createElement('span'); sp.textContent = (u.team || '—') + (u.pushEnabled ? '' : ' · messages not turned on');
+      var sp = document.createElement('span'); sp.textContent = (u.team || '—') + (u.pushEnabled ? (u.device ? ' · ' + u.device : '') : ' · notifications not turned on');
       who.appendChild(sp); lab.appendChild(cb); lab.appendChild(who); box.appendChild(lab);
     });
     if (!sorted.length) box.innerHTML = '<div class="admin-note">No users yet.</div>';

@@ -8,7 +8,7 @@
 // 2. Push notifications (unchanged from before): shows them and focuses or
 //    opens the app when one is tapped.
 
-var CACHE = 'rootahead-shell-v5'; // bump when the list below changes
+var CACHE = 'rootahead-shell-v6'; // bump when the list below changes
 var SHELL = ['/', '/manifest.json', '/logo-rootahead.png', '/icon-192-v2.png', '/icon-512-v2.png', '/apple-touch-icon-v2.png'];
 
 self.addEventListener('install', function(event){
@@ -36,12 +36,13 @@ self.addEventListener('fetch', function(event){
   if (url.origin !== self.location.origin) return;      // tiles, routing, fonts: straight to network
   if (url.pathname.indexOf('/api/') === 0) return;      // live data: never cached
   if (url.pathname.indexOf('/_vercel/') === 0) return;  // analytics
+  if (url.pathname.indexOf('/admin') === 0) return;     // the RA Messages app: always live, never cached
 
   if (req.mode === 'navigate'){
     // network-first for the page itself, cached shell as offline fallback
     event.respondWith(
       fetch(req).then(function(res){
-        if (res && res.ok){ var copy = res.clone(); caches.open(CACHE).then(function(c){ c.put('/', copy); }); }
+        if (res && res.ok && url.pathname === '/'){ var copy = res.clone(); caches.open(CACHE).then(function(c){ c.put('/', copy); }); }
         return res;
       }).catch(function(){
         return caches.match('/').then(function(hit){ return hit || Response.error(); });
@@ -81,12 +82,16 @@ self.addEventListener('push', function(event){
 
 self.addEventListener('notificationclick', function(event){
   event.notification.close();
+  var target = new URL((event.notification.data && event.notification.data.url) || '/', self.location.origin).href;
+  var same = target.indexOf(self.location.origin) === 0;
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList){
-      for (var i = 0; i < clientList.length; i++){
-        if ('focus' in clientList[i]) return clientList[i].focus();
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(list){
+      var c = null;
+      if (same) for (var i = 0; i < list.length; i++){
+        if (list[i].url.indexOf(self.location.origin) === 0 && list[i].url.indexOf('/admin') === -1){ c = list[i]; break; }
       }
-      if (clients.openWindow) return clients.openWindow((event.notification.data && event.notification.data.url) || '/');
+      if (c) return c.focus().then(function(w){ return (w && w.url !== target && 'navigate' in w) ? w.navigate(target) : w; });
+      return clients.openWindow(target);
     })
   );
 });

@@ -129,19 +129,31 @@ no public UI for it; it's a button inside the Admin panel).
   from there → Admin panel (password) → **🔔 Notify me on new visits** →
   allow notifications when your browser asks.
 
-### 4b. Team messages (admin → users)
+### 4b. Notifications to riders (works like Blendroom)
 
-Uses the same VAPID keys as section 4 (no extra setup).
+Vercel → Settings → Environment Variables: `VAPID_PUBLIC_KEY`,
+`VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (`mailto:you@…`; `VAPID_CONTACT` also
+works) and `ADMIN_PASSWORD` (`ADMIN_TOKEN` also works). Redeploy.
+The app fetches the public key from `/api/vapid-public-key`, so nothing is
+hardcoded and a new key pair only needs changing in Vercel.
 
-- Users turn it on once: dashboard → **Team messages → Turn on** → allow
-  notifications. iPhone: only inside the installed app (iOS 16.4+).
-- Admin → **Messages** tab: tick users, or use *Select all* / *Team …*, write
-  the message, **Send**. Users without messages turned on are greyed out.
-- Delivery: if a phone is offline the push service keeps it up to 24 h.
-  Devices that removed the app or blocked notifications are cleaned up
-  automatically on the next send.
-- Storage: `rootahead:push:users` (deviceId → subscription),
-  `rootahead:messages` (last 200 sent messages).
+**Every phone that should receive messages**
+1. Open the app in Safari/Chrome → Share → Add to Home Screen (iPhone: required).
+2. Start it from the icon, fill in name and team, tap **🔔 Notifications** →
+   Allow. The bell shows **🔔 On**. ROOT-Ahead then appears in the phone's
+   Settings → Notifications (turn it off there).
+   The device re-registers itself on every start.
+
+**Your message app: RA Messages**
+1. Open `https://<project>.vercel.app/admin/` → Share → Add to Home Screen.
+   It installs as "RA Messages" with its own icon.
+2. Unlock with the admin password (remembered on that phone; **Lock** forgets it).
+3. Choose Everyone / a team / people, write title + text, choose what opens
+   when tapped, check the preview, tap **Send to N devices**.
+   Devices that removed the app are taken off the list automatically.
+
+Storage: `rootahead:push:users` (device → subscription), `rootahead:messages`
+(last 200 sent). Needs iOS 16.4 or newer on iPhone.
 
 ### 5. (Optional) Turn on Vercel Web Analytics
 

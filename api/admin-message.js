@@ -1,15 +1,16 @@
 // Admin: send a team message as a push notification to one or more users.
-//   POST { deviceIds:[...], title, body }  → sends, returns { sent, failed, skipped }
+//   POST { deviceIds:[...] | 'all', title, body, url }  → sends, returns { sent, failed, skipped }
 //   GET                                     → the last 50 sent messages (log)
 // Protected like admin-users: header x-admin-key must equal ADMIN_PASSWORD.
 // Needs VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY in Vercel (same public key as in index.html).
 var getRedis = require('./_redis').getRedis;
 var webpush = require('web-push');
+var admin = require('./_admin');
 
 var vapidReady = !!(process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY);
 if (vapidReady){
   webpush.setVapidDetails(
-    process.env.VAPID_CONTACT || 'mailto:admin@example.com',
+    admin.vapidSubject(),
     process.env.VAPID_PUBLIC_KEY,
     process.env.VAPID_PRIVATE_KEY
   );
@@ -21,9 +22,7 @@ function parse(v){
 }
 
 module.exports = async function handler(req, res){
-  var expected = process.env.ADMIN_PASSWORD;
-  if (!expected){ res.status(503).json({ error: 'ADMIN_PASSWORD is not set in Vercel.' }); return; }
-  if (req.headers['x-admin-key'] !== expected){ res.status(401).json({ error: 'Wrong admin password for the backend.' }); return; }
+  if (!admin.requireAdmin(req, res)) return;
 
   try{
     var redis = getRedis();
@@ -42,13 +41,21 @@ module.exports = async function handler(req, res){
     var b = req.body || {};
     var title = String(b.title || 'ROOT Ahead').trim().slice(0, 60) || 'ROOT Ahead';
     var text = String(b.body || '').trim().slice(0, 300);
-    var ids = Array.isArray(b.deviceIds) ? b.deviceIds.map(function(x){ return String(x).slice(0, 100); }).filter(Boolean) : [];
+    var ids;
+    if (b.deviceIds === 'all'){
+      ids = Object.keys((await redis.hgetall('rootahead:push:users')) || {});   // everyone with messages on
+    } else {
+      ids = Array.isArray(b.deviceIds) ? b.deviceIds.map(function(x){ return String(x).slice(0, 100); }).filter(Boolean) : [];
+    }
+    // Link opened when the notification is tapped: a path in this app (e.g. /#track) or an https:// address
+    var link = String(b.url || '/').trim().slice(0, 300);
+    if (!/^\/(?!\/)/.test(link) && !/^https:\/\//i.test(link)) link = '/';
     ids = ids.filter(function(x, i){ return ids.indexOf(x) === i; }).slice(0, 500);
     if (!text){ res.status(400).json({ error: 'Write a message first.' }); return; }
-    if (!ids.length){ res.status(400).json({ error: 'Pick at least one recipient.' }); return; }
+    if (!ids.length){ res.status(400).json({ error: b.deviceIds === 'all' ? 'Nobody has turned notifications on yet.' : 'Pick at least one recipient.' }); return; }
 
     var id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    var payload = JSON.stringify({ title: title, body: text, tag: 'rootahead-msg-' + id, url: '/' });
+    var payload = JSON.stringify({ title: title, body: text, tag: 'rootahead-msg-' + id, url: link });
     var sent = 0, failed = 0, skipped = 0, gone = [];
 
     await Promise.all(ids.map(async function(deviceId){
@@ -64,7 +71,7 @@ module.exports = async function handler(req, res){
     }));
     if (gone.length) await redis.hdel.apply(redis, ['rootahead:push:users'].concat(gone));
 
-    var entry = { id: id, at: new Date().toISOString(), title: title, body: text, to: ids, sent: sent, failed: failed, skipped: skipped };
+    var entry = { id: id, at: new Date().toISOString(), title: title, body: text, url: link, everyone: b.deviceIds === 'all', to: ids, sent: sent, failed: failed, skipped: skipped };
     await redis.lpush('rootahead:messages', JSON.stringify(entry));
     await redis.ltrim('rootahead:messages', 0, 199);
 
