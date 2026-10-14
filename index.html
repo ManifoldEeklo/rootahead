@@ -383,13 +383,15 @@
   .uh-row .btn{flex:0 0 auto;}
   /* ---------- TRAIN ---------- */
   #trainView{position:fixed;inset:0;z-index:4050;overflow-y:auto;background:var(--bg);
-    padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);}
+    padding-bottom:env(safe-area-inset-bottom,0px);}
   #trainView.hidden{display:none;}
-  .tv-head{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);
-    background:linear-gradient(180deg,#132018,#101a14 90%);position:sticky;top:0;z-index:2;}
-  .tv-brand{height:34px;width:auto;}
-  .tv-title{font-family:'Fjalla One',sans-serif;font-size:20px;letter-spacing:.06em;color:var(--gold);margin-left:auto;}
-  .tv-body{max-width:720px;margin:0 auto;padding:18px 18px 40px;}
+  /* compact header, same height as the Track header */
+  #trainView .tv-head{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:12px;
+    padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#132018,#101a14 90%);}
+  #trainView .tv-brand{height:36px;width:auto;max-width:150px;margin:0;filter:none;}
+  #trainView .tv-title{margin-left:auto;font-family:'Fjalla One',sans-serif;font-size:20px;letter-spacing:.06em;color:var(--gold);}
+  .tv-body{max-width:760px;margin:0 auto;padding:16px 16px 40px;}
   .tv-h{font-family:'Fjalla One',sans-serif;font-weight:400;letter-spacing:.04em;font-size:22px;margin:0 0 4px;}
   .tv-lead{color:var(--text-muted);font-size:14px;margin:0 0 16px;}
   .tv-field{margin:0 0 16px;}
@@ -398,6 +400,7 @@
   .tv-seg{display:flex;flex-wrap:wrap;gap:6px;}
   .tv-seg button{flex:1 1 auto;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:8px;
     padding:9px 10px;font:inherit;font-size:13.5px;cursor:pointer;}
+  #tvGoalSeg{display:grid;grid-template-columns:1fr 1fr;}
   .tv-seg.days button{flex:1 1 0;min-width:40px;padding:9px 0;}
   .tv-seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#150c05;font-weight:600;}
   .tv-two{display:grid;grid-template-columns:150px 1fr;gap:8px;}
@@ -405,50 +408,87 @@
     background:var(--panel-alt);border:1px solid var(--line);color:var(--text);border-radius:var(--radius);padding:9px 10px;color-scheme:dark;}
   #trainView input[type=range]{width:100%;accent-color:var(--accent);}
   .tv-warn{font-size:13px;color:var(--gold);margin:0 0 10px;}
-  .tv-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
-  .tv-acts .btn{width:auto;flex:0 0 auto;margin:0;padding:10px 16px;font-size:14px;}
+  .tv-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+  #trainView .tv-acts .btn{width:auto;flex:0 0 auto;margin:0;padding:10px 16px;font-size:14px;font-family:inherit;text-transform:none;letter-spacing:0;}
+  #trainView .tv-acts .btn.primary{font-weight:700;}
   .tv-err{color:#e07a5f;font-size:13px;min-height:18px;margin-top:8px;}
   .tv-status{font-size:12.5px;color:var(--text-muted);margin-top:14px;min-height:16px;}
   .tv-status.bad{color:#e07a5f;}
-  .tv-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px;}
-  .tv-card-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline;}
-  .tv-card-top b{font-size:16px;}
+
+  /* plan summary */
+  .tv-ended{background:var(--panel);border:1px solid var(--gold);border-radius:10px;padding:14px;margin-bottom:14px;}
+  .tv-ended b{font-size:16px;color:var(--gold);}
+  .tv-ended p{font-size:14px;margin:6px 0 12px;}
+  #trainView .tv-ended .btn{width:auto;margin:0;padding:10px 16px;font-size:14px;font-family:inherit;text-transform:none;letter-spacing:0;}
+  .tv-history{margin-top:26px;border-top:1px solid var(--line);padding-top:14px;}
+  .tv-history h3{font-size:14px;margin:0 0 8px;}
+  .tv-history ul{list-style:none;margin:0;padding:0;}
+  .tv-history li{padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px;}
+  .tv-history li:last-child{border-bottom:none;}
+  .tv-history li small{display:block;color:var(--text-muted);font-size:12px;}
+  .tv-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:14px;}
+  .tv-card-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap;}
+  .tv-card-top b{font-size:15px;}
   .tv-link{background:none;border:none;color:var(--text-muted);text-decoration:underline;font:inherit;font-size:12.5px;cursor:pointer;padding:0;}
-  .tv-badge{display:inline-block;margin-top:8px;font-size:11.5px;border:1px solid var(--line);border-radius:12px;padding:2px 9px;color:var(--text-muted);}
+  .tv-meta{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:6px;}
+  .tv-badge{font-size:11.5px;border:1px solid var(--line);border-radius:12px;padding:2px 9px;color:var(--text-muted);}
   .tv-badge.coach{border-color:var(--gold);color:var(--gold);}
-  .tv-event{margin-top:8px;font-size:14px;color:var(--gold);}
+  .tv-event{font-size:13.5px;color:var(--gold);}
   .tv-coachnote{margin:10px 0 0;padding:8px 12px;border-left:3px solid var(--gold);background:var(--panel-alt);font-size:14px;white-space:pre-wrap;}
+
+  /* week navigation */
   .tv-weeknav{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-  .tv-weeknav > div{flex:1 1 auto;text-align:center;}
-  .tv-weeknav b{display:block;font-size:15px;}
-  .tv-weeknav small{display:block;font-size:12.5px;color:var(--text-muted);}
-  .tv-progress{height:4px;background:var(--panel-alt);border-radius:2px;margin-top:6px;overflow:hidden;}
+  .tv-weekinfo{flex:1 1 auto;text-align:center;}
+  .tv-weekinfo b{display:block;font-size:15px;}
+  .tv-weekinfo small{display:block;font-size:12.5px;color:var(--text-muted);}
+  .tv-progress{height:4px;background:var(--panel-alt);border-radius:2px;margin:6px auto 0;max-width:260px;overflow:hidden;}
   .tv-progress span{display:block;height:100%;width:0;background:var(--easy);}
-  .tv-arrow{width:42px;height:42px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:22px;cursor:pointer;}
+  .tv-arrow{flex:0 0 42px;height:42px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:22px;cursor:pointer;}
   .tv-arrow:disabled{opacity:.3;cursor:default;}
-  .tv-day{border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--panel);overflow:hidden;}
-  .tv-day.today{border-color:var(--gold);}
-  .tv-day.rest{background:transparent;}
-  .tv-day-head{display:flex;align-items:stretch;gap:12px;width:100%;background:none;border:none;color:inherit;font:inherit;text-align:left;padding:10px 12px;cursor:pointer;}
-  .tv-date{flex:0 0 42px;display:flex;flex-direction:column;justify-content:center;}
-  .tv-date b{font-size:14px;} .tv-date small{font-size:11.5px;color:var(--text-muted);}
-  .tv-stripe{flex:0 0 4px;border-radius:2px;}
-  .tv-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;justify-content:center;}
-  .tv-main b{font-size:15px;} .tv-main small{font-size:12.5px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .tv-day.rest .tv-main b{color:var(--text-muted);font-weight:500;}
-  .tv-mark{flex:0 0 24px;align-self:center;text-align:center;font-size:18px;color:var(--easy);}
-  .tv-day.skipped .tv-mark{color:var(--text-muted);}
-  .tv-day.done .tv-main b{text-decoration:line-through;text-decoration-color:rgba(238,231,214,.35);}
-  .tv-detail{padding:0 12px 12px 12px;border-top:1px solid var(--line);}
-  .tv-detail p{font-size:13.5px;color:var(--text-muted);margin:10px 0;}
-  .tv-detail .tv-daynote{color:var(--gold);}
-  .tv-detail .tv-hint{font-size:12px;}
-  .tv-steps{list-style:none;margin:0;padding:0;}
-  .tv-steps li{display:grid;grid-template-columns:10px 42px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:13.5px;}
+
+  /* the week as 7 tiles: colour + bar height show the kind of day */
+  .tv-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:12px;}
+  .tv-tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 2px 7px;min-width:0;
+    background:var(--panel);border:1px solid var(--line);border-radius:9px;color:var(--text);font:inherit;cursor:pointer;}
+  .tv-tile.rest{background:transparent;}
+  .tv-tile[aria-selected="true"]{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset;}
+  .tv-tile .dn{font-size:11.5px;font-weight:600;}
+  .tv-tile .dd{font-size:10.5px;color:var(--text-muted);}
+  .tv-tile .bar{width:60%;height:28px;display:flex;align-items:flex-end;}
+  .tv-tile .bar i{display:block;width:100%;border-radius:3px 3px 1px 1px;}
+  .tv-tile .mm{font-size:10.5px;font-family:'IBM Plex Mono',monospace;color:var(--text-muted);white-space:nowrap;}
+  .tv-tile.today .dn{color:var(--gold);}
+  .tv-tile .ck{position:absolute;top:3px;right:5px;font-size:11px;color:var(--easy);}
+  .tv-tile.skipped .ck{color:var(--text-muted);}
+
+  /* selected day */
+  .tv-daycard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;}
+  .tv-daytop{display:flex;align-items:flex-start;gap:12px;}
+  .tv-daytop .tx{flex:1 1 auto;min-width:0;}
+  .tv-daytop .when{font-size:12.5px;color:var(--text-muted);}
+  .tv-daytop h3{font-family:'Fjalla One',sans-serif;font-weight:400;letter-spacing:.03em;font-size:21px;margin:2px 0 2px;}
+  .tv-daytop .sum{font-size:13.5px;color:var(--text-muted);}
+  .tv-daytop .state{flex:0 0 auto;font-size:12px;border-radius:12px;padding:3px 10px;border:1px solid var(--line);color:var(--text-muted);}
+  .tv-daytop .state.done{border-color:var(--easy);color:var(--easy);}
+  .tv-about{font-size:14px;color:var(--text);margin:10px 0 0;line-height:1.45;}
+  .tv-daynote{font-size:14px;color:var(--gold);margin:8px 0 0;}
+  /* workout profile: width = time, height = intensity */
+  .tv-profile{display:flex;align-items:flex-end;gap:2px;height:64px;margin:14px 0 4px;padding:6px;background:var(--panel-alt);border-radius:8px;}
+  .tv-profile i{display:block;min-width:3px;border-radius:2px 2px 0 0;}
+  .tv-axis{display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;margin-bottom:6px;}
+  .tv-steps{list-style:none;margin:6px 0 0;padding:0;}
+  .tv-steps li{display:grid;grid-template-columns:10px 46px 1fr;column-gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px;}
   .tv-steps li:last-child{border-bottom:none;}
   .tv-steps i{width:10px;height:10px;border-radius:50%;}
   .tv-steps .m{font-family:'IBM Plex Mono',monospace;color:var(--gold);}
-  .tv-steps .g{font-size:12px;color:var(--text-muted);text-align:right;}
+  .tv-steps .g{grid-column:3;font-size:12px;color:var(--text-muted);}
+  .tv-hint{font-size:12px;color:var(--text-muted);margin:10px 0 0;}
+  .tv-restday{font-size:14px;color:var(--text-muted);margin:10px 0 0;}
+  @media (min-width:640px){
+    .tv-steps li{grid-template-columns:10px 46px 1fr auto;}
+    .tv-steps .g{grid-column:auto;text-align:right;}
+    .tv-tile .bar{height:36px;}
+  }
   .tr-day{display:grid;grid-template-columns:78px 1fr 62px;gap:6px;padding:8px 0;border-bottom:1px solid var(--line);align-items:center;}
   .tr-day:last-child{border-bottom:none;}
   .tr-date{font-size:12.5px;}
@@ -799,11 +839,11 @@
 
 <!-- Train: personal training plan (app suggests, coach adjusts) -->
 <div id="trainView" class="hidden">
-  <div class="tv-head">
+  <header class="tv-head">
     <button class="home-btn" id="trainHomeBtn" type="button">‹ Home</button>
     <img class="brand-logo tv-brand" src="/logo-rootahead.png" alt="ROOT Ahead">
     <span class="tv-title">Train</span>
-  </div>
+  </header>
   <div class="tv-body">
     <div id="tvSetup" hidden>
       <h2 class="tv-h">Your training plan</h2>
@@ -821,22 +861,29 @@
       <div class="tv-field"><span class="tv-lab">FTP in watts (optional)</span>
         <input type="number" id="tvFtp" min="50" max="700" placeholder="Leave empty if you don't know it"></div>
       <p class="tv-warn" id="tvCoachWarn" hidden>Your coach adjusted your current plan. Making a new plan replaces those changes.</p>
+      <p class="tv-warn" id="tvRecoveryNote" hidden></p>
       <div class="tv-acts"><button class="btn primary" type="button" id="tvMakeBtn">Make my plan</button><button class="btn" type="button" id="tvCancelSetup" hidden>Cancel</button></div>
       <div class="tv-err" id="tvSetupErr" role="alert"></div>
+      <div class="tv-history" id="tvHistory" hidden><h3>Earlier plans</h3><ul id="tvHistoryList"></ul></div>
     </div>
     <div id="tvPlan" hidden>
+      <div class="tv-ended" id="tvEnded" hidden>
+        <b id="tvEndedTitle"></b>
+        <p id="tvEndedText"></p>
+        <button class="btn primary" type="button" id="tvNextPlan">Make my next plan</button>
+      </div>
       <div class="tv-card">
         <div class="tv-card-top"><b id="tvGoal"></b><button class="tv-link" type="button" id="tvEditSettings">Change settings</button></div>
-        <span class="tv-badge" id="tvSource"></span>
-        <div class="tv-event" id="tvEvent" hidden></div>
+        <div class="tv-meta"><span class="tv-badge" id="tvSource"></span><span class="tv-event" id="tvEvent" hidden></span></div>
         <blockquote class="tv-coachnote" id="tvCoachNote" hidden></blockquote>
       </div>
       <div class="tv-weeknav">
         <button type="button" class="tv-arrow" id="tvPrev" aria-label="Previous week">‹</button>
-        <div><b id="tvWeekLabel"></b><small id="tvWeekTotals"></small><div class="tv-progress"><span id="tvWeekBar"></span></div></div>
+        <div class="tv-weekinfo"><b id="tvWeekLabel"></b><small id="tvWeekTotals"></small><div class="tv-progress"><span id="tvWeekBar"></span></div></div>
         <button type="button" class="tv-arrow" id="tvNext" aria-label="Next week">›</button>
       </div>
-      <div id="tvDays"></div>
+      <div class="tv-strip" id="tvStrip" role="tablist" aria-label="Days of this week"></div>
+      <div id="tvDay"></div>
     </div>
     <div class="tv-status" id="tvStatus" role="status"></div>
   </div>
@@ -4702,6 +4749,7 @@
       for (w = Math.ceil(weeks / 2); w < weeks; w++) phases[w] = 'build';
     }
     for (w = 3; w < weeks; w += 4) if (phases[w] !== 'taper' && phases[w] !== 'peak') phases[w] = 'recovery';
+    if (s.recoveryFirst && weeks > 1) phases[0] = 'recovery';   // just after an event: start easy
 
     var avail = (s.days || []).slice().sort(function(a, b){ return a - b; });
     if (!avail.length) avail = [1, 3, 5];
@@ -4785,24 +4833,33 @@
     if (!trainState){ setTimeout(showTrain, 0); return; }
     homeDash.classList.add('hidden');
     document.getElementById('trainView').classList.remove('hidden');
-    if (!trainState.loaded) loadTrain(); else renderTrain();
+    loadTrain();   // shows the saved copy at once, then fetches the latest (coach changes)
   }
   function hideTrain(){ var v = document.getElementById('trainView'); if (v) v.classList.add('hidden'); }
 
   function trainStatus(msg, bad){ var el = document.getElementById('tvStatus'); el.textContent = msg || ''; el.classList.toggle('bad', !!bad); }
-  function cachePlan(){ try{ localStorage.setItem(PLAN_CACHE, JSON.stringify({ plan:trainState.plan, log:trainState.log })); }catch(e){} }
-  function loadTrain(){
-    try{ var c = JSON.parse(localStorage.getItem(PLAN_CACHE) || 'null'); if (c){ trainState.plan = c.plan; trainState.log = c.log || {}; } }catch(e){}
-    trainState.loaded = true;
+  function cachePlan(){ try{ localStorage.setItem(PLAN_CACHE, JSON.stringify({ plan:trainState.plan, log:trainState.log, history:trainState.history || [] })); }catch(e){} }
+  var trainFetchAt = 0;
+  function loadTrain(opts){
+    opts = opts || {};
+    if (!trainState.loaded){
+      try{ var c = JSON.parse(localStorage.getItem(PLAN_CACHE) || 'null'); if (c){ trainState.plan = c.plan; trainState.log = c.log || {}; trainState.history = c.history || []; } }catch(e){}
+      trainState.loaded = true;
+    }
     renderTrain();
+    if (!opts.force && Date.now() - trainFetchAt < 8000) return;   // no need to ask again within a few seconds
+    trainFetchAt = Date.now();
     fetch('/api/plan?deviceId=' + encodeURIComponent(deviceId), { cache:'no-store' })
       .then(function(r){ return r.json().then(function(d){ return { ok:r.ok, data:d }; }); })
       .then(function(res){
         if (!res.ok){ if (!trainState.plan) trainStatus('Your plan could not be loaded right now.', true); return; }
-        var changed = JSON.stringify(res.data.plan) !== JSON.stringify(trainState.plan);
-        trainState.plan = res.data.plan; trainState.log = res.data.log || {};
+        var before = trainState.plan, changed = JSON.stringify(res.data.plan) !== JSON.stringify(before);
+        trainState.plan = res.data.plan; trainState.log = res.data.log || {}; trainState.history = res.data.history || [];
         cachePlan();
-        if (changed) trainState.week = -1;
+        if (changed && before && res.data.plan && res.data.plan.source === 'coach' && res.data.plan.adjustedAt !== before.adjustedAt){
+          showDashToast('Your coach updated your training plan.', 4000);
+        }
+        if (changed && !before) trainState.week = -1;
         renderTrain();
       })
       .catch(function(){ if (trainState.plan) trainStatus('Offline: showing your saved plan.'); });
@@ -4821,6 +4878,16 @@
     var n = Math.ceil(p.days.length / 7);
     if (trainState.week < 0 || trainState.week >= n) trainState.week = currentWeekIndex(p);
     var s = p.settings || {};
+    // plan finished? show how it went and offer the next one
+    var lastDay = p.days.length ? p.days[p.days.length - 1].d : p.start, todayIso = tIso(new Date());
+    var ended = lastDay < todayIso;
+    document.getElementById('tvEnded').hidden = !ended;
+    if (ended){
+      var sm = planSummary(p, trainState.log);
+      document.getElementById('tvEndedTitle').textContent = 'This plan ended on ' + tParse(lastDay).toLocaleDateString([], { day:'numeric', month:'long' });
+      document.getElementById('tvEndedText').textContent = 'You did ' + sm.done + ' of ' + sm.workouts + ' workouts (' + trainHours(sm.minDone) + ' of ' + trainHours(sm.minPlanned) + '). ' +
+        'Everything stays saved. Make a new plan to keep going' + (recentEventDays(p) !== null ? '; it starts with an easy week after your event.' : '.');
+    }
     // summary
     document.getElementById('tvGoal').textContent = (TRAIN_GOALS[s.goal] || 'Training plan') + ' · ' + s.hours + ' h a week';
     var src = document.getElementById('tvSource');
@@ -4842,54 +4909,105 @@
     document.getElementById('tvNext').disabled = w >= n - 1;
     var bar = document.getElementById('tvWeekBar');
     bar.style.width = (t.planned ? Math.min(100, Math.round(t.done / t.planned * 100)) : 0) + '%';
-    // days
-    var list = document.getElementById('tvDays'); list.innerHTML = '';
-    var today = tIso(new Date());
-    p.days.slice(w * 7, w * 7 + 7).forEach(function(day){
-      var info = TRAIN_TYPES[day.type] || TRAIN_TYPES.rest, lg = trainState.log[day.d];
-      var row = document.createElement('div');
-      row.className = 'tv-day' + (day.d === today ? ' today' : '') + (day.type === 'rest' ? ' rest' : '') + (lg ? ' ' + lg.status : '');
-      var dt = tParse(day.d);
-      var head = document.createElement('button'); head.type = 'button'; head.className = 'tv-day-head';
-      head.setAttribute('aria-expanded', String(trainState.open === day.d));
-      var dateEl = document.createElement('span'); dateEl.className = 'tv-date';
-      dateEl.innerHTML = '<b></b><small></small>';
-      dateEl.firstChild.textContent = TRAIN_DAYS[(dt.getDay() + 6) % 7];
-      dateEl.lastChild.textContent = dt.getDate() + '/' + (dt.getMonth() + 1);
-      var stripe = document.createElement('span'); stripe.className = 'tv-stripe';
-      stripe.style.background = info.zone ? TRAIN_ZONES[info.zone].color : 'transparent';
-      var main = document.createElement('span'); main.className = 'tv-main';
-      var tt = document.createElement('b'); tt.textContent = info.title;
-      var sub = document.createElement('small');
-      sub.textContent = day.type === 'rest' ? (day.note || '') : trainHours(day.min) + (info.zone ? ' · ' + TRAIN_ZONES[info.zone].name : '') + (day.note ? ' · ' + day.note : '');
-      main.appendChild(tt); main.appendChild(sub);
-      var mark = document.createElement('span'); mark.className = 'tv-mark';
-      mark.textContent = lg ? (lg.status === 'done' ? '✓' : '–') : '';
-      head.appendChild(dateEl); head.appendChild(stripe); head.appendChild(main); head.appendChild(mark);
-      head.addEventListener('click', function(){ trainState.open = trainState.open === day.d ? null : day.d; renderTrain(); });
-      row.appendChild(head);
-      if (trainState.open === day.d) row.appendChild(trainDetail(day, info, lg, p));
-      list.appendChild(row);
+    // the week strip
+    var today = tIso(new Date()), week = p.days.slice(w * 7, w * 7 + 7);
+    if (!trainState.open || !week.some(function(x){ return x.d === trainState.open; })){
+      var pick = week.filter(function(x){ return x.d === today; })[0] || week.filter(function(x){ return x.type !== 'rest'; })[0] || week[0];
+      trainState.open = pick.d;
+    }
+    var strip = document.getElementById('tvStrip'); strip.innerHTML = '';
+    week.forEach(function(day){
+      var info = TRAIN_TYPES[day.type] || TRAIN_TYPES.rest, lg = trainState.log[day.d], dt = tParse(day.d);
+      var b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'tab');
+      b.className = 'tv-tile' + (day.type === 'rest' ? ' rest' : '') + (day.d === today ? ' today' : '') + (lg ? ' ' + lg.status : '');
+      b.setAttribute('aria-selected', String(day.d === trainState.open));
+      b.setAttribute('aria-label', TRAIN_DAYS[(dt.getDay() + 6) % 7] + ' ' + dt.getDate() + '/' + (dt.getMonth() + 1) + ': ' + info.title + (day.min ? ', ' + trainHours(day.min) : ''));
+      var h = info.zone ? { Z1:30, Z2:45, Z3:60, SS:70, Z4:80, Z5:92, Z6:100 }[info.zone] : 0;
+      b.innerHTML = '<span class="dn"></span><span class="dd"></span><span class="bar"><i></i></span><span class="mm"></span>' + (lg ? '<span class="ck">' + (lg.status === 'done' ? '✓' : '–') + '</span>' : '');
+      b.querySelector('.dn').textContent = TRAIN_DAYS[(dt.getDay() + 6) % 7];
+      b.querySelector('.dd').textContent = dt.getDate() + '/' + (dt.getMonth() + 1);
+      var bar = b.querySelector('.bar i'); bar.style.height = h + '%'; bar.style.background = info.zone ? TRAIN_ZONES[info.zone].color : 'transparent';
+      b.querySelector('.mm').textContent = day.type === 'rest' ? 'rest' : trainHours(day.min);
+      b.addEventListener('click', function(){ trainState.open = day.d; renderTrain(); });
+      strip.appendChild(b);
+    });
+    // the selected day
+    var sel = week.filter(function(x){ return x.d === trainState.open; })[0];
+    var holder = document.getElementById('tvDay'); holder.innerHTML = '';
+    holder.appendChild(trainDayCard(sel, p));
+  }
+
+  function planSummary(plan, log){
+    var r = { workouts:0, done:0, minPlanned:0, minDone:0 };
+    plan.days.forEach(function(x){
+      if (x.type === 'rest') return;
+      r.workouts++; r.minPlanned += x.min;
+      if (log && log[x.d] && log[x.d].status === 'done'){ r.done++; r.minDone += x.min; }
+    });
+    return r;
+  }
+  // days since the plan's event, if it was in the last 3 weeks (→ start the next plan easy)
+  function recentEventDays(plan){
+    var ev = plan && plan.settings && plan.settings.eventDate;
+    if (!ev) return null;
+    var ago = Math.round((tParse(tIso(new Date())) - tParse(ev)) / 86400000);
+    return ago >= 0 && ago <= 21 ? ago : null;
+  }
+  function renderHistory(){
+    var h = trainState.history || [], box = document.getElementById('tvHistory'), ul = document.getElementById('tvHistoryList');
+    box.hidden = !h.length; ul.innerHTML = '';
+    h.forEach(function(x){
+      var li = document.createElement('li');
+      li.textContent = (TRAIN_GOALS[x.goal] || 'Plan') + (x.eventName ? ' · ' + x.eventName : '');
+      var sm = document.createElement('small');
+      sm.textContent = tParse(x.start).toLocaleDateString([], { day:'numeric', month:'short' }) + ' – ' + tParse(x.end).toLocaleDateString([], { day:'numeric', month:'short', year:'numeric' }) +
+        ' · ' + x.done + ' of ' + x.workouts + ' workouts · ' + trainHours(x.minDone || 0) + ' ridden' + (x.source === 'coach' ? ' · coach-adjusted' : '');
+      li.appendChild(sm); ul.appendChild(li);
     });
   }
 
-  function trainDetail(day, info, lg, p){
-    var box = document.createElement('div'); box.className = 'tv-detail';
-    var about = document.createElement('p'); about.textContent = info.about; box.appendChild(about);
-    if (day.note){ var cn = document.createElement('p'); cn.className = 'tv-daynote'; cn.textContent = 'Coach: ' + day.note; box.appendChild(cn); }
+  function trainDayCard(day, p){
+    var info = TRAIN_TYPES[day.type] || TRAIN_TYPES.rest, lg = trainState.log[day.d], dt = tParse(day.d);
+    var card = document.createElement('div'); card.className = 'tv-daycard';
+    var top = document.createElement('div'); top.className = 'tv-daytop';
+    var tx = document.createElement('div'); tx.className = 'tx';
+    var when = document.createElement('div'); when.className = 'when';
+    when.textContent = dt.toLocaleDateString([], { weekday:'long', day:'numeric', month:'long' }) + (day.d === tIso(new Date()) ? ' · today' : '');
+    var h3 = document.createElement('h3'); h3.textContent = info.title;
+    var sum = document.createElement('div'); sum.className = 'sum';
+    sum.textContent = day.type === 'rest' ? 'No riding' : trainHours(day.min) + (info.zone ? ' · ' + TRAIN_ZONES[info.zone].name : '');
+    tx.appendChild(when); tx.appendChild(h3); tx.appendChild(sum); top.appendChild(tx);
+    if (lg){ var st = document.createElement('span'); st.className = 'state ' + lg.status; st.textContent = lg.status === 'done' ? '✓ Done' : 'Skipped'; top.appendChild(st); }
+    card.appendChild(top);
+    var about = document.createElement('p'); about.className = 'tv-about'; about.textContent = info.about; card.appendChild(about);
+    if (day.note){ var cn = document.createElement('p'); cn.className = 'tv-daynote'; cn.textContent = 'Coach: ' + day.note; card.appendChild(cn); }
     var steps = trainSteps(day.type, day.min), ftp = (p.settings && p.settings.ftp) || 0;
     if (steps.length){
+      var prof = document.createElement('div'); prof.className = 'tv-profile'; prof.setAttribute('aria-hidden', 'true');
+      steps.forEach(function(st){
+        var i = document.createElement('i');
+        i.style.flex = st.min + ' 1 0'; i.style.background = TRAIN_ZONES[st.zone].color;
+        i.style.height = { Z1:22, Z2:40, Z3:56, SS:66, Z4:76, Z5:90, Z6:100 }[st.zone] + '%';
+        i.title = st.min + '′ ' + st.label;
+        prof.appendChild(i);
+      });
+      card.appendChild(prof);
+      var axis = document.createElement('div'); axis.className = 'tv-axis';
+      axis.innerHTML = '<span>0′</span><span></span>'; axis.lastChild.textContent = trainHours(day.min);
+      card.appendChild(axis);
       var ol = document.createElement('ol'); ol.className = 'tv-steps';
       steps.forEach(function(st){
         var li = document.createElement('li');
         var dot = document.createElement('i'); dot.style.background = TRAIN_ZONES[st.zone].color;
-        var m = document.createElement('span'); m.className = 'm'; m.textContent = (st.min % 1 ? st.min : st.min) + '′';
+        var m = document.createElement('span'); m.className = 'm'; m.textContent = st.min + '′';
         var l = document.createElement('span'); l.className = 'l'; l.textContent = st.label;
         var tg = document.createElement('span'); tg.className = 'g'; tg.textContent = trainTarget(st.zone, ftp);
         li.appendChild(dot); li.appendChild(m); li.appendChild(l); li.appendChild(tg); ol.appendChild(li);
       });
-      box.appendChild(ol);
-      if (!ftp){ var hint = document.createElement('p'); hint.className = 'tv-hint'; hint.textContent = 'Add your FTP in the plan settings to see power targets in watts.'; box.appendChild(hint); }
+      card.appendChild(ol);
+      if (!ftp){ var hint = document.createElement('p'); hint.className = 'tv-hint'; hint.textContent = 'Add your FTP under “Change settings” to see power targets in watts.'; card.appendChild(hint); }
+    } else if (day.type === 'rest'){
+      var rp = document.createElement('p'); rp.className = 'tv-restday'; rp.textContent = 'Easy walking or stretching is fine.'; card.appendChild(rp);
     }
     if (day.type !== 'rest'){
       var acts = document.createElement('div'); acts.className = 'tv-acts';
@@ -4900,13 +5018,12 @@
       } else {
         btn('Undo', '', function(){ logTrainDay(day.d, 'clear'); });
       }
-      if (['end','long','rec','tempo'].indexOf(day.type) !== -1){
-        btn('Plan a route for this ride', 'ghost', function(){ planRouteFor(day); });
-      }
-      box.appendChild(acts);
+      if (day.type !== 'event') btn('Plan a route for this ride', 'ghost', function(){ planRouteFor(day); });
+      card.appendChild(acts);
     }
-    return box;
+    return card;
   }
+
   function logTrainDay(d, status){
     if (status === 'clear') delete trainState.log[d]; else trainState.log[d] = { status:status, at:new Date().toISOString() };
     cachePlan(); renderTrain();
@@ -4914,15 +5031,25 @@
       .then(function(r){ if (!r.ok) trainStatus('Saved on this phone; it will sync when the server answers.', true); else trainStatus(''); })
       .catch(function(){ trainStatus('Offline: saved on this phone only.', true); });
   }
+  // average road speed per kind of ride (a ride with intervals includes easy parts)
+  var TRAIN_PACE = { rec:24, end:27, long:27, tempo:28, ss:28, thr:28, vo2:26, hills:22, sprint:26 };
+  var TRAIN_ROUTE_TIP = {
+    tempo:'Pick a loop with long, quiet stretches for the tempo blocks.',
+    ss:'Pick a loop with long, quiet stretches without stops for the sweet spot efforts.',
+    thr:'Pick a loop with a long, quiet stretch of 20 minutes without stops.',
+    vo2:'Pick a loop with a few quiet stretches of 4 minutes.',
+    hills:'Start near hills, or use Max Alt in Track for a hillier route.',
+    sprint:'A short, safe loop is enough.'
+  };
   function planRouteFor(day){
-    // road pace ≈ 27 km/h endurance, 24 km/h recovery
-    var km = Math.round(day.min / 60 * (day.type === 'rec' ? 24 : 27));
+    var km = Math.round(day.min / 60 * (TRAIN_PACE[day.type] || 27));
     var slider = document.getElementById('distSlider');
     slider.value = String(tClamp(km, +slider.min || 3, +slider.max || 250));
     slider.dispatchEvent(new Event('input'));
     hideTrain();
     location.hash = 'track';
-    showDashToast('Distance set to ' + slider.value + ' km for your ' + (TRAIN_TYPES[day.type].title.toLowerCase()) + '.', 3500);
+    showDashToast('Distance set to ' + slider.value + ' km for your ' + (TRAIN_TYPES[day.type].title.toLowerCase()) + '.' +
+      (TRAIN_ROUTE_TIP[day.type] ? ' ' + TRAIN_ROUTE_TIP[day.type] : ''), TRAIN_ROUTE_TIP[day.type] ? 6500 : 3500);
   }
 
   // ---- setup form ----
@@ -4934,11 +5061,19 @@
     Array.prototype.forEach.call(document.querySelectorAll('#tvDaysSeg button'), function(b){ b.setAttribute('aria-pressed', String(s.days.indexOf(+b.dataset.v) !== -1)); });
     document.getElementById('tvHours').value = s.hours;
     document.getElementById('tvHoursVal').textContent = s.hours + ' h';
-    document.getElementById('tvEventDate').value = s.eventDate || '';
-    document.getElementById('tvEventName').value = s.eventName || '';
+    var evPast = s.eventDate && s.eventDate < tIso(new Date());
+    document.getElementById('tvEventDate').value = evPast ? '' : (s.eventDate || '');
+    document.getElementById('tvEventName').value = evPast ? '' : (s.eventName || '');
+    var ago = recentEventDays(trainState.plan);
+    trainState.settings.recoveryFirst = ago !== null;
+    var rn = document.getElementById('tvRecoveryNote');
+    rn.hidden = ago === null;
+    if (ago !== null) rn.textContent = 'Your event was ' + (ago === 0 ? 'today' : ago === 1 ? 'yesterday' : ago + ' days ago') + ', so the new plan starts with an easy recovery week.';
+    renderHistory();
     document.getElementById('tvFtp').value = s.ftp || '';
     document.getElementById('tvCancelSetup').hidden = !trainState.plan;
-    document.getElementById('tvCoachWarn').hidden = !(trainState.plan && trainState.plan.source === 'coach');
+    var curEnded = trainState.plan && trainState.plan.days.length && trainState.plan.days[trainState.plan.days.length - 1].d < tIso(new Date());
+    document.getElementById('tvCoachWarn').hidden = !(trainState.plan && trainState.plan.source === 'coach' && !curEnded);
     document.getElementById('tvMakeBtn').textContent = trainState.plan ? 'Make a new plan' : 'Make my plan';
     document.getElementById('tvSetupErr').textContent = '';
   }
@@ -4957,6 +5092,18 @@
       });
     });
   }
+  if ('serviceWorker' in navigator){
+    navigator.serviceWorker.addEventListener('message', function(e){
+      var m = e.data || {};
+      if (m.type !== 'rootahead-push') return;
+      if (m.tag === 'rootahead-plan'){ loadTrain({ force:true }); return; }       // plan changed by the coach
+      if (m.body) showDashToast((m.title && m.title !== 'ROOT Ahead' ? m.title + ': ' : '') + m.body, 6000);  // team message while the app is open
+    });
+  }
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState === 'visible' && trainState.loaded) loadTrain();
+  });
+
   segPick('tvGoalSeg', false, 'goal'); segPick('tvLevelSeg', false, 'level'); segPick('tvDaysSeg', true);
   document.getElementById('tvHours').addEventListener('input', function(){ trainState.settings.hours = +this.value; document.getElementById('tvHoursVal').textContent = this.value + ' h'; });
   document.getElementById('tvMakeBtn').addEventListener('click', function(){
@@ -4966,7 +5113,8 @@
     var ftp = parseInt(document.getElementById('tvFtp').value, 10); s.ftp = ftp > 50 && ftp < 700 ? ftp : 0;
     if (s.days.length < 2){ err.textContent = 'Pick at least 2 days you can ride.'; return; }
     if (s.eventDate && s.eventDate < tIso(new Date())){ err.textContent = 'The event date is in the past.'; return; }
-    if (trainState.plan && trainState.plan.source === 'coach' && !confirm('Your coach adjusted your current plan. A new plan replaces those changes. Continue?')) return;
+    var oldEnded = trainState.plan && trainState.plan.days.length && trainState.plan.days[trainState.plan.days.length - 1].d < tIso(new Date());
+    if (trainState.plan && trainState.plan.source === 'coach' && !oldEnded && !confirm('Your coach adjusted your current plan. A new plan replaces those changes. Continue?')) return;
     var plan = generateTrainPlan(JSON.parse(JSON.stringify(s)));
     var btn = this; btn.disabled = true;
     fetch('/api/plan', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ deviceId:deviceId, plan:plan }) })
@@ -4974,6 +5122,10 @@
       .then(function(res){
         btn.disabled = false;
         if (!res.ok){ err.textContent = 'The plan could not be saved right now. Please try again.'; return; }
+        if (trainState.plan){ var sm0 = planSummary(trainState.plan, trainState.log), od = trainState.plan.days;
+          (trainState.history = trainState.history || []).unshift({ start: trainState.plan.start, end: od.length ? od[od.length - 1].d : trainState.plan.start,
+            goal: (trainState.plan.settings || {}).goal, eventName: (trainState.plan.settings || {}).eventName, source: trainState.plan.source,
+            workouts: sm0.workouts, done: sm0.done, minPlanned: sm0.minPlanned, minDone: sm0.minDone }); }
         trainState.plan = res.data.plan || plan; trainState.log = trainState.log || {}; trainState.editing = false; trainState.week = -1; trainState.open = null;
         cachePlan(); renderTrain(); trainStatus('');
       })
@@ -4981,6 +5133,7 @@
   });
   document.getElementById('tvCancelSetup').addEventListener('click', function(){ trainState.editing = false; renderTrain(); });
   document.getElementById('tvEditSettings').addEventListener('click', function(){ trainState.editing = true; renderTrain(); });
+  document.getElementById('tvNextPlan').addEventListener('click', function(){ trainState.editing = true; renderTrain(); var tv = document.getElementById('trainView'); if (tv.scrollTo) tv.scrollTo(0, 0); });
   document.getElementById('tvPrev').addEventListener('click', function(){ trainState.week--; trainState.open = null; renderTrain(); });
   document.getElementById('tvNext').addEventListener('click', function(){ trainState.week++; trainState.open = null; renderTrain(); });
   document.getElementById('trainHomeBtn').addEventListener('click', function(){ goDashboard(); });
@@ -5003,7 +5156,8 @@
           var who = document.createElement('div'); who.className = 'who';
           var n = document.createElement('span'); n.className = 'n'; n.textContent = ((r.firstName || '') + ' ' + (r.lastName || '')).trim() || 'Unnamed device';
           var tm = document.createElement('span'); tm.className = 'tm';
-          tm.textContent = (r.team || '—') + ' · ' + (TRAIN_GOALS[r.goal] || r.goal) + (r.eventDate ? ' · event ' + r.eventDate : '') + ' · ' + (r.source === 'coach' ? 'adjusted' : 'app suggestion');
+          tm.textContent = (r.team || '—') + ' · ' + (TRAIN_GOALS[r.goal] || r.goal) + (r.eventDate ? ' · event ' + r.eventDate : '') + ' · ' +
+            (r.ended ? 'plan ended ' + r.endDate + ', no new plan yet' : r.source === 'coach' ? 'adjusted' : 'app suggestion');
           who.appendChild(n); who.appendChild(tm);
           var c = document.createElement('span'); c.className = 'cnt'; c.textContent = r.done + '/' + r.due; c.title = 'Workouts done / due so far';
           row.appendChild(who); row.appendChild(c);

@@ -166,7 +166,16 @@ Storage: `rootahead:push:users` (device → subscription), `rootahead:messages`
 - Coach: Admin → **Training** → pick a rider → change any day's workout,
   minutes or note, add a note above the plan → **Save plan** (optionally
   notifies the rider; tapping opens Train).
-- Storage: `rootahead:plan:<device>`, `rootahead:planlog:<device>`, `rootahead:plans`.
+- Live updates: when the coach saves (with notify), the push also tells an
+  open app to reload the plan; the plan is also re-fetched every time Train
+  opens or the app comes back to the screen.
+- After a plan ends: a banner shows how it went and offers the next plan
+  (starts with an easy week if the event was in the last 3 weeks). The old
+  plan is archived, not deleted; riders see "Earlier plans", the coach list
+  shows "plan ended".
+- Storage: `rootahead:plan:<device>`, `rootahead:planlog:<device>` (done/skipped
+  per day, kept across plans), `rootahead:planarchive:<device>` (last 20 plans),
+  `rootahead:plans`.
 
 ### 5. (Optional) Turn on Vercel Web Analytics
 

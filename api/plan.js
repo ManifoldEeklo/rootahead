@@ -6,7 +6,8 @@
 // Coach (header x-admin-key):
 //   GET  /api/plan?all=1                             → riders with a plan + progress
 //   PUT  { deviceId, plan, notify }                  → save the coach's version, push the rider
-// Keys: rootahead:plan:<id> (plan), rootahead:planlog:<id> (hash day → status), rootahead:plans (set of ids)
+// Keys: rootahead:plan:<id> (plan), rootahead:planlog:<id> (hash day → status), rootahead:plans (set of ids),
+//       rootahead:planarchive:<id> (list of earlier plans: summary + full plan, last 20)
 var getRedis = require('./_redis').getRedis;
 var admin = require('./_admin');
 var webpush = require('web-push');
@@ -16,6 +17,21 @@ if (vapidReady) webpush.setVapidDetails(admin.vapidSubject(), process.env.VAPID_
 
 function parse(v){ if (v && typeof v === 'object') return v; try{ return JSON.parse(v); } catch(e){ return null; } }
 function idOf(v){ return String(v || '').slice(0, 100); }
+
+// Short record of a plan with how it went — kept when a rider starts a new plan
+function summarize(plan, log){
+  var due = 0, done = 0, minPlanned = 0, minDone = 0;
+  (plan.days || []).forEach(function(x){
+    if (x.type === 'rest') return;
+    due++; minPlanned += x.min || 0;
+    var l = parse((log || {})[x.d]);
+    if (l && l.status === 'done'){ done++; minDone += x.min || 0; }
+  });
+  var days = plan.days || [];
+  return { start: plan.start, end: days.length ? days[days.length - 1].d : plan.start, goal: (plan.settings || {}).goal,
+    eventName: (plan.settings || {}).eventName || '', eventDate: (plan.settings || {}).eventDate || '', source: plan.source,
+    workouts: due, done: done, minPlanned: minPlanned, minDone: minDone, archivedAt: new Date().toISOString() };
+}
 var TYPES = ['rest','rec','end','long','tempo','ss','thr','vo2','hills','sprint','event'];
 
 // Keep only what a plan may contain (it comes from a browser)
@@ -60,7 +76,9 @@ module.exports = async function handler(req, res){
         var done = past.filter(function(x){ var l = parse(log[x.d]); return l && l.status === 'done'; }).length;
         out.push({ deviceId: ids[i], firstName: p.firstName || null, lastName: p.lastName || null, team: p.team || null,
           goal: plan.settings.goal, eventDate: plan.settings.eventDate, weeks: Math.ceil(plan.days.length / 7),
-          source: plan.source, adjustedAt: plan.adjustedAt, generatedAt: plan.generatedAt, done: done, due: past.length });
+          source: plan.source, adjustedAt: plan.adjustedAt, generatedAt: plan.generatedAt, done: done, due: past.length,
+          ended: plan.days.length ? plan.days[plan.days.length - 1].d < today : false,
+          endDate: plan.days.length ? plan.days[plan.days.length - 1].d : '' });
       }
       res.status(200).json({ riders: out });
       return;
@@ -72,7 +90,9 @@ module.exports = async function handler(req, res){
       var pl = parse(await redis.get('rootahead:plan:' + id));
       var lg = (await redis.hgetall('rootahead:planlog:' + id)) || {};
       var logOut = {}; Object.keys(lg).forEach(function(k){ var v = parse(lg[k]); if (v) logOut[k] = v; });
-      res.status(200).json({ plan: pl, log: logOut });
+      var hist = ((await redis.lrange('rootahead:planarchive:' + id, 0, 19)) || []).map(parse).filter(Boolean)
+        .map(function(h){ return h.summary || h; });
+      res.status(200).json({ plan: pl, log: logOut, history: hist });
       return;
     }
 
@@ -93,6 +113,13 @@ module.exports = async function handler(req, res){
       }
       var plan2 = cleanPlan(b.plan);
       if (!plan2){ res.status(400).json({ error: 'plan is required' }); return; }
+      // the previous plan is archived (summary + full plan), never thrown away
+      var old = parse(await redis.get('rootahead:plan:' + rid));
+      if (old && old.days && old.days.length){
+        var oldLog = (await redis.hgetall('rootahead:planlog:' + rid)) || {};
+        await redis.lpush('rootahead:planarchive:' + rid, JSON.stringify({ summary: summarize(old, oldLog), plan: old }));
+        await redis.ltrim('rootahead:planarchive:' + rid, 0, 19);
+      }
       plan2.source = 'app'; plan2.coachNote = ''; plan2.adjustedAt = '';
       await redis.set('rootahead:plan:' + rid, JSON.stringify(plan2));
       await redis.sadd('rootahead:plans', rid);
