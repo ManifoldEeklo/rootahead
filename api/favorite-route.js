@@ -6,7 +6,7 @@
 // different people is a much stronger signal than one person uploading
 // the same ride five times — hence a Set of device IDs per cell, not a
 // plain counter.
-var Redis = require('@upstash/redis').Redis;
+var getRedis = require('./_redis').getRedis;
 
 var CELL_SIZE_M = 60; // matches the scenic-area "close enough" scale used elsewhere in the app
 var MAX_CELLS_PER_SUBMIT = 400; // a generous cap — a very long ride shouldn't be able to flood the register in one submission
@@ -24,7 +24,7 @@ module.exports = async function handler(req, res){
     return;
   }
   try{
-    var redis = Redis.fromEnv();
+    var redis = getRedis();
     var body = req.body || {};
     var deviceId = String(body.deviceId || '').slice(0, 100);
     var points = Array.isArray(body.points) ? body.points : [];

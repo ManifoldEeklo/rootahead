@@ -1,9 +1,9 @@
 // Tracks app opens (visits) and successful route generations. Uses Upstash
-// Redis via the Vercel Marketplace integration — Redis.fromEnv() picks up
+// Redis via the Vercel Marketplace integration — getRedis() picks up
 // UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN, which Vercel injects
 // automatically once the integration is connected to this project. No
 // secret ever needs to be typed into code.
-var Redis = require('@upstash/redis').Redis;
+var getRedis = require('./_redis').getRedis;
 var webpush = require('web-push');
 
 var vapidReady = !!(process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY);
@@ -84,7 +84,7 @@ module.exports = async function handler(req, res){
     return;
   }
   try{
-    var redis = Redis.fromEnv();
+    var redis = getRedis();
     var body = req.body || {};
     var type = body.type;
     var deviceId = String(body.deviceId || '').slice(0, 100); // basic sanity cap, not an auth token

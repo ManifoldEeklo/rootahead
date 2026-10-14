@@ -3,7 +3,7 @@
 // fall in ground real riders have actually marked as a highlight — the
 // same mechanism as the built-in forest/water scenic bonus, just informed
 // by the community instead of OSM landuse tags.
-var Redis = require('@upstash/redis').Redis;
+var getRedis = require('./_redis').getRedis;
 
 var CELL_SIZE_M = 60;
 
@@ -25,7 +25,7 @@ module.exports = async function handler(req, res){
       return;
     }
 
-    var redis = Redis.fromEnv();
+    var redis = getRedis();
     var center = cellKeyFor(lat, lon);
     var cellSpan = Math.ceil(radiusM / CELL_SIZE_M);
     // Bounded scan over the candidate cell grid around the point — capped

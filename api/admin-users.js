@@ -2,7 +2,7 @@
 // Protected server-side: the request must carry header x-admin-key equal to
 // the ADMIN_PASSWORD environment variable set in Vercel. Without that env
 // var the endpoint refuses to answer, so names are never exposed by default.
-var Redis = require('@upstash/redis').Redis;
+var getRedis = require('./_redis').getRedis;
 
 function parse(v){
   if (v && typeof v === 'object') return v;       // Upstash client already parsed it
@@ -16,7 +16,7 @@ module.exports = async function handler(req, res){
   }
   var expected = process.env.ADMIN_PASSWORD;
   if (!expected){
-    res.status(503).json({ error: 'ADMIN_PASSWORD is not set in Vercel — see README.' });
+    res.status(503).json({ error: 'ADMIN_PASSWORD is not set yet. Vercel → your project → Settings → Environment Variables → add ADMIN_PASSWORD (same value as the Admin password) → Save → Deployments → Redeploy.' });
     return;
   }
   if (req.headers['x-admin-key'] !== expected){
@@ -24,7 +24,7 @@ module.exports = async function handler(req, res){
     return;
   }
   try{
-    var redis = Redis.fromEnv();
+    var redis = getRedis();
     var counts = (await redis.hgetall('rootahead:users:routecount')) || {};
     var profiles = (await redis.hgetall('rootahead:users')) || {};
     var total = 0;

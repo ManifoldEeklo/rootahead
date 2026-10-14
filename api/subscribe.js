@@ -3,10 +3,12 @@
 // every visitor, so there's deliberately no UI for it outside Admin.
 // Subscriptions are kept in a Set (deduped automatically) so re-enabling
 // on the same device doesn't create duplicate entries.
-var Redis = require('@upstash/redis').Redis;
+var getRedis = require('./_redis').getRedis;
 
 module.exports = async function handler(req, res){
-  var redis = Redis.fromEnv();
+  var redis;
+  try{ redis = getRedis(); }
+  catch(err){ res.status(503).json({ error: err.message }); return; }
 
   if (req.method === 'POST'){
     try{

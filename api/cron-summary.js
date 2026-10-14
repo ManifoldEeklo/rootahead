@@ -3,11 +3,11 @@
 // repo on GitHub. The GitHub token lives only in Vercel's environment
 // variables — it never reaches the browser, and this function only ever
 // runs server-side/on schedule.
-var Redis = require('@upstash/redis').Redis;
+var getRedis = require('./_redis').getRedis;
 
 module.exports = async function handler(req, res){
   try{
-    var redis = Redis.fromEnv();
+    var redis = getRedis();
     var visitsTotal = Number((await redis.get('rootahead:visits:total')) || 0);
     var routesTotal = Number((await redis.get('rootahead:routes:total')) || 0);
     var uniqueDevices = Number((await redis.scard('rootahead:visits:devices')) || 0);

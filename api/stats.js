@@ -1,4 +1,4 @@
-var Redis = require('@upstash/redis').Redis;
+var getRedis = require('./_redis').getRedis;
 
 module.exports = async function handler(req, res){
   if (req.method !== 'GET'){
@@ -6,7 +6,7 @@ module.exports = async function handler(req, res){
     return;
   }
   try{
-    var redis = Redis.fromEnv();
+    var redis = getRedis();
     var visitsTotal = (await redis.get('rootahead:visits:total')) || 0;
     var routesTotal = (await redis.get('rootahead:routes:total')) || 0;
     var uniqueDevices = (await redis.scard('rootahead:visits:devices')) || 0;

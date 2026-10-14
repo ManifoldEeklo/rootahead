@@ -76,6 +76,14 @@ and `api/stats.js` are built for.
 - Redeploy (or it picks it up automatically) — the Admin panel's **Usage
   stats** block will now show real numbers.
 
+### 3a. If the Admin panel says "Database not connected"
+
+The API finds the Upstash variables under any prefix (`KV_REST_API_URL`,
+`UPSTASH_REDIS_REST_URL`, or e.g. `STORAGE_KV_REST_API_URL`). If none exist the
+database isn't connected to this project: Vercel → Storage → Upstash for Redis
+→ Connect Project → then **Redeploy** (env changes only apply to new deploys).
+A plain `REDIS_URL` (Redis Cloud / TCP) does not work for this app.
+
 ### 3b. Admin password for "Tracks per user"
 
 Every generated route is stored per user in the same Upstash Redis (no extra
