@@ -1,0 +1,13 @@
+{
+  "name": "root-ahead",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ROOT-Ahead — gravel/off-road route planner. Routing runs client-side against public APIs; small serverless functions track anonymous usage stats and send push notifications via Upstash Redis + Web Push.",
+  "scripts": {
+    "dev": "npx serve ."
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.38.3",
+    "web-push": "^3.6.7"
+  }
+}

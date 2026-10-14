@@ -1,0 +1,159 @@
+# ROOT-Ahead — route planner (team edition)
+
+A separate edition of Trail-ahead for team use: same planner, own name and
+splash photo. Everything stored in Redis uses the `rootahead:` key prefix
+(visit/route counters, push subscriptions, favourite-ground cells), so it
+can safely share a Redis database with Trail-ahead (`trailahead:` prefix)
+without the two mixing their numbers or data. Deploy it as its **own**
+Vercel project and connect the Redis database (and, for push notifications,
+the two `VAPID_*` env vars) to that project too.
+
+The splash photo is embedded in `index.html` (CSS `#splashScreen::before`) —
+to swap it, replace the base64 `data:image/jpeg` URL there.
+
+Mostly a static HTML app — routing (BRouter, Valhalla, OSRM, Overpass, NGI
+Top10Vector, TOP10NL, the Flemish Tragewegenregister) runs as direct
+`fetch()` calls from the browser to those public APIs, no backend involved.
+
+Two small serverless functions were added on top for **anonymous usage
+tracking** (app opens, unique devices, routes generated), stored in Upstash
+Redis and viewable from the app's own Admin panel.
+
+## What's in this repo
+
+```
+├── index.html            the entire app (map, UI, routing logic)
+├── manifest.json          PWA manifest — enables "Add to Home Screen"
+├── sw.js                   service worker — shows incoming push notifications
+├── icon-192.png / icon-512.png   app icons for the home-screen install
+├── api/
+│   ├── track.js           records a "visit" or "route" event, triggers push on visit
+│   ├── stats.js            reads back the current counters
+│   ├── subscribe.js         stores/removes a push subscription (Admin panel only)
+│   ├── favorite-route.js   records favourited ~60m ground cells from an uploaded GPX
+│   ├── favorite-cells.js   reads back favourited cells near a point, for route generation
+│   └── cron-summary.js     optional: once a day, writes a snapshot to GitHub
+├── package.json
+├── vercel.json             static config + the daily cron schedule
+└── .gitignore
+```
+
+## Deploy
+
+### 1. Push to GitHub
+
+```bash
+git init
+git add .
+git commit -m "ROOT-Ahead"
+git branch -M main
+git remote add origin https://github.com/<your-username>/<your-repo>.git
+git push -u origin main
+```
+
+### 2. Import into Vercel
+
+- vercel.com → **Add New… → Project** → import the repo you just pushed.
+- Framework preset: **Other**.
+- Deploy once first — the tracking endpoints will simply error harmlessly
+  (caught and ignored by the app) until you connect a database in step 3.
+
+### 3. Connect Upstash Redis (for the usage stats)
+
+Vercel's own **Vercel KV is deprecated** — the currently recommended path
+is Upstash Redis via the Vercel Marketplace, which is what `api/track.js`
+and `api/stats.js` are built for.
+
+- Your Vercel project → **Storage** tab → **Create Database** → **Upstash →
+  Redis** (there's a free tier).
+- Connect it to this project. Vercel automatically injects `KV_REST_API_URL`
+  and `KV_REST_API_TOKEN` as environment variables — nothing to type in by
+  hand, no token to manage yourself. (Yes, still named `KV_*` — that's a
+  naming leftover from before Vercel KV was deprecated in favour of this
+  Upstash integration; `Redis.fromEnv()` in the code checks for both the old
+  `KV_*` names and the newer `UPSTASH_REDIS_REST_*` names automatically, so
+  no code changes are needed either way.)
+- Redeploy (or it picks it up automatically) — the Admin panel's **Usage
+  stats** block will now show real numbers.
+
+### 4. (Optional) Push notifications when someone opens the app
+
+Lets you get a notification on your own phone whenever anyone opens the
+app — mainly meant for you as the owner, not for regular visitors (there's
+no public UI for it; it's a button inside the Admin panel).
+
+- Add **two** environment variables in Vercel → Settings → Environment Variables:
+  - `VAPID_PUBLIC_KEY`
+  - `VAPID_PRIVATE_KEY`
+
+  A matching key pair was generated for this project and given to you
+  directly in chat (not written into this file, on purpose — a private key
+  should never sit in something that gets committed to git). Paste those
+  exact values in. The public half is also hardcoded as `VAPID_PUBLIC_KEY`
+  near the top of the push-notification code in `index.html` — if you ever
+  regenerate a new pair (`npx web-push generate-vapid-keys`), update it in
+  **both** places so they still match.
+- Optional: also add `VAPID_CONTACT` (e.g. `mailto:you@example.com`) — some
+  push services want a contact address; it defaults to a placeholder if
+  you skip this.
+- Redeploy so the new env vars take effect.
+- On your phone: open the deployed site → **Add to Home Screen** → open it
+  from there → Admin panel (password) → **🔔 Notify me on new visits** →
+  allow notifications when your browser asks.
+
+### 5. (Optional) Turn on Vercel Web Analytics
+
+The page already ships the plain-HTML tracking snippet (no `@vercel/analytics`
+npm package needed for a static site like this one). It only starts sending
+data once you flip the switch:
+
+- Your Vercel project → **Analytics** tab → **Enable**.
+- That's it — page views start showing up in the dashboard on the next visit.
+
+### 5. (Optional) Daily snapshot to a GitHub file
+
+`api/cron-summary.js` runs once a day (see the `crons` entry in
+`vercel.json`) and appends `{date, visitsTotal, uniqueDevices, routesTotal}`
+to `stats/daily.json` in this repo — a simple historical log, without the
+commit-per-visit problem a naive "log straight to GitHub" approach would have.
+
+This step needs a **GitHub Personal Access Token** with permission to write
+to this repo:
+
+- GitHub → Settings → Developer settings → Personal access tokens → generate
+  one scoped to just this repo, **Contents: read and write**.
+- In your Vercel project → **Settings → Environment Variables**, add:
+
+| Name | Value |
+|---|---|
+| `GITHUB_TOKEN` | the token you just generated |
+| `GITHUB_REPO` | `your-username/your-repo` |
+| `GITHUB_STATS_PATH` | *(optional, defaults to `stats/daily.json`)* |
+| `GITHUB_BRANCH` | *(optional, defaults to `main`)* |
+
+If you skip this step entirely, the app still works fine — you just won't
+get the daily GitHub snapshot; the live numbers in the Admin panel keep
+working off Redis regardless.
+
+## Mobile
+
+Detects touch/narrow screens and switches the sidebar into a slide-in
+drawer (☰ button in the header). On phones the menu opens by default after
+the splash screen; generating a route collapses it automatically so the map
+fills the screen. **Generate**, **Clear**, and **.gpx** live in the map's
+own bottom bar, not inside the drawer, so they're always reachable.
+
+## Known limitations, stated plainly
+
+- **The admin password (`Admin123`) is a plain string inside `index.html`.**
+  UI convenience only, not real security — readable by anyone in the page
+  source. Same is true of `/api/stats` itself: it's not access-controlled,
+  so anyone who knows the URL can read the counters. Fine for a personal
+  project's usage numbers; not something to put real secrets behind.
+- **Device counting uses `localStorage`.** Clearing browser data makes a
+  returning visitor look "new" again — a known, accepted trade-off of not
+  requiring accounts or real device fingerprinting.
+- **External routing APIs** (BRouter, Valhalla, Overpass, the various
+  government geodata services) are outside this app's control and can go
+  down or change shape; the app is built to degrade gracefully rather than
+  break when that happens, but can't guarantee their uptime.
