@@ -529,6 +529,32 @@
     height:34px;padding:0 12px;flex:0 0 auto;cursor:pointer;font-size:13px;font-weight:600;line-height:1;
     background:var(--panel-alt);border:1px solid var(--line);border-radius:var(--radius);color:var(--text);}
   .home-btn:hover{border-color:var(--accent);}
+
+  /* One Generate button: the one in the sidebar, kept in view at the bottom
+     of the panel while scrolling (PC and phone). The stat-bar copy stays in
+     the markup with its handler but is hidden. */
+  #generateBtnMap{display:none !important;}
+  aside.controls{padding-bottom:0 !important;} /* so the sticky dock sits flush with the panel's bottom edge */
+  .gen-dock{position:sticky;bottom:0;z-index:5;margin:18px -18px 0;padding:12px 18px 14px;
+    background:linear-gradient(180deg,rgba(22,34,27,0) 0,var(--panel) 14px);}
+  .gen-dock .btn.primary{margin-top:0;min-height:48px;font-size:18px;}
+  .gen-dock .status{margin-top:8px;}
+  body.is-mobile .gen-dock{padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));}
+  #adminTrigger{margin-bottom:22px;}
+
+  /* Pick on map: panel hides, a card on the map guides the pick + confirm */
+  body.picking:not(.is-mobile) aside.controls{display:none;}
+  body.picking #map{cursor:crosshair;}
+  .pick-card{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:1700;display:none;
+    width:min(440px,calc(100% - 24px));background:var(--panel);border:1px solid var(--gold);border-radius:10px;
+    padding:14px;box-shadow:0 8px 28px rgba(0,0,0,.55);}
+  .pick-card.show{display:block;}
+  .pick-card .q{font-size:15px;font-weight:600;line-height:1.35;}
+  .pick-card .addr{font-size:12px;color:var(--text-muted);margin-top:4px;min-height:16px;
+    overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+  .pick-card .row{display:flex;gap:10px;margin-top:12px;}
+  .pick-card .row .btn{flex:1 1 0;min-height:46px;font-size:15px;margin:0;}
+  .pick-card .row .btn.primary{width:auto;}
   .sidebar-home{display:block;width:100%;margin:0 0 14px;text-align:left;}
   .admin-controls{margin-top:22px;padding:14px 12px 4px;border:1px dashed var(--gold);border-radius:6px;background:rgba(217,181,86,.04);}
   .admin-controls-title{font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:10px;}
@@ -746,8 +772,10 @@
         </select>
       </div>
 
-      <button class="btn primary" id="generateBtn">Generate Route</button>
-      <div class="status" id="statusMsg"></div>
+      <div class="gen-dock">
+        <button class="btn primary" id="generateBtn">▶ Generate route</button>
+        <div class="status" id="statusMsg"></div>
+      </div>
 
       <!-- ADMIN CONTROLS: everything the Track screen doesn't use (yet).
            Kept fully working, only hidden — switch on via Admin → "Admin route
@@ -994,6 +1022,17 @@
 
     <main class="mapwrap">
       <div id="map"></div>
+      <div class="pick-card" id="pickCard" role="dialog" aria-live="polite">
+        <div class="q" id="pickQ"></div>
+        <div class="addr" id="pickAddr"></div>
+        <div class="row" id="pickRowChoose">
+          <button class="btn" type="button" id="pickCancelBtn">Cancel</button>
+        </div>
+        <div class="row" id="pickRowConfirm" style="display:none;">
+          <button class="btn" type="button" id="pickNoBtn">✗ No, pick again</button>
+          <button class="btn primary" type="button" id="pickYesBtn">✓ Yes, use this</button>
+        </div>
+      </div>
       <div id="mapLoadingOverlay">
         <svg class="loading-logo" viewBox="0 0 220 150" xmlns="http://www.w3.org/2000/svg">
           <polygon points="0,120 35,68 62,95 100,45 140,92 180,62 220,100 220,150 0,150" fill="#1d2c23"/>
@@ -1059,7 +1098,7 @@
         <button class="btn" id="undoBtn" disabled title="Undo (up to 5 steps)">↶</button>
         <button class="btn" id="redoBtn" disabled title="Redo (up to 5 steps)">↷</button>
         <button class="btn" id="clearRouteBtn" disabled>✕ Clear</button>
-        <button class="btn primary" id="generateBtnMap">Generate Route</button>
+        <button class="btn primary" id="generateBtnMap">Generate Route</button><!-- hidden: single Generate lives in the sidebar -->
         <button class="btn primary" id="downloadBtn" disabled>⬇ .gpx</button>
       </div>
     </main>
@@ -1748,14 +1787,88 @@
       setStatus('');
     }, function(){ setStatus('Could not get your location — pick a start on the map instead.', true); });
   });
-  document.getElementById('startMapBtn').addEventListener('click', function(e){
-    state.pickMode = (state.pickMode==='start') ? null : 'start';
-    e.target.classList.toggle('active', state.pickMode==='start');
+  /* ---- Pick on map with confirmation (start / end) ----
+     1. "Pick on map" hides the panel (drawer on a phone, side panel on PC)
+        so the whole map is free, and shows a card: "Tap the map…".
+     2. A tap drops a temporary pin and asks "OK with this point?".
+     3. No → pin removed, tap again. Yes → point is set, panel comes back.
+        Cancel (or Esc on PC) → nothing changes, panel comes back.
+     state.pickMode stays null during this flow, so the generic map click
+     handler above doesn't act on these taps. */
+  var pickFlow = null;            // null | { kind:'start'|'end', cand:{lat,lon}|null }
+  var pickTempMarker = null;
+  var pickGeoSeq = 0;
+  var pickCard = document.getElementById('pickCard');
+
+  function pickLabel(kind){ return kind === 'start' ? 'start' : 'end'; }
+  function removePickMarker(){ if (pickTempMarker){ map.removeLayer(pickTempMarker); pickTempMarker = null; } }
+  function showPickChoose(){
+    document.getElementById('pickQ').textContent = '📍 Tap the map to choose your ' + pickLabel(pickFlow.kind) + ' point';
+    document.getElementById('pickAddr').textContent = pickFlow.cand ? '' : 'Zoom and pan as needed, then tap.';
+    document.getElementById('pickRowChoose').style.display = 'flex';
+    document.getElementById('pickRowConfirm').style.display = 'none';
+  }
+  function showPickConfirm(){
+    document.getElementById('pickQ').textContent = 'OK with this ' + pickLabel(pickFlow.kind) + ' point?';
+    document.getElementById('pickAddr').textContent = 'Looking up address…';
+    document.getElementById('pickRowChoose').style.display = 'none';
+    document.getElementById('pickRowConfirm').style.display = 'flex';
+  }
+  function relayoutMap(){ setTimeout(function(){ map.invalidateSize(); }, 60); }
+
+  function beginMapPick(kind){
+    if (pickFlow) endMapPick(false);
+    state.pickMode = null;
+    pickFlow = { kind: kind, cand: null };
+    document.body.classList.add('picking');
+    if (detectMobile()) closeSidebar();
+    relayoutMap();
+    showPickChoose();
+    pickCard.classList.add('show');
+  }
+  function endMapPick(reopenPanel){
+    removePickMarker();
+    pickFlow = null;
+    pickGeoSeq++;
+    pickCard.classList.remove('show');
+    document.body.classList.remove('picking');
+    relayoutMap();
+    if (reopenPanel && detectMobile()) openSidebar();
+  }
+  map.on('click', function(e){
+    if (!pickFlow) return;
+    var lat = e.latlng.lat, lon = e.latlng.lng;
+    pickFlow.cand = { lat: lat, lon: lon };
+    removePickMarker();
+    pickTempMarker = L.marker([lat, lon], { interactive: false, icon: L.divIcon({ className: '', iconSize: [26, 26], iconAnchor: [13, 13],
+      html: '<div style="width:22px;height:22px;border-radius:50%;background:#c1611d;border:3px solid #d9b556;box-shadow:0 0 0 4px rgba(217,181,86,.3),0 2px 8px rgba(0,0,0,.6);"></div>' }) }).addTo(map);
+    showPickConfirm();
+    var seq = ++pickGeoSeq;
+    fetch('https://nominatim.openstreetmap.org/reverse?format=json&zoom=17&lat=' + lat + '&lon=' + lon)
+      .then(function(r){ return r.json(); })
+      .then(function(d){ if (seq === pickGeoSeq && pickFlow) document.getElementById('pickAddr').textContent = (d && d.display_name) || lat.toFixed(5) + ', ' + lon.toFixed(5); })
+      .catch(function(){ if (seq === pickGeoSeq && pickFlow) document.getElementById('pickAddr').textContent = lat.toFixed(5) + ', ' + lon.toFixed(5); });
   });
-  document.getElementById('endMapBtn').addEventListener('click', function(e){
-    state.pickMode = (state.pickMode==='end') ? null : 'end';
-    e.target.classList.toggle('active', state.pickMode==='end');
+  document.getElementById('pickYesBtn').addEventListener('click', function(){
+    if (!pickFlow || !pickFlow.cand) return;
+    var c = pickFlow.cand, kind = pickFlow.kind;
+    if (kind === 'start'){ setStartMarker(c.lat, c.lon); reverseGeocodeInto('startInput', c.lat, c.lon); }
+    else { setEndMarker(c.lat, c.lon); reverseGeocodeInto('endInput', c.lat, c.lon); }
+    endMapPick(true);
   });
+  document.getElementById('pickNoBtn').addEventListener('click', function(){
+    if (!pickFlow) return;
+    removePickMarker();
+    pickGeoSeq++;
+    pickFlow.cand = null;
+    showPickChoose();
+    document.getElementById('pickAddr').textContent = 'Tap another spot on the map.';
+  });
+  document.getElementById('pickCancelBtn').addEventListener('click', function(){ endMapPick(true); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && pickFlow) endMapPick(true); });
+
+  document.getElementById('startMapBtn').addEventListener('click', function(){ beginMapPick('start'); });
+  document.getElementById('endMapBtn').addEventListener('click', function(){ beginMapPick('end'); });
   document.getElementById('wpMapBtn').addEventListener('click', function(e){
     if (state.waypoints.length >= 5){ setStatus('Max 5 waypoints reached — remove one to add another.', true); return; }
     state.pickMode = (state.pickMode==='waypoint') ? null : 'waypoint';

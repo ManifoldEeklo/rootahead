@@ -8,7 +8,7 @@
 // 2. Push notifications (unchanged from before): shows them and focuses or
 //    opens the app when one is tapped.
 
-var CACHE = 'rootahead-shell-v1'; // bump when the list below changes
+var CACHE = 'rootahead-shell-v3'; // bump when the list below changes
 var SHELL = ['/', '/manifest.json', '/icon-192.png', '/icon-512.png', '/apple-touch-icon.png'];
 
 self.addEventListener('install', function(event){

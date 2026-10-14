@@ -4,7 +4,7 @@
   "description": "Manage-Plot-Train — ROOT-Ahead team app with route planner",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0d1712",
+  "background_color": "#262628",
   "theme_color": "#0d1712",
   "icons": [
     {
