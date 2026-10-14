@@ -155,6 +155,19 @@ hardcoded and a new key pair only needs changing in Vercel.
 Storage: `rootahead:push:users` (device → subscription), `rootahead:messages`
 (last 200 sent). Needs iOS 16.4 or newer on iPhone.
 
+### 4c. Train: personal training plans
+
+- Rider: dashboard → **Train** → goal, hours per week, riding days, level,
+  optional event date/name and FTP → **Make my plan**. The app builds a
+  periodised plan (Base → Build → Peak → Taper before an event, an easier week
+  every 4th week, 16 weeks max). Each workout shows its steps with power
+  targets (from FTP) or effort (RPE). Riders mark days **Done**/**Skipped**;
+  endurance rides have **Plan a route for this ride** (sets the distance in Track).
+- Coach: Admin → **Training** → pick a rider → change any day's workout,
+  minutes or note, add a note above the plan → **Save plan** (optionally
+  notifies the rider; tapping opens Train).
+- Storage: `rootahead:plan:<device>`, `rootahead:planlog:<device>`, `rootahead:plans`.
+
 ### 5. (Optional) Turn on Vercel Web Analytics
 
 The page already ships the plain-HTML tracking snippet (no `@vercel/analytics`
