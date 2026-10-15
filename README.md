@@ -177,6 +177,23 @@ Storage: `rootahead:push:users` (device → subscription), `rootahead:messages`
   per day, kept across plans), `rootahead:planarchive:<device>` (last 20 plans),
   `rootahead:plans`.
 
+### 4d. Coach tools in RA Admin (`/admin/` → Training)
+
+- **Riders**: every rider with plan status, done/due, average score (last 14
+  days) and their latest reflection. Open a rider to change any day, add notes,
+  save (the rider's app updates), save the plan as a template, or give them a
+  template from a chosen Monday (their current plan goes to their history).
+- **Workouts**: your own workouts (name, note, steps with minutes and zone;
+  "+ Intervals…" adds effort/recovery repeats). They appear under "Your
+  workouts" in every workout dropdown. A plan keeps its own copy, so editing
+  or deleting a workout never breaks a rider's plan.
+- **Plan templates**: fixed multi-week plans (1–16 weeks, phase per week),
+  built from standard and own workouts, given to one rider at a time.
+- **Reflections**: when a rider taps Done they must give a score 1–10 and a
+  reflection of max 50 characters; shown to the coach per day.
+- Storage: `rootahead:coach:workouts`, `rootahead:coach:templates` (admin only).
+- The installed admin app is now called "RA Admin" (reinstall to see the new name).
+
 ### 5. (Optional) Turn on Vercel Web Analytics
 
 The page already ships the plain-HTML tracking snippet (no `@vercel/analytics`

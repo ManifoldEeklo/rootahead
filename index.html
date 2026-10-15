@@ -482,6 +482,16 @@
   .tv-steps i{width:10px;height:10px;border-radius:50%;}
   .tv-steps .m{font-family:'IBM Plex Mono',monospace;color:var(--gold);}
   .tv-steps .g{grid-column:3;font-size:12px;color:var(--text-muted);}
+  .tv-reflection{display:flex;gap:10px;align-items:baseline;margin-top:12px;padding:9px 12px;background:var(--panel-alt);border-radius:8px;font-size:14px;}
+  .tv-reflection .sc{font-family:'IBM Plex Mono',monospace;color:var(--gold);font-weight:600;flex:0 0 auto;}
+  .tv-reflect{margin-top:14px;padding:12px;border:1px solid var(--gold);border-radius:10px;}
+  .tv-reflect b{display:block;font-size:15px;margin-bottom:6px;}
+  .tv-reflect .lbl{display:block;font-size:12.5px;color:var(--text-muted);margin:8px 0 6px;}
+  .tv-reflect .scores{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;}
+  .tv-reflect .scores button{padding:9px 0;border-radius:7px;border:1px solid var(--line);background:var(--panel-alt);color:var(--text);font:inherit;font-size:14px;cursor:pointer;}
+  .tv-reflect .scores button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#150c05;font-weight:700;}
+  .tv-reflect .cnt{text-align:right;font-size:11.5px;color:var(--text-muted);margin-top:4px;}
+  @media (max-width:420px){ .tv-reflect .scores{grid-template-columns:repeat(5,1fr);} }
   .tv-hint{font-size:12px;color:var(--text-muted);margin:10px 0 0;}
   .tv-restday{font-size:14px;color:var(--text-muted);margin:10px 0 0;}
   @media (min-width:640px){
@@ -494,6 +504,7 @@
   .tr-date{font-size:12.5px;}
   .tr-day select,.tr-day input{font-size:13px;padding:6px 7px;background:var(--panel-alt);border:1px solid var(--line);color:var(--text);border-radius:var(--radius);width:100%;}
   .tr-day input[type=text]{grid-column:1 / -1;}
+  .tr-ref{grid-column:1 / -1;font-size:12px;color:var(--gold);}
   .tr-nav{display:flex;align-items:center;gap:8px;margin:10px 0 4px;}
   .tr-nav span{flex:1 1 auto;text-align:center;font-size:12.5px;font-weight:600;}
   #trCoachNote{width:100%;min-height:60px;margin-top:6px;background:var(--panel-alt);border:1px solid var(--line);color:var(--text);
@@ -1228,6 +1239,7 @@
           <div class="admin-tabpane" data-pane="training" style="display:none;">
             <div class="admin-stats-block first">
               <div class="admin-stats-header"><span>Training plans</span><button class="btn small" id="trRefresh" type="button">↻ Refresh</button></div>
+              <a class="btn small" href="/admin/#training" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;margin:4px 0 10px;">🗂 Own workouts &amp; plan templates: open RA Admin</a>
               <div id="trList"></div>
               <div id="trEditor" hidden>
                 <button class="btn small" type="button" id="trBack">‹ All riders</button>
@@ -4824,6 +4836,20 @@
   }
   function trainHours(min){ var h = Math.floor(min / 60), m = min % 60; return h ? h + 'h' + (m ? String(m).padStart(2, '0') : '') : m + ' min'; }
 
+  // ---- days that hold a coach workout (type 'custom' with a copy of the workout) ----
+  var ZONE_ORDER = ['Z1','Z2','Z3','SS','Z4','Z5','Z6'];
+  function topZone(steps){   // the hardest zone held for at least 2 minutes in total
+    var t = {}; (steps || []).forEach(function(s){ t[s.zone] = (t[s.zone] || 0) + s.min; });
+    for (var i = ZONE_ORDER.length - 1; i >= 0; i--) if ((t[ZONE_ORDER[i]] || 0) >= 2) return ZONE_ORDER[i];
+    return 'Z2';
+  }
+  function dayInfo(day){
+    if (day && day.type === 'custom' && day.custom) return { title: day.custom.title, zone: topZone(day.custom.steps), about: day.custom.about || 'A workout from your coach.' };
+    return TRAIN_TYPES[day && day.type] || TRAIN_TYPES.rest;
+  }
+  function daySteps(day){ return day.type === 'custom' && day.custom ? day.custom.steps : trainSteps(day.type, day.min); }
+  function stepsMinutes(steps){ return Math.round((steps || []).reduce(function(t, s){ return t + (Number(s.min) || 0); }, 0)); }
+
   /* ================= TRAIN: rider screen ================= */
   var trainState = { plan:null, log:{}, week:0, open:null, settings:null, loaded:false };
   var PLAN_CACHE = 'rootahead_plan_cache';
@@ -4917,7 +4943,7 @@
     }
     var strip = document.getElementById('tvStrip'); strip.innerHTML = '';
     week.forEach(function(day){
-      var info = TRAIN_TYPES[day.type] || TRAIN_TYPES.rest, lg = trainState.log[day.d], dt = tParse(day.d);
+      var info = dayInfo(day), lg = trainState.log[day.d], dt = tParse(day.d);
       var b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'tab');
       b.className = 'tv-tile' + (day.type === 'rest' ? ' rest' : '') + (day.d === today ? ' today' : '') + (lg ? ' ' + lg.status : '');
       b.setAttribute('aria-selected', String(day.d === trainState.open));
@@ -4967,7 +4993,7 @@
   }
 
   function trainDayCard(day, p){
-    var info = TRAIN_TYPES[day.type] || TRAIN_TYPES.rest, lg = trainState.log[day.d], dt = tParse(day.d);
+    var info = dayInfo(day), lg = trainState.log[day.d], dt = tParse(day.d);
     var card = document.createElement('div'); card.className = 'tv-daycard';
     var top = document.createElement('div'); top.className = 'tv-daytop';
     var tx = document.createElement('div'); tx.className = 'tx';
@@ -4981,7 +5007,8 @@
     card.appendChild(top);
     var about = document.createElement('p'); about.className = 'tv-about'; about.textContent = info.about; card.appendChild(about);
     if (day.note){ var cn = document.createElement('p'); cn.className = 'tv-daynote'; cn.textContent = 'Coach: ' + day.note; card.appendChild(cn); }
-    var steps = trainSteps(day.type, day.min), ftp = (p.settings && p.settings.ftp) || 0;
+    var steps = daySteps(day), ftp = (p.settings && p.settings.ftp) || 0;
+    if (day.type === 'custom'){ var cb = document.createElement('p'); cb.className = 'tv-daynote'; cb.textContent = 'Workout from your coach'; card.insertBefore(cb, card.querySelector('.tv-about')); }
     if (steps.length){
       var prof = document.createElement('div'); prof.className = 'tv-profile'; prof.setAttribute('aria-hidden', 'true');
       steps.forEach(function(st){
@@ -5012,8 +5039,15 @@
     if (day.type !== 'rest'){
       var acts = document.createElement('div'); acts.className = 'tv-acts';
       function btn(label, cls, fn){ var b = document.createElement('button'); b.type = 'button'; b.className = 'btn ' + cls; b.textContent = label; b.addEventListener('click', fn); acts.appendChild(b); }
+      if (lg && lg.status === 'done' && lg.score){
+        var rf = document.createElement('div'); rf.className = 'tv-reflection';
+        rf.innerHTML = '<span class="sc"></span><span class="tx"></span>';
+        rf.firstChild.textContent = lg.score + '/10'; rf.lastChild.textContent = '“' + lg.text + '”';
+        card.appendChild(rf);
+      }
+      if (trainState.reflecting === day.d){ card.appendChild(reflectionForm(day)); return card; }
       if (!lg){
-        btn('✓ Done', 'primary', function(){ logTrainDay(day.d, 'done'); });
+        btn('✓ Done', 'primary', function(){ trainState.reflecting = day.d; renderTrain(); });
         btn('Skipped', '', function(){ logTrainDay(day.d, 'skipped'); });
       } else {
         btn('Undo', '', function(){ logTrainDay(day.d, 'clear'); });
@@ -5024,10 +5058,30 @@
     return card;
   }
 
-  function logTrainDay(d, status){
-    if (status === 'clear') delete trainState.log[d]; else trainState.log[d] = { status:status, at:new Date().toISOString() };
+  function reflectionForm(day){
+    var f = document.createElement('div'); f.className = 'tv-reflect';
+    var st = { score:0 };
+    f.innerHTML = '<b>How did it go?</b><span class="lbl">Score from 1 (very bad) to 10 (perfect)</span><div class="scores" role="group" aria-label="Score"></div>' +
+      '<label class="lbl" for="tvRefText">Your reflection</label><input type="text" id="tvRefText" maxlength="50" placeholder="e.g. Legs heavy, last effort hard" autocomplete="off">' +
+      '<div class="cnt">0 / 50</div><div class="tv-acts"><button type="button" class="btn primary" disabled>Save</button><button type="button" class="btn">Cancel</button></div>';
+    var box = f.querySelector('.scores'), save = f.querySelector('.btn.primary'), txt = f.querySelector('input');
+    function ok(){ save.disabled = !(st.score && txt.value.trim()); }
+    for (var i = 1; i <= 10; i++) (function(n){
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = n; b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', function(){ st.score = n; Array.prototype.forEach.call(box.children, function(x){ x.setAttribute('aria-pressed', String(+x.textContent === n)); }); ok(); });
+      box.appendChild(b);
+    })(i);
+    txt.addEventListener('input', function(){ f.querySelector('.cnt').textContent = txt.value.length + ' / 50'; ok(); });
+    save.addEventListener('click', function(){ trainState.reflecting = null; logTrainDay(day.d, 'done', { score: st.score, text: txt.value.trim().slice(0, 50) }); });
+    f.querySelectorAll('.btn')[1].addEventListener('click', function(){ trainState.reflecting = null; renderTrain(); });
+    setTimeout(function(){ try{ txt.focus({ preventScroll:true }); }catch(e){} }, 50);
+    return f;
+  }
+  function logTrainDay(d, status, extra){
+    if (status === 'clear') delete trainState.log[d];
+    else trainState.log[d] = Object.assign({ status:status, at:new Date().toISOString() }, extra || {});
     cachePlan(); renderTrain();
-    fetch('/api/plan', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ deviceId:deviceId, log:{ d:d, status:status } }) })
+    fetch('/api/plan', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ deviceId:deviceId, log:Object.assign({ d:d, status:status }, extra || {}) }) })
       .then(function(r){ if (!r.ok) trainStatus('Saved on this phone; it will sync when the server answers.', true); else trainStatus(''); })
       .catch(function(){ trainStatus('Offline: saved on this phone only.', true); });
   }
@@ -5048,7 +5102,7 @@
     slider.dispatchEvent(new Event('input'));
     hideTrain();
     location.hash = 'track';
-    showDashToast('Distance set to ' + slider.value + ' km for your ' + (TRAIN_TYPES[day.type].title.toLowerCase()) + '.' +
+    showDashToast('Distance set to ' + slider.value + ' km for your ' + (dayInfo(day).title.toLowerCase()) + '.' +
       (TRAIN_ROUTE_TIP[day.type] ? ' ' + TRAIN_ROUTE_TIP[day.type] : ''), TRAIN_ROUTE_TIP[day.type] ? 6500 : 3500);
   }
 
@@ -5139,11 +5193,40 @@
   document.getElementById('trainHomeBtn').addEventListener('click', function(){ goDashboard(); });
 
   /* ================= TRAIN: coach (Admin → Training) ================= */
-  var coachState = { riders:[], current:null, plan:null, log:{}, week:0 };
+  var coachState = { riders:[], current:null, plan:null, log:{}, week:0, library:{ workouts:[], templates:[] } };
+  function loadCoachLibrary(){
+    return fetch('/api/coach-library', { headers:{ 'x-admin-key': adminKey } })
+      .then(function(r){ return r.ok ? r.json() : { workouts:[], templates:[] }; })
+      .then(function(d){ coachState.library = { workouts: d.workouts || [], templates: d.templates || [] }; })
+      .catch(function(){});
+  }
+  // the workout dropdown: built-in workouts + the coach's own workouts
+  function fillWorkoutSelect(sel, day, workouts){
+    TRAIN_TYPE_ORDER.forEach(function(k){ var o = document.createElement('option'); o.value = k; o.textContent = TRAIN_TYPES[k].title; sel.appendChild(o); });
+    var g = document.createElement('optgroup'); g.label = 'Your workouts';
+    var have = false;
+    (workouts || []).forEach(function(w){ var o = document.createElement('option'); o.value = 'c:' + w.id; o.textContent = w.title + ' (' + trainHours(stepsMinutes(w.steps)) + ')'; g.appendChild(o); if (day.wid === w.id) have = true; });
+    if (day.type === 'custom' && day.custom && !have){ var o2 = document.createElement('option'); o2.value = 'c:' + (day.wid || 'copy'); o2.textContent = day.custom.title + ' (saved copy)'; g.appendChild(o2); }
+    if (g.children.length) sel.appendChild(g);
+    sel.value = day.type === 'custom' ? 'c:' + (day.wid || 'copy') : day.type;
+  }
+  function applyWorkoutChoice(day, value, workouts){
+    if (value.indexOf('c:') === 0){
+      var w = (workouts || []).filter(function(x){ return 'c:' + x.id === value; })[0];
+      if (!w) return;   // the saved copy stays as it is
+      day.type = 'custom'; day.wid = w.id; day.custom = { title: w.title, about: w.about || '', steps: JSON.parse(JSON.stringify(w.steps)) };
+      day.min = stepsMinutes(w.steps);
+      return;
+    }
+    delete day.wid; delete day.custom;
+    day.type = value;
+    if (day.type === 'rest') day.min = 0; else if (!day.min) day.min = { rec:40, end:90, long:150, event:120, sprint:45 }[day.type] || 75;
+  }
   function loadTrainingList(){
     var list = document.getElementById('trList'), note = document.getElementById('trNote');
     document.getElementById('trEditor').hidden = true; list.hidden = false;
     note.textContent = 'Loading…';
+    loadCoachLibrary();
     fetch('/api/plan?all=1', { headers:{ 'x-admin-key': adminKey } })
       .then(function(r){ return r.json().then(function(d){ return { ok:r.ok, data:d }; }); })
       .then(function(res){
@@ -5159,6 +5242,7 @@
           tm.textContent = (r.team || '—') + ' · ' + (TRAIN_GOALS[r.goal] || r.goal) + (r.eventDate ? ' · event ' + r.eventDate : '') + ' · ' +
             (r.ended ? 'plan ended ' + r.endDate + ', no new plan yet' : r.source === 'coach' ? 'adjusted' : 'app suggestion');
           who.appendChild(n); who.appendChild(tm);
+          if (r.avgScore != null) tm.textContent += ' · score ' + r.avgScore + '/10';
           var c = document.createElement('span'); c.className = 'cnt'; c.textContent = r.done + '/' + r.due; c.title = 'Workouts done / due so far';
           row.appendChild(who); row.appendChild(c);
           row.addEventListener('click', function(){ openCoachPlan(r); });
@@ -5197,18 +5281,18 @@
       var lab = document.createElement('span'); lab.className = 'tr-date';
       lab.textContent = TRAIN_DAYS[(dt.getDay() + 6) % 7] + ' ' + dt.getDate() + '/' + (dt.getMonth() + 1) + (lg ? (lg.status === 'done' ? ' ✓' : ' –') : '');
       var sel = document.createElement('select'); sel.setAttribute('aria-label', 'Workout');
-      TRAIN_TYPE_ORDER.forEach(function(k){ var o = document.createElement('option'); o.value = k; o.textContent = TRAIN_TYPES[k].title; if (k === day.type) o.selected = true; sel.appendChild(o); });
+      fillWorkoutSelect(sel, day, coachState.library.workouts);
       var mins = document.createElement('input'); mins.type = 'number'; mins.min = 0; mins.max = 480; mins.step = 5; mins.value = day.min; mins.setAttribute('aria-label', 'Minutes');
-      mins.disabled = day.type === 'rest';
+      mins.disabled = day.type === 'rest' || day.type === 'custom';
       var noteIn = document.createElement('input'); noteIn.type = 'text'; noteIn.maxLength = 200; noteIn.placeholder = 'Note for the rider (optional)'; noteIn.value = day.note || '';
-      sel.addEventListener('change', function(){
-        day.type = sel.value;
-        if (day.type === 'rest') day.min = 0; else if (!day.min) day.min = { rec:40, end:90, long:150, event:120, sprint:45 }[day.type] || 75;
-        renderCoachWeek();
-      });
+      sel.addEventListener('change', function(){ applyWorkoutChoice(day, sel.value, coachState.library.workouts); renderCoachWeek(); });
       mins.addEventListener('input', function(){ day.min = tClamp(Math.round(+mins.value || 0), 0, 480); });
       noteIn.addEventListener('input', function(){ if (noteIn.value.trim()) day.note = noteIn.value.trim(); else delete day.note; });
       row.appendChild(lab); row.appendChild(sel); row.appendChild(mins); row.appendChild(noteIn);
+      if (lg && lg.status === 'done' && lg.score){
+        var rf = document.createElement('div'); rf.className = 'tr-ref'; rf.textContent = 'Rider: ' + lg.score + '/10 · “' + lg.text + '”';
+        row.appendChild(rf);
+      }
       box.appendChild(row);
     });
   }

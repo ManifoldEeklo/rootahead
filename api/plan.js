@@ -32,7 +32,8 @@ function summarize(plan, log){
     eventName: (plan.settings || {}).eventName || '', eventDate: (plan.settings || {}).eventDate || '', source: plan.source,
     workouts: due, done: done, minPlanned: minPlanned, minDone: minDone, archivedAt: new Date().toISOString() };
 }
-var TYPES = ['rest','rec','end','long','tempo','ss','thr','vo2','hills','sprint','event'];
+var TYPES = ['rest','rec','end','long','tempo','ss','thr','vo2','hills','sprint','event','custom'];
+var ZONES = ['Z1','Z2','Z3','SS','Z4','Z5','Z6'];
 
 // Keep only what a plan may contain (it comes from a browser)
 function cleanPlan(p){
@@ -41,6 +42,15 @@ function cleanPlan(p){
     var d = { d: String(x.d || '').slice(0, 10), type: TYPES.indexOf(x.type) !== -1 ? x.type : 'rest',
               min: Math.max(0, Math.min(480, Math.round(Number(x.min) || 0))) };
     if (x.note) d.note = String(x.note).slice(0, 200);
+    // a coach workout travels with its full description, so the rider app can show it
+    if (d.type === 'custom'){
+      var c = x.custom || {}, steps = (Array.isArray(c.steps) ? c.steps : []).slice(0, 40).map(function(s){
+        return { label: String(s.label || 'Step').slice(0, 60), min: Math.max(0.25, Math.min(300, Number(s.min) || 0)), zone: ZONES.indexOf(s.zone) !== -1 ? s.zone : 'Z2' };
+      });
+      if (!steps.length || !c.title){ d.type = 'rest'; d.min = 0; }
+      else { d.wid = String(x.wid || '').slice(0, 40); d.custom = { title: String(c.title).slice(0, 60), about: String(c.about || '').slice(0, 300), steps: steps };
+             d.min = Math.round(steps.reduce(function(t, s){ return t + s.min; }, 0)); }
+    }
     return d;
   }).filter(function(x){ return /^\d{4}-\d{2}-\d{2}$/.test(x.d); });
   var s = p.settings || {};
@@ -49,7 +59,8 @@ function cleanPlan(p){
     phases: Array.isArray(p.phases) ? p.phases.slice(0, 16).map(function(x){ return String(x).slice(0, 12); }) : [],
     settings: { goal: String(s.goal || '').slice(0, 20), hours: Number(s.hours) || 0, level: String(s.level || '').slice(0, 20),
                 days: Array.isArray(s.days) ? s.days.slice(0, 7).map(Number) : [], eventDate: String(s.eventDate || '').slice(0, 10),
-                eventName: String(s.eventName || '').slice(0, 60), ftp: Number(s.ftp) || 0 },
+                eventName: String(s.eventName || '').slice(0, 60), ftp: Number(s.ftp) || 0, recoveryFirst: !!s.recoveryFirst },
+    templateName: String(p.templateName || '').slice(0, 60),
     coachNote: String(p.coachNote || '').slice(0, 600),
     source: p.source === 'coach' ? 'coach' : 'app',
     generatedAt: String(p.generatedAt || '').slice(0, 30), adjustedAt: String(p.adjustedAt || '').slice(0, 30)
@@ -73,11 +84,15 @@ module.exports = async function handler(req, res){
         var log = (await redis.hgetall('rootahead:planlog:' + ids[i])) || {};
         var p = parse(profiles[ids[i]]) || {};
         var past = plan.days.filter(function(x){ return x.d <= today && x.type !== 'rest'; });
+        var since = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10), scores = [], lastRef = null;
+        Object.keys(log).sort().forEach(function(k){ var l = parse(log[k]); if (l && l.status === 'done' && l.score){ if (k >= since) scores.push(l.score); lastRef = { d: k, score: l.score, text: l.text }; } });
         var done = past.filter(function(x){ var l = parse(log[x.d]); return l && l.status === 'done'; }).length;
         out.push({ deviceId: ids[i], firstName: p.firstName || null, lastName: p.lastName || null, team: p.team || null,
           goal: plan.settings.goal, eventDate: plan.settings.eventDate, weeks: Math.ceil(plan.days.length / 7),
           source: plan.source, adjustedAt: plan.adjustedAt, generatedAt: plan.generatedAt, done: done, due: past.length,
           ended: plan.days.length ? plan.days[plan.days.length - 1].d < today : false,
+          avgScore: scores.length ? Math.round(scores.reduce(function(a, b){ return a + b; }, 0) / scores.length * 10) / 10 : null,
+          lastReflection: lastRef, templateName: plan.templateName || '',
           endDate: plan.days.length ? plan.days[plan.days.length - 1].d : '' });
       }
       res.status(200).json({ riders: out });
@@ -104,8 +119,14 @@ module.exports = async function handler(req, res){
         if (!/^\d{4}-\d{2}-\d{2}$/.test(day)){ res.status(400).json({ error: 'bad day' }); return; }
         if (b.log.status === 'clear'){ await redis.hdel('rootahead:planlog:' + rid, day); }
         else {
-          var entry = {}; entry[day] = JSON.stringify({ status: b.log.status === 'skipped' ? 'skipped' : 'done',
-            feel: b.log.feel ? String(b.log.feel).slice(0, 10) : '', at: new Date().toISOString() });
+          var rec = { status: b.log.status === 'skipped' ? 'skipped' : 'done', at: new Date().toISOString() };
+          if (rec.status === 'done'){
+            var score = Math.round(Number(b.log.score));
+            var text = String(b.log.text || '').trim().slice(0, 50);
+            if (!(score >= 1 && score <= 10) || !text){ res.status(400).json({ error: 'A finished ride needs a score from 1 to 10 and a short reflection.' }); return; }
+            rec.score = score; rec.text = text;
+          }
+          var entry = {}; entry[day] = JSON.stringify(rec);
           await redis.hset('rootahead:planlog:' + rid, entry);
         }
         res.status(200).json({ ok: true });
@@ -133,6 +154,14 @@ module.exports = async function handler(req, res){
       var plan3 = cleanPlan(b.plan);
       if (!cid || !plan3){ res.status(400).json({ error: 'deviceId and plan are required' }); return; }
       plan3.source = 'coach'; plan3.adjustedAt = new Date().toISOString();
+      if (b.replace){   // a new plan (e.g. from a template) instead of an edit: keep the old one in the archive
+        var prevPlan = parse(await redis.get('rootahead:plan:' + cid));
+        if (prevPlan && prevPlan.days && prevPlan.days.length){
+          var prevLog = (await redis.hgetall('rootahead:planlog:' + cid)) || {};
+          await redis.lpush('rootahead:planarchive:' + cid, JSON.stringify({ summary: summarize(prevPlan, prevLog), plan: prevPlan }));
+          await redis.ltrim('rootahead:planarchive:' + cid, 0, 19);
+        }
+      }
       await redis.set('rootahead:plan:' + cid, JSON.stringify(plan3));
       await redis.sadd('rootahead:plans', cid);
       var notified = false;

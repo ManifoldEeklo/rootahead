@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>RA Messages</title>
+<title>RA Admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
 <link rel="manifest" href="/admin/manifest.webmanifest">
@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="RA Messages">
+<meta name="apple-mobile-web-app-title" content="RA Admin">
 <link rel="apple-touch-icon" href="/admin/apple-touch-icon.png">
 <link rel="icon" type="image/png" href="/admin/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,10 +40,11 @@
   .lock-card h1{font-size:26px;font-weight:800;margin-bottom:4px;}
   .lock-card p{margin:0 0 18px;}
   .field{display:block;margin:14px 0 6px;font-size:14px;font-weight:600;}
-  input[type=password],input[type=text],input[type=search],textarea,select{
+  input[type=password],input[type=text],input[type=search],input[type=number],textarea,select{
     width:100%;background:var(--char-2);border:1px solid var(--char-3);border-radius:10px;padding:12px 13px;font-size:16px;}
   textarea{resize:vertical;min-height:96px;}
   input:focus,textarea:focus,select:focus{outline:none;border-color:var(--yellow);}
+  input:disabled,select:disabled{opacity:.45;}
   .go{width:100%;margin-top:14px;background:var(--yellow);color:var(--yellow-ink);border:none;border-radius:12px;
     padding:14px 18px;font-family:'Archivo',sans-serif;font-weight:800;font-size:17px;cursor:pointer;}
   .go:disabled{opacity:.45;cursor:not-allowed;}
@@ -100,6 +101,75 @@
   .log .meta{font-size:13px;color:var(--muted);margin-top:3px;}
   .empty-note{color:var(--muted);font-size:14px;}
   [hidden]{display:none !important;}
+  /* main tabs */
+  .maintabs{display:flex;gap:4px;margin:4px 0 0;border-bottom:1px solid var(--char-3);}
+  .maintabs button{flex:1 1 0;background:none;border:none;border-bottom:3px solid transparent;padding:12px 6px;font-family:'Archivo',sans-serif;
+    font-weight:700;font-size:16px;color:var(--muted);cursor:pointer;margin-bottom:-1px;}
+  .maintabs button[aria-selected="true"]{color:var(--yellow);border-bottom-color:var(--yellow);}
+  .seg.sub{margin-top:16px;}
+  .trstatus{font-size:14px;color:var(--muted);margin-top:10px;min-height:0;}
+  .trstatus.bad,.result.bad{color:var(--bad);}
+  /* lists */
+  .rlist{list-style:none;margin:12px 0 0;padding:0;}
+  .rrow{display:flex;gap:12px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--char-3);cursor:pointer;}
+  .rrow:hover .rmain b{color:var(--yellow);}
+  .rmain{flex:1 1 auto;min-width:0;}
+  .rmain b{display:block;font-weight:600;}
+  .rsub{display:block;font-size:13px;color:var(--muted);}
+  .rref{display:block;font-size:13px;color:var(--yellow);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rside{flex:0 0 auto;text-align:right;}
+  .rside b{display:block;font-family:'Archivo',sans-serif;font-size:17px;}
+  .rside small{font-size:12px;color:var(--muted);}
+  .miniprofile,.profile{display:flex;align-items:flex-end;gap:2px;background:var(--char-2);border-radius:6px;padding:4px;}
+  .miniprofile{height:26px;margin-top:6px;max-width:260px;}
+  .profile{height:70px;margin-top:14px;}
+  .miniprofile i,.profile i{display:block;min-width:2px;border-radius:2px 2px 0 0;}
+  .total{font-size:14px;color:var(--muted);margin-top:6px;}
+  /* rider + template editors */
+  .rv-name{font-size:22px;margin-top:14px;}
+  .rv-info{color:var(--muted);font-size:14px;margin:4px 0 6px;}
+  .weeknav{display:flex;align-items:center;gap:10px;margin:16px 0 6px;}
+  .weeknav b{flex:1 1 auto;text-align:center;font-size:15px;}
+  .weeknav .ghost{width:44px;height:40px;font-size:20px;padding:0;}
+  .dayrow{display:grid;grid-template-columns:52px minmax(0,1fr) 92px;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--char-3);}
+  .dayrow .dlab{font-size:13px;font-weight:600;}
+  .dayrow select,.dayrow input{padding:9px 10px;font-size:15px;}
+  .dmin{display:flex;align-items:center;gap:4px;min-width:0;}
+  .dmin input{min-width:0;width:100%;}
+  .dmin small{font-size:12px;color:var(--muted);}
+  .dayrow .dnote{grid-column:2 / -1;font-size:14px;padding:8px 10px;}
+  .dref{grid-column:2 / -1;font-size:13px;color:var(--good);}
+  .dref.skipped{color:var(--muted);}
+  .check{display:flex;gap:10px;align-items:center;font-size:14px;margin-top:14px;}
+  .check input{width:20px;height:20px;accent-color:var(--yellow);}
+  .ghost.wide{display:block;width:100%;margin-top:10px;padding:11px;font-size:15px;}
+  .ghost.danger{color:var(--bad);border-color:rgba(255,138,115,.35);}
+  .assign{margin-top:26px;padding-top:16px;border-top:1px solid var(--char-3);}
+  .assign h3{font-family:'Archivo',sans-serif;font-size:16px;margin:0 0 10px;}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+  input[type=date]{width:100%;background:var(--char-2);border:1px solid var(--char-3);border-radius:10px;padding:12px 13px;font-size:16px;color-scheme:dark;}
+  .inline{display:flex;align-items:center;gap:8px;font-size:14px;}
+  .inline select{width:auto;padding:8px 10px;}
+  .weekbtns{display:flex;gap:6px;justify-content:flex-end;}
+  .weekbtns .ghost{padding:8px 12px;}
+  .stephead,.steprow{display:grid;grid-template-columns:1fr 70px 128px 34px 34px;gap:6px;align-items:center;}
+  .stephead{font-size:12px;color:var(--muted);margin-bottom:4px;}
+  .stephead span:last-child{grid-column:3;}
+  .steprow{margin-bottom:6px;}
+  .steprow input,.steprow select{padding:9px 8px;font-size:14px;}
+  .steprow .icon{height:38px;border:1px solid var(--char-3);background:var(--char-2);border-radius:8px;cursor:pointer;color:var(--grey);}
+  .steprow .icon:disabled{opacity:.3;}
+  @media (max-width:430px){
+    /* a step on two lines: name / zone + minutes + buttons */
+    .stephead{display:none;}
+    .steprow{grid-template-columns:minmax(0,1fr) 64px 34px 34px;padding-bottom:8px;border-bottom:1px solid var(--char-3);margin-bottom:8px;}
+    .steprow input[type=text]{grid-column:1 / -1;grid-row:1;}
+    .steprow select{grid-column:1;grid-row:2;}
+    .steprow input[type=number]{grid-column:2;grid-row:2;}
+    .steprow .icon{grid-row:2;}
+    .dayrow{grid-template-columns:44px minmax(0,1fr) 84px;}
+    .dmin small{display:none;}
+  }
   @media (prefers-reduced-motion:no-preference){ .notif{animation:drop .35s ease-out;} }
   @keyframes drop{from{transform:translateY(-8px);opacity:0}to{transform:none;opacity:1}}
 </style>
@@ -109,8 +179,8 @@
 <div id="lock">
   <form class="lock-card" id="lockForm" novalidate>
     <img src="/logo-rootahead.png" alt="ROOT Ahead">
-    <h1>RA Messages</h1>
-    <p class="muted">Send notifications to the riders who turned them on in ROOT Ahead.</p>
+    <h1>RA Admin</h1>
+    <p class="muted">Messages and training for ROOT Ahead riders.</p>
     <label class="field" for="pw">Admin password</label>
     <input type="password" id="pw" autocomplete="current-password">
     <button class="go" type="submit" id="unlockBtn">Unlock</button>
@@ -121,9 +191,15 @@
 <div class="wrap" id="app" hidden>
   <header class="bar">
     <img src="/logo-rootahead.png" alt="ROOT Ahead">
-    <h1>Messages</h1>
+    <h1>Admin</h1>
     <button class="ghost" type="button" id="lockBtn" title="Forget the password on this phone">Lock</button>
   </header>
+  <nav class="maintabs" role="tablist" aria-label="Sections">
+    <button type="button" role="tab" data-tab="messages" aria-selected="true">Messages</button>
+    <button type="button" role="tab" data-tab="training" aria-selected="false">Training</button>
+  </nav>
+
+  <div id="paneMessages">
 
   <section aria-labelledby="toTitle">
     <h2 id="toTitle">Send to</h2>
@@ -179,6 +255,97 @@
     <h2 id="sentTitle">Sent</h2>
     <ul class="log" id="log"><li class="empty-note">Nothing sent yet.</li></ul>
   </section>
+  </div>
+
+  <div id="paneTraining" hidden>
+    <div class="seg sub" id="trSeg" role="group" aria-label="Training">
+      <button type="button" data-sub="riders" aria-pressed="true">Riders</button>
+      <button type="button" data-sub="workouts" aria-pressed="false">Workouts</button>
+      <button type="button" data-sub="templates" aria-pressed="false">Plan templates</button>
+    </div>
+    <div class="trstatus" id="trStatus" role="status"></div>
+
+    <!-- riders -->
+    <div id="subRiders">
+      <div id="riderListBox">
+        <input type="search" id="riderSearch" placeholder="Search by name or team" aria-label="Search riders" style="margin-top:14px;">
+        <ul class="rlist" id="riderList"></ul>
+      </div>
+      <div id="riderView" hidden>
+        <button class="ghost" type="button" id="rvBack">‹ All riders</button>
+        <h2 class="rv-name" id="rvName"></h2>
+        <p class="rv-info" id="rvInfo"></p>
+        <div id="rvPlanBox" hidden>
+          <label class="field" for="rvNote">Note for the rider (shown above their plan)</label>
+          <textarea id="rvNote" maxlength="600" placeholder="e.g. Keep Tuesday easy if your legs are still tired."></textarea>
+          <div class="weeknav"><button class="ghost" type="button" id="rvPrev" aria-label="Previous week">‹</button><b id="rvWeekLabel"></b><button class="ghost" type="button" id="rvNext" aria-label="Next week">›</button></div>
+          <div id="rvWeek"></div>
+          <label class="check"><input type="checkbox" id="rvNotify" checked> Notify the rider (their app updates right away)</label>
+          <button class="go" type="button" id="rvSave">Save plan</button>
+          <button class="ghost wide" type="button" id="rvToTemplate">Save this plan as a template</button>
+          <div class="result" id="rvResult" role="status"></div>
+        </div>
+        <div class="assign">
+          <h3>Give a plan template</h3>
+          <div class="two"><select id="rvTemplate" aria-label="Template"></select><input type="date" id="rvStart" aria-label="Start date (a Monday)"></div>
+          <button class="ghost wide" type="button" id="rvAssign">Use this template from that week</button>
+          <div class="result" id="rvAssignResult" role="status"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- own workouts -->
+    <div id="subWorkouts" hidden>
+      <div id="woListBox">
+        <button class="ghost wide" type="button" id="woNew" style="margin-top:14px;">+ New workout</button>
+        <ul class="rlist" id="woList"></ul>
+      </div>
+      <div id="woEditor" hidden>
+        <button class="ghost" type="button" id="woBack">‹ All workouts</button>
+        <label class="field" for="woTitle">Name</label>
+        <input type="text" id="woTitle" maxlength="60" placeholder="e.g. 4 × 8 min threshold">
+        <label class="field" for="woAbout">What the rider should know</label>
+        <textarea id="woAbout" maxlength="300" placeholder="e.g. Do the efforts on a flat stretch, stay seated."></textarea>
+        <label class="field">Steps</label>
+        <div class="stephead"><span>Name</span><span>Min</span><span>Zone</span></div>
+        <div id="woSteps"></div>
+        <div class="two"><button class="ghost" type="button" id="woAdd">+ Step</button><button class="ghost" type="button" id="woRepeat">+ Intervals…</button></div>
+        <div class="profile" id="woProfile" aria-hidden="true"></div>
+        <div class="total" id="woTotal"></div>
+        <button class="go" type="button" id="woSave">Save workout</button>
+        <button class="ghost wide danger" type="button" id="woDelete" hidden>Delete workout</button>
+        <div class="result" id="woResult" role="status"></div>
+      </div>
+    </div>
+
+    <!-- plan templates -->
+    <div id="subTemplates" hidden>
+      <div id="tplListBox">
+        <button class="ghost wide" type="button" id="tplNew" style="margin-top:14px;">+ New plan template</button>
+        <ul class="rlist" id="tplList"></ul>
+      </div>
+      <div id="tplEditor" hidden>
+        <button class="ghost" type="button" id="tplBack">‹ All templates</button>
+        <label class="field" for="tplName">Name</label>
+        <input type="text" id="tplName" maxlength="60" placeholder="e.g. Winter base, 8 weeks">
+        <label class="field" for="tplAbout">Note for riders who get this plan</label>
+        <textarea id="tplAbout" maxlength="300"></textarea>
+        <div class="weeknav"><button class="ghost" type="button" id="tplPrev" aria-label="Previous week">‹</button><b id="tplWeekLabel"></b><button class="ghost" type="button" id="tplNext" aria-label="Next week">›</button></div>
+        <div class="two"><label class="inline">Phase <select id="tplPhase"><option value="base">Base</option><option value="build">Build</option><option value="peak">Peak</option><option value="recovery">Recovery</option><option value="taper">Taper</option></select></label>
+          <span class="weekbtns"><button class="ghost" type="button" id="tplAddWeek">+ Week</button><button class="ghost" type="button" id="tplRemoveWeek">− Week</button></span></div>
+        <div id="tplWeek"></div>
+        <button class="go" type="button" id="tplSave">Save template</button>
+        <button class="ghost wide danger" type="button" id="tplDelete" hidden>Delete template</button>
+        <div class="result" id="tplResult" role="status"></div>
+        <div class="assign">
+          <h3>Give this plan to a rider</h3>
+          <div class="two"><select id="tplRider" aria-label="Rider"></select><input type="date" id="tplStart" aria-label="Start date (a Monday)"></div>
+          <button class="ghost wide" type="button" id="tplAssign">Save and give to this rider</button>
+          <div class="result" id="tplAssignResult" role="status"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -201,7 +368,7 @@
   function reachable(){ return users.filter(function(u){ return u.pushEnabled; }); }
 
   /* ---- lock / unlock (password remembered on this phone, like Blendroom) ---- */
-  function showApp(){ $('lock').hidden = true; $('app').hidden = false; loadAll(); }
+  function showApp(){ $('lock').hidden = true; $('app').hidden = false; loadAll(); if (location.hash === '#training') setTimeout(function(){ showMainTab('training'); }, 0); }
   function showLock(msg){ $('app').hidden = true; $('lock').hidden = false; $('lockErr').textContent = msg || ''; $('pw').value = ''; }
   $('lockForm').addEventListener('submit', function(e){
     e.preventDefault();
@@ -349,6 +516,588 @@
       return api('/api/admin-message').then(function(r2){ if (r2.ok) renderLog(r2.data.messages || []); });
     }).catch(function(){ $('count').textContent = 'No connection. Pull down or reopen to try again.'; });
   }
+
+  /*@@TRAIN_CORE_START@@*/
+  /* ================= TRAIN: plan generator + workout library =================
+     The app suggests a plan from the rider's goal, hours, days and level;
+     the coach can change any day in Admin → Training. Plans are periodised:
+     Base → Build → Peak → Taper (when there is an event), with an easier
+     recovery week every 4th week. Targets use power zones (% of FTP) when an
+     FTP is known, otherwise effort (RPE 1–10). */
+  var TRAIN_ZONES = {
+    Z1: { name:'Recovery',  pct:[0,55],    rpe:'2/10, very easy',          color:'#6f8fa6' },
+    Z2: { name:'Endurance', pct:[56,75],   rpe:'3–4/10, you can chat',      color:'#6b9c5b' },
+    Z3: { name:'Tempo',     pct:[76,87],   rpe:'5–6/10, short sentences',   color:'#c9b04a' },
+    SS: { name:'Sweet spot',pct:[88,94],   rpe:'7/10, a few words',         color:'#e09a3c' },
+    Z4: { name:'Threshold', pct:[95,105],  rpe:'8/10, hard but steady',     color:'#c1611d' },
+    Z5: { name:'VO2max',    pct:[106,120], rpe:'9/10, very hard',           color:'#a13a2f' },
+    Z6: { name:'Sprint',    pct:[121,200], rpe:'10/10, all out',            color:'#7e2a5a' }
+  };
+  var TRAIN_TYPES = {
+    rest:   { title:'Rest day',         zone:null, about:'No riding. Recovery is where you get stronger.' },
+    rec:    { title:'Recovery spin',    zone:'Z1', about:'Very easy spinning to loosen the legs. Flat route, light gear.' },
+    end:    { title:'Endurance ride',   zone:'Z2', about:'Steady aerobic riding. Keep it conversational the whole way.' },
+    long:   { title:'Long ride',        zone:'Z2', about:'Your longest ride of the week. Steady, eat and drink every 20–30 minutes.' },
+    tempo:  { title:'Tempo',            zone:'Z3', about:'Blocks of comfortably hard riding. Builds aerobic power.' },
+    ss:     { title:'Sweet spot',       zone:'SS', about:'Just under threshold: the most efficient way to raise your FTP.' },
+    thr:    { title:'Threshold',        zone:'Z4', about:'Long efforts at the edge of what you can hold for an hour.' },
+    vo2:    { title:'VO2max intervals', zone:'Z5', about:'Short, very hard efforts. Raises your ceiling.' },
+    hills:  { title:'Hill repeats',     zone:'Z5', about:'Hard climbs, easy descents. Pick a 2–4 minute climb.' },
+    sprint: { title:'Openers',          zone:'Z6', about:'Short ride with a few sharp efforts to wake the legs before an event.' },
+    event:  { title:'Event day',        zone:'Z4', about:'Race or event day. Warm up well and enjoy it.' }
+  };
+  var TRAIN_TYPE_ORDER = ['rest','rec','end','long','tempo','ss','thr','vo2','hills','sprint','event'];
+  var TRAIN_GOALS = { fitness:'General fitness', endurance:'Longer rides', race:'Race / event', climb:'Climbing' };
+  var TRAIN_PHASES = { base:'Base', build:'Build', peak:'Peak', recovery:'Recovery', taper:'Taper' };
+  var TRAIN_DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  function tIso(dt){ return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0'); }
+  function tParse(s){ var p = String(s).split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function tAddDays(s, n){ var d = tParse(s); d.setDate(d.getDate() + n); return tIso(d); }
+  function tMonday(dt){ var d = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d; }
+  function tRound5(x){ return Math.max(0, Math.round(x / 5) * 5); }
+  function tClamp(x, a, b){ return Math.max(a, Math.min(b, x)); }
+
+  // Steps of a workout: [{label, min, zone}]
+  function trainSteps(type, min){
+    if (type === 'rest' || !min) return [];
+    if (type === 'rec') return [{ label:'Easy spin', min:min, zone:'Z1' }];
+    if (type === 'end' || type === 'long'){
+      var s = [{ label:'Warm-up', min:10, zone:'Z1' }, { label:'Steady endurance', min:Math.max(5, min - 15), zone:'Z2' }, { label:'Cool-down', min:5, zone:'Z1' }];
+      if (type === 'long' && min >= 150){ s[1].min -= 20; s.splice(2, 0, { label:'Finish with tempo', min:20, zone:'Z3' }); }
+      return s;
+    }
+    if (type === 'event') return [{ label:'Warm-up', min:20, zone:'Z2' }, { label:'Event', min:Math.max(10, min - 20), zone:'Z4' }];
+    var main = { tempo:{ on:15, off:5, zone:'Z3', lo:1, hi:4 }, ss:{ on:12, off:5, zone:'SS', lo:2, hi:5 },
+                 thr:{ on:min >= 80 ? 20 : 12, off:8, zone:'Z4', lo:2, hi:3 }, vo2:{ on:4, off:4, zone:'Z5', lo:3, hi:6 },
+                 hills:{ on:3, off:4, zone:'Z5', lo:4, hi:8 }, sprint:{ on:1, off:3, zone:'Z4', lo:3, hi:3 } }[type];
+    var wu = 15, cd = 10, room = min - wu - cd;
+    var reps = tClamp(Math.floor((room + main.off) / (main.on + main.off)), main.lo, main.hi);
+    var steps = [{ label:'Warm-up', min:wu, zone:'Z2' }];
+    for (var i = 0; i < reps; i++){
+      steps.push({ label:(type === 'hills' ? 'Climb ' : 'Effort ') + (i + 1) + ' of ' + reps, min:main.on, zone:main.zone });
+      if (i < reps - 1) steps.push({ label:type === 'hills' ? 'Easy descent' : 'Easy', min:main.off, zone:'Z1' });
+    }
+    if (type === 'sprint') steps.push({ label:'3 × 15 s sprint, 2 min easy between', min:7, zone:'Z6' });
+    var used = steps.reduce(function(t, x){ return t + x.min; }, 0) + cd;
+    if (min - used >= 5) steps.push({ label:'Endurance', min:min - used, zone:'Z2' });
+    else if (min - used > 0) cd += min - used;
+    steps.push({ label:'Cool-down', min:cd, zone:'Z1' });
+    return steps;
+  }
+  function trainTarget(zone, ftp){
+    var z = TRAIN_ZONES[zone]; if (!z) return '';
+    if (ftp > 0){
+      var lo = Math.round(ftp * z.pct[0] / 100), hi = Math.round(ftp * z.pct[1] / 100);
+      return zone === 'Z1' ? 'under ' + hi + ' W' : zone === 'Z6' ? 'over ' + lo + ' W' : lo + '–' + hi + ' W';
+    }
+    return 'effort ' + z.rpe;
+  }
+
+  // The suggestion. s = { goal, hours, days:[0..6] (0 = Monday), level, eventDate, eventName, ftp }
+  function generateTrainPlan(s, today){
+    today = today || new Date();
+    var start = tIso(tMonday(today));
+    var weeks = 8, hasEvent = /^\d{4}-\d{2}-\d{2}$/.test(s.eventDate || '') && s.eventDate >= tIso(today);
+    if (hasEvent){
+      var span = Math.round((tParse(s.eventDate) - tParse(start)) / 86400000);
+      if (span >= 16 * 7) hasEvent = false, weeks = 16;   // event further than 16 weeks: plan the first 16, taper comes in a later plan
+      else weeks = Math.floor(span / 7) + 1;               // the plan ends with the event week
+    }
+    // phases
+    var phases = [];
+    for (var w = 0; w < weeks; w++) phases.push('base');
+    if (hasEvent){
+      var peakN = weeks >= 8 ? 2 : weeks >= 3 ? 1 : 0, rest = Math.max(0, weeks - 1 - peakN), buildN = weeks <= 3 ? rest : Math.round(rest * 0.45);
+      for (w = 0; w < weeks; w++){
+        phases[w] = w === weeks - 1 ? 'taper' : w >= weeks - 1 - peakN ? 'peak' : w >= weeks - 1 - peakN - buildN ? 'build' : 'base';
+      }
+    } else {
+      for (w = Math.ceil(weeks / 2); w < weeks; w++) phases[w] = 'build';
+    }
+    for (w = 3; w < weeks; w += 4) if (phases[w] !== 'taper' && phases[w] !== 'peak') phases[w] = 'recovery';
+    if (s.recoveryFirst && weeks > 1) phases[0] = 'recovery';   // just after an event: start easy
+
+    var avail = (s.days || []).slice().sort(function(a, b){ return a - b; });
+    if (!avail.length) avail = [1, 3, 5];
+    var longDay = avail.indexOf(6) !== -1 ? 6 : avail.indexOf(5) !== -1 ? 5 : avail[avail.length - 1];
+    var others = avail.filter(function(d){ return d !== longDay; });
+    var kBase = { beginner:1, intermediate:2, advanced:3 }[s.level] || 2;
+    var longCap = s.level === 'beginner' ? 180 : s.level === 'advanced' ? 330 : 270;
+    var picks = {
+      base:  { fitness:['tempo','ss','end'], endurance:['tempo','ss','end'], race:['ss','tempo','thr'], climb:['tempo','ss','hills'] },
+      build: { fitness:['ss','tempo','vo2'], endurance:['ss','tempo','thr'], race:['thr','vo2','ss'], climb:['hills','thr','ss'] },
+      peak:  { fitness:['vo2','ss','tempo'], endurance:['thr','ss','tempo'], race:['vo2','thr','hills'], climb:['hills','vo2','thr'] }
+    };
+    var days = [];
+    for (w = 0; w < weeks; w++){
+      var ph = phases[w], weekStart = tAddDays(start, w * 7);
+      var factor = ph === 'recovery' ? 0.65 : ph === 'taper' ? 0.55 : ph === 'peak' ? 1.05 : 1 + 0.05 * (w % 4);
+      var W = (s.hours || 5) * 60 * factor;
+      var k = ph === 'recovery' || ph === 'taper' ? 1 : Math.min(kBase, Math.max(0, others.length - (others.length > 2 ? 1 : 0)));
+      // spread hard days: every other available day, never the day before the long ride
+      var hardDays = [], pool = others.filter(function(d){ return d !== longDay - 1 || others.length <= 2; });
+      function nextTo(d){ return hardDays.some(function(h){ return Math.abs(h - d) === 1; }) || Math.abs(d - longDay) === 1; }
+      pool.forEach(function(d){ if (hardDays.length < k && !nextTo(d)) hardDays.push(d); });          // 1st choice: a free day either side
+      pool.forEach(function(d){ if (hardDays.length < k && hardDays.indexOf(d) === -1 && !hardDays.some(function(h){ return Math.abs(h - d) === 1; })) hardDays.push(d); });
+      while (hardDays.length < k){   // last resort: the day touching the fewest hard days
+        var cand = pool.filter(function(d){ return hardDays.indexOf(d) === -1; });
+        if (!cand.length) break;
+        cand.sort(function(a, b){
+          var na = hardDays.filter(function(h){ return Math.abs(h - a) === 1; }).length, nb = hardDays.filter(function(h){ return Math.abs(h - b) === 1; }).length;
+          return na - nb;
+        });
+        hardDays.push(cand[0]);
+      }
+      hardDays.sort(function(a, b){ return a - b; });
+      var list = ((picks[ph] || picks.base)[s.goal] || picks.base.fitness).filter(function(t){ return t !== 'end' || hardDays.length >= 3; });
+      var hardMin = tClamp(tRound5(W * 0.17), 45, s.level === 'beginner' ? 75 : 100);
+      var easy = others.filter(function(d){ return hardDays.indexOf(d) === -1; });
+      var remaining = Math.max(60, W - hardMin * hardDays.length);
+      var easyMin = easy.length ? remaining / (easy.length + 1.6) : 0;           // long ride ≈ 1.6 × an easy ride
+      var longMin = tClamp(tRound5(remaining - easyMin * easy.length), 60, longCap);
+      if (easy.length) easyMin = tClamp(tRound5((remaining - longMin) / easy.length), 30, Math.min(150, Math.max(30, longMin - 15)));
+      for (var d = 0; d < 7; d++){
+        var date = tAddDays(weekStart, d), item = { d:date, type:'rest', min:0 };
+        if (hasEvent && date > s.eventDate){ days.push(item); continue; }
+        if (hasEvent && date === s.eventDate){ item.type = 'event'; item.min = 120; if (s.eventName) item.note = s.eventName; days.push(item); continue; }
+        if (avail.indexOf(d) !== -1){
+          if (ph === 'taper' && hasEvent){
+            var toEvent = Math.round((tParse(s.eventDate) - tParse(date)) / 86400000);
+            if (toEvent === 1){ item.type = 'sprint'; item.min = 45; }
+            else if (d === hardDays[0] && toEvent > 2){ item.type = 'thr'; item.min = 60; }
+            else { item.type = 'rec'; item.min = 40; }
+          } else if (d === longDay){ item.type = 'long'; item.min = longMin; }
+          else if (hardDays.indexOf(d) !== -1){
+            item.type = ph === 'recovery' ? 'tempo' : list[(hardDays.indexOf(d) + w) % list.length];
+            if (item.type === 'end' && ph !== 'recovery'){ item.min = easyMin || hardMin; days.push(item); continue; }
+            item.min = ph === 'recovery' ? 50 : hardMin;
+          } else if (ph === 'recovery' || easyMin < 40){ item.type = 'rec'; item.min = ph === 'recovery' ? 40 : Math.max(30, easyMin); }
+          else { item.type = 'end'; item.min = easyMin; }
+        }
+        days.push(item);
+      }
+    }
+    return { v:1, start:start, days:days, phases:phases, settings:s, source:'app', coachNote:'', generatedAt:new Date().toISOString(), adjustedAt:'' };
+  }
+  function trainWeekTotals(plan, w, log){
+    var planned = 0, done = 0;
+    plan.days.slice(w * 7, w * 7 + 7).forEach(function(x){
+      if (x.type === 'rest') return;
+      planned += x.min;
+      if (log && log[x.d] && log[x.d].status === 'done') done += x.min;
+    });
+    return { planned:planned, done:done };
+  }
+  function trainHours(min){ var h = Math.floor(min / 60), m = min % 60; return h ? h + 'h' + (m ? String(m).padStart(2, '0') : '') : m + ' min'; }
+
+  // ---- days that hold a coach workout (type 'custom' with a copy of the workout) ----
+  var ZONE_ORDER = ['Z1','Z2','Z3','SS','Z4','Z5','Z6'];
+  function topZone(steps){   // the hardest zone held for at least 2 minutes in total
+    var t = {}; (steps || []).forEach(function(s){ t[s.zone] = (t[s.zone] || 0) + s.min; });
+    for (var i = ZONE_ORDER.length - 1; i >= 0; i--) if ((t[ZONE_ORDER[i]] || 0) >= 2) return ZONE_ORDER[i];
+    return 'Z2';
+  }
+  function dayInfo(day){
+    if (day && day.type === 'custom' && day.custom) return { title: day.custom.title, zone: topZone(day.custom.steps), about: day.custom.about || 'A workout from your coach.' };
+    return TRAIN_TYPES[day && day.type] || TRAIN_TYPES.rest;
+  }
+  function daySteps(day){ return day.type === 'custom' && day.custom ? day.custom.steps : trainSteps(day.type, day.min); }
+  function stepsMinutes(steps){ return Math.round((steps || []).reduce(function(t, s){ return t + (Number(s.min) || 0); }, 0)); }
+
+  /*@@TRAIN_CORE_END@@*/
+
+  /* ======================= TRAINING (coach) ======================= */
+  var TR = { users:[], plans:{}, lib:{ workouts:[], templates:[] }, sub:'riders',
+             rider:null, plan:null, log:{}, week:0,      // rider being edited
+             wo:null,                                      // workout being edited
+             tpl:null, tplWeek:0 };                        // template being edited
+
+  function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function riderName(u){ return ((u.firstName || '') + ' ' + (u.lastName || '')).trim() || 'Unnamed device'; }
+  function nextMonday(){ var d = tMonday(new Date()); d.setDate(d.getDate() + 7); return tIso(d); }
+  function trMsg(id, text, bad){ var e = $(id); e.textContent = text || ''; e.classList.toggle('bad', !!bad); }
+
+  // ---------- main tabs: Messages | Training ----------
+  function showMainTab(name){
+    Array.prototype.forEach.call(document.querySelectorAll('.maintabs button'), function(b){ b.setAttribute('aria-selected', String(b.dataset.tab === name)); });
+    $('paneMessages').hidden = name !== 'messages'; $('paneTraining').hidden = name !== 'training';
+    try{ history.replaceState(null, '', name === 'training' ? '#training' : '#messages'); }catch(e){}
+    if (name === 'training') loadTraining();
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.maintabs button'), function(b){ b.addEventListener('click', function(){ showMainTab(b.dataset.tab); }); });
+
+  function showSub(name){
+    TR.sub = name;
+    Array.prototype.forEach.call(document.querySelectorAll('#trSeg button'), function(b){ b.setAttribute('aria-pressed', String(b.dataset.sub === name)); });
+    $('subRiders').hidden = name !== 'riders'; $('subWorkouts').hidden = name !== 'workouts'; $('subTemplates').hidden = name !== 'templates';
+    if (name === 'riders'){ $('riderView').hidden = true; $('riderListBox').hidden = false; renderRiders(); }
+    if (name === 'workouts'){ $('woEditor').hidden = true; $('woListBox').hidden = false; renderWorkouts(); }
+    if (name === 'templates'){ $('tplEditor').hidden = true; $('tplListBox').hidden = false; renderTemplates(); }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('#trSeg button'), function(b){ b.addEventListener('click', function(){ showSub(b.dataset.sub); }); });
+
+  function loadTraining(){
+    trMsg('trStatus', 'Loading…');
+    return Promise.all([ api('/api/admin-users'), api('/api/plan?all=1'), api('/api/coach-library') ]).then(function(r){
+      if (r[0].status === 401){ try{ localStorage.removeItem(KEY_STORE); }catch(x){} showLock('Unlock again.'); return; }
+      if (!r[0].ok || !r[1].ok || !r[2].ok){ trMsg('trStatus', ((r[1].data || r[2].data || {}).error) || 'Could not load training data.', true); return; }
+      TR.users = r[0].data.users || [];
+      TR.plans = {}; (r[1].data.riders || []).forEach(function(p){ TR.plans[p.deviceId] = p; });
+      TR.lib = { workouts: r[2].data.workouts || [], templates: r[2].data.templates || [] };
+      trMsg('trStatus', '');
+      showSub(TR.sub);
+    }).catch(function(){ trMsg('trStatus', 'No connection. Try again.', true); });
+  }
+
+  // ---------- shared: workout dropdown (built-in + own workouts) ----------
+  function workoutSelect(day, onChange){
+    var sel = el('select'); sel.setAttribute('aria-label', 'Workout');
+    var g1 = el('optgroup'); g1.label = 'Standard';
+    TRAIN_TYPE_ORDER.forEach(function(k){ var o = el('option', null, TRAIN_TYPES[k].title); o.value = k; g1.appendChild(o); });
+    sel.appendChild(g1);
+    var g2 = el('optgroup'), have = false; g2.label = 'Your workouts';
+    TR.lib.workouts.forEach(function(w){ var o = el('option', null, w.title + ' (' + trainHours(stepsMinutes(w.steps)) + ')'); o.value = 'c:' + w.id; g2.appendChild(o); if (day.wid === w.id) have = true; });
+    if (day.type === 'custom' && day.custom && !have){ var o2 = el('option', null, day.custom.title + ' (saved copy)'); o2.value = 'c:' + (day.wid || 'copy'); g2.appendChild(o2); }
+    if (g2.children.length) sel.appendChild(g2);
+    sel.value = day.type === 'custom' ? 'c:' + (day.wid || 'copy') : (day.type || 'rest');
+    sel.addEventListener('change', function(){
+      var v = sel.value;
+      if (v.indexOf('c:') === 0){
+        var w = TR.lib.workouts.filter(function(x){ return 'c:' + x.id === v; })[0];
+        if (w){ day.type = 'custom'; day.wid = w.id; day.custom = { title: w.title, about: w.about || '', steps: JSON.parse(JSON.stringify(w.steps)) }; day.min = stepsMinutes(w.steps); }
+      } else {
+        delete day.wid; delete day.custom; day.type = v;
+        if (v === 'rest') day.min = 0; else if (!day.min) day.min = { rec:40, end:90, long:150, event:120, sprint:45 }[v] || 75;
+      }
+      onChange();
+    });
+    return sel;
+  }
+  // one editable day row (used for riders and templates)
+  function dayRow(day, label, onChange, logEntry){
+    var row = el('div', 'dayrow');
+    row.appendChild(el('span', 'dlab', label));
+    row.appendChild(workoutSelect(day, onChange));
+    var mins = el('input'); mins.type = 'number'; mins.min = 0; mins.max = 480; mins.step = 5; mins.value = day.min || 0;
+    mins.setAttribute('aria-label', 'Minutes'); mins.disabled = day.type === 'rest' || day.type === 'custom';
+    mins.addEventListener('input', function(){ day.min = Math.max(0, Math.min(480, Math.round(+mins.value || 0))); });
+    var minWrap = el('span', 'dmin'); minWrap.appendChild(mins); minWrap.appendChild(el('small', null, 'min'));
+    row.appendChild(minWrap);
+    var note = el('input'); note.type = 'text'; note.maxLength = 200; note.placeholder = 'Note for the rider (optional)'; note.value = day.note || '';
+    note.addEventListener('input', function(){ if (note.value.trim()) day.note = note.value.trim(); else delete day.note; });
+    note.className = 'dnote'; row.appendChild(note);
+    if (logEntry){
+      var r = el('div', 'dref ' + logEntry.status);
+      r.textContent = logEntry.status === 'done' ? '✓ Done' + (logEntry.score ? ' · ' + logEntry.score + '/10 · “' + logEntry.text + '”' : '') : 'Skipped';
+      row.appendChild(r);
+    }
+    return row;
+  }
+
+  // ---------- RIDERS ----------
+  function renderRiders(){
+    var ul = $('riderList'), q = $('riderSearch').value.trim().toLowerCase();
+    ul.innerHTML = '';
+    var ids = {}; TR.users.forEach(function(u){ ids[u.deviceId] = u; });
+    Object.keys(TR.plans).forEach(function(id){ if (!ids[id]) ids[id] = { deviceId:id, firstName:TR.plans[id].firstName, lastName:TR.plans[id].lastName, team:TR.plans[id].team }; });
+    var list = Object.keys(ids).map(function(id){ return ids[id]; })
+      .filter(function(u){ return u.firstName || u.lastName || TR.plans[u.deviceId]; })
+      .filter(function(u){ return !q || (riderName(u) + ' ' + (u.team || '')).toLowerCase().indexOf(q) !== -1; })
+      .sort(function(a, b){ return riderName(a).localeCompare(riderName(b)); });
+    if (!list.length){ ul.appendChild(el('li', 'empty-note', TR.users.length ? 'Nobody matches that search.' : 'No riders yet.')); return; }
+    list.forEach(function(u){
+      var p = TR.plans[u.deviceId];
+      var li = el('li', 'rrow'); li.tabIndex = 0; li.setAttribute('role', 'button');
+      var main = el('div', 'rmain');
+      main.appendChild(el('b', null, riderName(u)));
+      var sub = el('span', 'rsub');
+      sub.textContent = (u.team || 'No team') + ' · ' + (!p ? 'no plan yet' : p.ended ? 'plan ended ' + p.endDate : (p.templateName ? p.templateName : TRAIN_GOALS[p.goal] || 'plan') + (p.source === 'coach' ? ' (adjusted)' : ''));
+      main.appendChild(sub);
+      if (p && p.lastReflection) main.appendChild(el('span', 'rref', p.lastReflection.score + '/10 · “' + p.lastReflection.text + '”'));
+      li.appendChild(main);
+      var side = el('div', 'rside');
+      if (p){ side.appendChild(el('b', null, p.done + '/' + p.due)); side.appendChild(el('small', null, p.avgScore != null ? 'score ' + p.avgScore : 'done')); }
+      li.appendChild(side);
+      li.addEventListener('click', function(){ openRider(u); });
+      li.addEventListener('keydown', function(e){ if (e.key === 'Enter') openRider(u); });
+      ul.appendChild(li);
+    });
+  }
+  $('riderSearch').addEventListener('input', renderRiders);
+
+  function openRider(u){
+    TR.rider = u; TR.plan = null; TR.log = {};
+    $('riderListBox').hidden = true; $('riderView').hidden = false;
+    $('rvName').textContent = riderName(u);
+    $('rvInfo').textContent = 'Loading…';
+    $('rvPlanBox').hidden = true; trMsg('rvResult', '');
+    // template picker
+    var sel = $('rvTemplate'); sel.innerHTML = '';
+    if (!TR.lib.templates.length){ var o = el('option', null, 'No templates yet: make one under Plan templates'); o.value = ''; sel.appendChild(o); }
+    TR.lib.templates.forEach(function(t){ var o = el('option', null, t.name + ' (' + t.weeks.length + ' wk)'); o.value = t.id; sel.appendChild(o); });
+    $('rvAssign').disabled = !TR.lib.templates.length;
+    $('rvStart').value = nextMonday();
+    api('/api/plan?deviceId=' + encodeURIComponent(u.deviceId)).then(function(res){
+      if (!res.ok){ $('rvInfo').textContent = (res.data && res.data.error) || 'Could not load the plan.'; return; }
+      TR.log = res.data.log || {};
+      if (!res.data.plan){ $('rvInfo').textContent = (u.team || 'No team') + ' · no plan yet. Give this rider a plan template below, or ask them to make one under Train.'; return; }
+      TR.plan = JSON.parse(JSON.stringify(res.data.plan));
+      var s = TR.plan.settings || {}, last = TR.plan.days.length ? TR.plan.days[TR.plan.days.length - 1].d : '';
+      $('rvInfo').textContent = (u.team || 'No team') + ' · ' + (TR.plan.templateName ? 'template “' + TR.plan.templateName + '”' : (TRAIN_GOALS[s.goal] || '') + (s.hours ? ', ' + s.hours + ' h/week' : '') + (s.level ? ', ' + s.level : '')) +
+        (s.ftp ? ' · FTP ' + s.ftp + ' W' : '') + (s.eventDate ? ' · ' + (s.eventName || 'event') + ' ' + s.eventDate : '') + ' · ends ' + last +
+        (TR.plan.source === 'coach' ? ' · adjusted by you' : ' · app suggestion');
+      $('rvNote').value = TR.plan.coachNote || '';
+      var n = Math.ceil(TR.plan.days.length / 7), today = tIso(new Date());
+      TR.week = Math.max(0, Math.min(n - 1, Math.floor((tParse(today) - tParse(TR.plan.start)) / (7 * 86400000))));
+      $('rvPlanBox').hidden = false;
+      renderRiderWeek();
+    }).catch(function(){ $('rvInfo').textContent = 'No connection.'; });
+  }
+  function renderRiderWeek(){
+    var p = TR.plan, n = Math.ceil(p.days.length / 7), w = TR.week;
+    var t = trainWeekTotals(p, w, TR.log);
+    $('rvWeekLabel').textContent = 'Week ' + (w + 1) + ' of ' + n + ' · ' + (TRAIN_PHASES[p.phases[w]] || p.phases[w] || '') + ' · ' + trainHours(t.planned) + (t.done ? ' (' + trainHours(t.done) + ' done)' : '');
+    $('rvPrev').disabled = w === 0; $('rvNext').disabled = w >= n - 1;
+    var box = $('rvWeek'); box.innerHTML = '';
+    p.days.slice(w * 7, w * 7 + 7).forEach(function(day){
+      var dt = tParse(day.d);
+      box.appendChild(dayRow(day, TRAIN_DAYS[(dt.getDay() + 6) % 7] + ' ' + dt.getDate() + '/' + (dt.getMonth() + 1), renderRiderWeek, TR.log[day.d]));
+    });
+  }
+  $('rvPrev').addEventListener('click', function(){ TR.week--; renderRiderWeek(); });
+  $('rvNext').addEventListener('click', function(){ TR.week++; renderRiderWeek(); });
+  $('rvBack').addEventListener('click', function(){ showSub('riders'); });
+  function savePlanFor(deviceId, plan, replace, resultId){
+    trMsg(resultId, 'Saving…');
+    return api('/api/plan', { method:'PUT', headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ deviceId: deviceId, plan: plan, notify: $('rvNotify').checked, replace: !!replace }) })
+      .then(function(res){
+        if (!res.ok){ trMsg(resultId, (res.data && res.data.error) || 'Could not save.', true); return false; }
+        trMsg(resultId, 'Saved.' + ($('rvNotify').checked ? (res.data.notified ? ' The rider got a notification and their app updates.' : ' No notification: the rider has not turned notifications on (their app updates when they open Train).') : ''));
+        return res.data.plan;
+      }).catch(function(){ trMsg(resultId, 'No connection. Not saved.', true); return false; });
+  }
+  $('rvSave').addEventListener('click', function(){
+    if (!TR.plan) return;
+    TR.plan.coachNote = $('rvNote').value.trim().slice(0, 600);
+    var btn = this; btn.disabled = true;
+    savePlanFor(TR.rider.deviceId, TR.plan, false, 'rvResult').then(function(p){ btn.disabled = false; if (p){ TR.plan = p; loadTrainingQuiet(); } });
+  });
+  // a template becomes a real plan for one rider, starting on a Monday
+  function planFromTemplate(t, startIso, existing){
+    var start = tIso(tMonday(tParse(startIso))), days = [], phases = [];
+    t.weeks.forEach(function(w, wi){
+      phases.push(w.phase || 'base');
+      w.days.forEach(function(d, di){
+        var day = { d: tAddDays(start, wi * 7 + di), type: d.type, min: d.min || 0 };
+        if (d.note) day.note = d.note;
+        if (d.type === 'custom'){ day.wid = d.wid; day.custom = JSON.parse(JSON.stringify(d.custom)); day.min = stepsMinutes(d.custom.steps); }
+        days.push(day);
+      });
+    });
+    var s = (existing && existing.settings) ? JSON.parse(JSON.stringify(existing.settings)) : {};
+    var total = days.reduce(function(a, x){ return a + (x.type === 'rest' ? 0 : x.min); }, 0);
+    s.hours = Math.round(total / 60 / t.weeks.length); s.eventDate = ''; s.eventName = ''; s.recoveryFirst = false;
+    return { v:1, start: start, days: days, phases: phases, settings: s, templateName: t.name, coachNote: t.about || '', source:'coach', generatedAt: new Date().toISOString() };
+  }
+  $('rvAssign').addEventListener('click', function(){
+    var t = TR.lib.templates.filter(function(x){ return x.id === $('rvTemplate').value; })[0];
+    if (!t) return;
+    var start = $('rvStart').value || nextMonday();
+    if (TR.plan && !confirm('Replace ' + riderName(TR.rider) + '’s current plan with “' + t.name + '” from ' + start + '? The current plan is kept in their history.')) return;
+    var btn = this; btn.disabled = true;
+    savePlanFor(TR.rider.deviceId, planFromTemplate(t, start, TR.plan), true, 'rvAssignResult').then(function(p){
+      btn.disabled = false;
+      if (p){ loadTrainingQuiet().then(function(){ openRider(TR.rider); trMsg('rvResult', '“' + t.name + '” is now ' + riderName(TR.rider) + '’s plan.'); }); }
+    });
+  });
+  $('rvToTemplate').addEventListener('click', function(){
+    if (!TR.plan) return;
+    var name = prompt('Name for this template:', (TR.plan.templateName || TRAIN_GOALS[(TR.plan.settings || {}).goal] || 'Plan') + ' (' + Math.ceil(TR.plan.days.length / 7) + ' weeks)');
+    if (!name) return;
+    var weeks = [];
+    for (var w = 0; w * 7 < TR.plan.days.length; w++){
+      weeks.push({ phase: TR.plan.phases[w] || 'base', days: TR.plan.days.slice(w * 7, w * 7 + 7).map(function(d){
+        var x = { type: d.type, min: d.min }; if (d.note) x.note = d.note; if (d.type === 'custom'){ x.wid = d.wid; x.custom = d.custom; } return x; }) });
+    }
+    saveLibrary('template', { name: name, about: $('rvNote').value.trim(), weeks: weeks }, 'rvResult').then(function(item){ if (item) trMsg('rvResult', 'Saved as template “' + item.name + '”. Find it under Plan templates.'); });
+  });
+  function loadTrainingQuiet(){
+    return Promise.all([ api('/api/plan?all=1'), api('/api/coach-library') ]).then(function(r){
+      if (r[0].ok){ TR.plans = {}; (r[0].data.riders || []).forEach(function(p){ TR.plans[p.deviceId] = p; }); }
+      if (r[1].ok) TR.lib = { workouts: r[1].data.workouts || [], templates: r[1].data.templates || [] };
+    });
+  }
+  function saveLibrary(kind, item, resultId){
+    trMsg(resultId, 'Saving…');
+    return api('/api/coach-library', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ kind: kind, item: item }) })
+      .then(function(res){
+        if (!res.ok){ trMsg(resultId, (res.data && res.data.error) || 'Could not save.', true); return null; }
+        return loadTrainingQuiet().then(function(){ trMsg(resultId, 'Saved.'); return res.data.item; });
+      }).catch(function(){ trMsg(resultId, 'No connection. Not saved.', true); return null; });
+  }
+  function deleteLibrary(kind, id, resultId){
+    return api('/api/coach-library', { method:'DELETE', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ kind: kind, id: id }) })
+      .then(function(res){ if (!res.ok){ trMsg(resultId, (res.data && res.data.error) || 'Could not delete.', true); return false; } return loadTrainingQuiet().then(function(){ return true; }); });
+  }
+
+  // ---------- WORKOUTS ----------
+  function profileInto(box, steps){
+    box.innerHTML = '';
+    steps.forEach(function(st){
+      var i = el('i'); i.style.flex = (st.min || 0.1) + ' 1 0'; i.style.background = TRAIN_ZONES[st.zone].color;
+      i.style.height = { Z1:22, Z2:40, Z3:56, SS:66, Z4:76, Z5:90, Z6:100 }[st.zone] + '%'; box.appendChild(i);
+    });
+  }
+  function renderWorkouts(){
+    var ul = $('woList'); ul.innerHTML = '';
+    if (!TR.lib.workouts.length){ ul.appendChild(el('li', 'empty-note', 'No own workouts yet. They appear in the workout list when you adjust a plan.')); return; }
+    TR.lib.workouts.forEach(function(w){
+      var li = el('li', 'rrow'); li.tabIndex = 0; li.setAttribute('role', 'button');
+      var main = el('div', 'rmain'); main.appendChild(el('b', null, w.title));
+      main.appendChild(el('span', 'rsub', trainHours(stepsMinutes(w.steps)) + ' · ' + w.steps.length + ' steps · ' + TRAIN_ZONES[topZone(w.steps)].name));
+      var pr = el('div', 'miniprofile'); profileInto(pr, w.steps); main.appendChild(pr);
+      li.appendChild(main);
+      li.addEventListener('click', function(){ editWorkout(w); });
+      li.addEventListener('keydown', function(e){ if (e.key === 'Enter') editWorkout(w); });
+      ul.appendChild(li);
+    });
+  }
+  function editWorkout(w){
+    TR.wo = w ? JSON.parse(JSON.stringify(w)) : { title:'', about:'', steps:[ { label:'Warm-up', min:15, zone:'Z2' }, { label:'Effort', min:10, zone:'SS' }, { label:'Cool-down', min:10, zone:'Z1' } ] };
+    $('woListBox').hidden = true; $('woEditor').hidden = false;
+    $('woTitle').value = TR.wo.title; $('woAbout').value = TR.wo.about || '';
+    $('woDelete').hidden = !TR.wo.id; trMsg('woResult', '');
+    renderWoSteps();
+  }
+  function renderWoSteps(){
+    var box = $('woSteps'); box.innerHTML = '';
+    TR.wo.steps.forEach(function(st, i){
+      var row = el('div', 'steprow');
+      var lab = el('input'); lab.type = 'text'; lab.maxLength = 60; lab.value = st.label; lab.setAttribute('aria-label', 'Step ' + (i + 1) + ' name');
+      lab.addEventListener('input', function(){ st.label = lab.value; });
+      var mn = el('input'); mn.type = 'number'; mn.min = 0.25; mn.max = 300; mn.step = 0.25; mn.value = st.min; mn.setAttribute('aria-label', 'Minutes');
+      mn.addEventListener('input', function(){ st.min = Math.max(0, +mn.value || 0); woTotals(); });
+      var zs = el('select'); zs.setAttribute('aria-label', 'Zone');
+      ZONE_ORDER.forEach(function(z){ var o = el('option', null, TRAIN_ZONES[z].name + ' (' + z + ')'); o.value = z; zs.appendChild(o); });
+      zs.value = st.zone; zs.addEventListener('change', function(){ st.zone = zs.value; woTotals(); });
+      var up = el('button', 'icon', '↑'); up.type = 'button'; up.title = 'Move up'; up.disabled = i === 0;
+      up.addEventListener('click', function(){ var a = TR.wo.steps; a.splice(i - 1, 0, a.splice(i, 1)[0]); renderWoSteps(); });
+      var rm = el('button', 'icon', '✕'); rm.type = 'button'; rm.title = 'Remove step';
+      rm.addEventListener('click', function(){ TR.wo.steps.splice(i, 1); renderWoSteps(); });
+      row.appendChild(lab); row.appendChild(mn); row.appendChild(zs); row.appendChild(up); row.appendChild(rm);
+      box.appendChild(row);
+    });
+    woTotals();
+  }
+  function woTotals(){
+    $('woTotal').textContent = 'Total ' + trainHours(stepsMinutes(TR.wo.steps));
+    profileInto($('woProfile'), TR.wo.steps);
+  }
+  $('woAdd').addEventListener('click', function(){ TR.wo.steps.push({ label:'Easy', min:5, zone:'Z1' }); renderWoSteps(); });
+  $('woRepeat').addEventListener('click', function(){
+    // repeat an effort + recovery pair: handy for intervals
+    var n = parseInt(prompt('Add how many repeats of “effort + recovery”?', '4'), 10);
+    var on = parseFloat(prompt('Effort minutes?', '4')), off = parseFloat(prompt('Recovery minutes?', '3'));
+    var z = (prompt('Effort zone? (Z3, SS, Z4, Z5, Z6)', 'Z5') || 'Z5').toUpperCase();
+    if (!(n > 0 && on > 0 && off >= 0) || ZONE_ORDER.indexOf(z) === -1) return;
+    var cd = TR.wo.steps.length && /cool/i.test(TR.wo.steps[TR.wo.steps.length - 1].label) ? TR.wo.steps.pop() : null;
+    for (var i = 0; i < n; i++){ TR.wo.steps.push({ label:'Effort ' + (i + 1) + ' of ' + n, min:on, zone:z }); if (off && i < n - 1) TR.wo.steps.push({ label:'Recovery', min:off, zone:'Z1' }); }
+    if (cd) TR.wo.steps.push(cd);
+    renderWoSteps();
+  });
+  $('woSave').addEventListener('click', function(){
+    TR.wo.title = $('woTitle').value.trim(); TR.wo.about = $('woAbout').value.trim();
+    if (!TR.wo.title){ trMsg('woResult', 'Give the workout a name.', true); return; }
+    if (!TR.wo.steps.length){ trMsg('woResult', 'Add at least one step.', true); return; }
+    saveLibrary('workout', TR.wo, 'woResult').then(function(item){ if (item){ TR.wo = item; $('woDelete').hidden = false; trMsg('woResult', 'Saved. It is now in the workout list of every plan.'); } });
+  });
+  $('woDelete').addEventListener('click', function(){
+    if (!TR.wo.id || !confirm('Delete “' + TR.wo.title + '”? Plans that already use it keep their copy.')) return;
+    deleteLibrary('workout', TR.wo.id, 'woResult').then(function(ok){ if (ok) showSub('workouts'); });
+  });
+  $('woBack').addEventListener('click', function(){ showSub('workouts'); });
+  $('woNew').addEventListener('click', function(){ editWorkout(null); });
+
+  // ---------- PLAN TEMPLATES ----------
+  function renderTemplates(){
+    var ul = $('tplList'); ul.innerHTML = '';
+    if (!TR.lib.templates.length){ ul.appendChild(el('li', 'empty-note', 'No templates yet. Make one here, or open a rider and use “Save as template”.')); return; }
+    TR.lib.templates.forEach(function(t){
+      var mins = 0; t.weeks.forEach(function(w){ w.days.forEach(function(d){ if (d.type !== 'rest') mins += d.min || 0; }); });
+      var li = el('li', 'rrow'); li.tabIndex = 0; li.setAttribute('role', 'button');
+      var main = el('div', 'rmain'); main.appendChild(el('b', null, t.name));
+      main.appendChild(el('span', 'rsub', t.weeks.length + ' week' + (t.weeks.length === 1 ? '' : 's') + ' · about ' + trainHours(Math.round(mins / t.weeks.length)) + ' a week' + (t.about ? ' · ' + t.about : '')));
+      li.appendChild(main);
+      li.addEventListener('click', function(){ editTemplate(t); });
+      li.addEventListener('keydown', function(e){ if (e.key === 'Enter') editTemplate(t); });
+      ul.appendChild(li);
+    });
+  }
+  function blankWeek(){ return { phase:'base', days:[0,1,2,3,4,5,6].map(function(){ return { type:'rest', min:0 }; }) }; }
+  function editTemplate(t){
+    TR.tpl = t ? JSON.parse(JSON.stringify(t)) : { name:'', about:'', weeks:[blankWeek()] };
+    TR.tplWeek = 0;
+    $('tplListBox').hidden = true; $('tplEditor').hidden = false;
+    $('tplName').value = TR.tpl.name; $('tplAbout').value = TR.tpl.about || '';
+    $('tplDelete').hidden = !TR.tpl.id; trMsg('tplResult', '');
+    var rs = $('tplRider'); rs.innerHTML = '';
+    TR.users.filter(function(u){ return u.firstName || u.lastName; }).sort(function(a, b){ return riderName(a).localeCompare(riderName(b)); })
+      .forEach(function(u){ var o = el('option', null, riderName(u) + (u.team ? ' · ' + u.team : '')); o.value = u.deviceId; rs.appendChild(o); });
+    $('tplStart').value = nextMonday();
+    renderTplWeek();
+  }
+  function renderTplWeek(){
+    var t = TR.tpl, w = TR.tplWeek, wk = t.weeks[w];
+    var mins = wk.days.reduce(function(a, d){ return a + (d.type === 'rest' ? 0 : d.min || 0); }, 0);
+    $('tplWeekLabel').textContent = 'Week ' + (w + 1) + ' of ' + t.weeks.length + ' · ' + trainHours(mins);
+    $('tplPrev').disabled = w === 0; $('tplNext').disabled = w >= t.weeks.length - 1;
+    $('tplPhase').value = wk.phase || 'base';
+    var box = $('tplWeek'); box.innerHTML = '';
+    wk.days.forEach(function(day, i){ box.appendChild(dayRow(day, TRAIN_DAYS[i], renderTplWeek)); });
+    $('tplRemoveWeek').disabled = t.weeks.length <= 1;
+  }
+  $('tplPhase').addEventListener('change', function(){ TR.tpl.weeks[TR.tplWeek].phase = this.value; });
+  $('tplPrev').addEventListener('click', function(){ TR.tplWeek--; renderTplWeek(); });
+  $('tplNext').addEventListener('click', function(){ TR.tplWeek++; renderTplWeek(); });
+  $('tplAddWeek').addEventListener('click', function(){
+    if (TR.tpl.weeks.length >= 16){ trMsg('tplResult', 'A template can have up to 16 weeks.', true); return; }
+    TR.tpl.weeks.splice(TR.tplWeek + 1, 0, JSON.parse(JSON.stringify(TR.tpl.weeks[TR.tplWeek])));   // copy this week as a start
+    TR.tplWeek++; renderTplWeek();
+  });
+  $('tplRemoveWeek').addEventListener('click', function(){
+    if (TR.tpl.weeks.length <= 1 || !confirm('Remove week ' + (TR.tplWeek + 1) + '?')) return;
+    TR.tpl.weeks.splice(TR.tplWeek, 1); TR.tplWeek = Math.max(0, TR.tplWeek - 1); renderTplWeek();
+  });
+  function tplSave(){
+    TR.tpl.name = $('tplName').value.trim(); TR.tpl.about = $('tplAbout').value.trim();
+    if (!TR.tpl.name){ trMsg('tplResult', 'Give the template a name.', true); return Promise.resolve(null); }
+    return saveLibrary('template', TR.tpl, 'tplResult').then(function(item){ if (item){ TR.tpl = item; $('tplDelete').hidden = false; } return item; });
+  }
+  $('tplSave').addEventListener('click', tplSave);
+  $('tplDelete').addEventListener('click', function(){
+    if (!TR.tpl.id || !confirm('Delete template “' + TR.tpl.name + '”? Riders who got it keep their plan.')) return;
+    deleteLibrary('template', TR.tpl.id, 'tplResult').then(function(ok){ if (ok) showSub('templates'); });
+  });
+  $('tplBack').addEventListener('click', function(){ showSub('templates'); });
+  $('tplNew').addEventListener('click', function(){ editTemplate(null); });
+  $('tplAssign').addEventListener('click', function(){
+    var id = $('tplRider').value, u = TR.users.filter(function(x){ return x.deviceId === id; })[0];
+    if (!u){ trMsg('tplAssignResult', 'Pick a rider.', true); return; }
+    var start = $('tplStart').value || nextMonday(), btn = this;
+    tplSave().then(function(t){
+      if (!t) return;
+      var has = TR.plans[id] && !TR.plans[id].ended;
+      if (has && !confirm('Replace ' + riderName(u) + '’s current plan with “' + t.name + '” from ' + start + '? Their current plan is kept in their history.')) return;
+      btn.disabled = true;
+      api('/api/plan?deviceId=' + encodeURIComponent(id)).then(function(res){
+        var existing = res.ok ? res.data.plan : null;
+        return savePlanFor(id, planFromTemplate(t, start, existing), true, 'tplAssignResult');
+      }).then(function(p){ btn.disabled = false; if (p){ loadTrainingQuiet(); trMsg('tplAssignResult', '“' + t.name + '” is now ' + riderName(u) + '’s plan, starting ' + start + '.'); } })
+        .catch(function(){ btn.disabled = false; });
+    });
+  });
 
   // start: unlocked if this phone remembers the password
   try{ key = localStorage.getItem(KEY_STORE) || ''; }catch(x){}
