@@ -381,6 +381,135 @@
   .uh-row .d b{display:block;font-family:'IBM Plex Mono',monospace;color:var(--gold);font-weight:600;}
   .uh-row .d span{display:block;font-size:11px;color:var(--text-muted);}
   .uh-row .btn{flex:0 0 auto;}
+  /* ---------- RACES (rider's calendar) ---------- */
+  .badge-n{position:absolute;top:14px;right:14px;min-width:24px;height:24px;border-radius:12px;background:var(--gold);color:#141414;font-weight:700;font-size:13px;
+    display:flex;align-items:center;justify-content:center;padding:0 7px;}
+  .badge-n[hidden]{display:none;}
+  .race-strip{max-width:960px;width:calc(100% - 44px);margin:0 auto 16px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;}
+  .rs-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+  .rs-head b{font-family:'Fjalla One',sans-serif;font-weight:400;letter-spacing:.06em;text-transform:uppercase;font-size:14px;color:var(--gold);}
+  .rs-all{background:none;border:none;color:var(--text-muted);font:inherit;font-size:13px;cursor:pointer;}
+  .rs-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 2px;border:none;border-top:1px solid var(--line);background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer;}
+  .rs-item:first-child{border-top:none;}
+  .rs-item .d{flex:0 0 48px;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--gold);}
+  .rs-item .n{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px;}
+  .pill{flex:0 0 auto;border-radius:11px;padding:2px 9px;font-size:11.5px;font-weight:700;letter-spacing:.03em;white-space:nowrap;}
+  .pill.selected{background:rgba(107,156,91,.22);color:#9fd59a;border:1px solid rgba(159,213,154,.5);}
+  .pill.removed{background:#e03b2c;color:#fff;border:1px solid #ff7a6b;}
+  .pill.cancelled{background:#c0392b;color:#fff;}
+  .rs-item.removed .n,.rs-item.cancelled .n{text-decoration:line-through;text-decoration-color:#ff7a6b;color:#ffb3aa;}
+  .rs-item.removed,.rs-item.cancelled{background:rgba(224,59,44,.12);border-radius:8px;}
+  .rs-item.removed .d,.rs-item.cancelled .d{color:#ff7a6b;}
+  #raceView{position:fixed;inset:0;z-index:4050;overflow-y:auto;background:var(--bg);padding-bottom:env(safe-area-inset-bottom,0px);}
+  #raceView.hidden{display:none;}
+  #raceView .tv-head{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:12px;
+    padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#132018,#101a14 90%);}
+  #raceView .tv-brand{height:36px;width:auto;max-width:150px;margin:0;filter:none;}
+  #raceView .tv-title{margin-left:auto;font-family:'Fjalla One',sans-serif;font-size:20px;letter-spacing:.06em;color:var(--gold);}
+  .rv-body{max-width:860px;margin:0 auto;padding:6px 16px 40px;}
+  .rv-sec-h{font-family:'Fjalla One',sans-serif;font-weight:400;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);font-size:15px;margin:22px 0 10px;}
+  .race-card{display:flex;gap:14px;width:100%;text-align:left;padding:14px;margin-bottom:10px;border-radius:16px;border:1px solid var(--line);background:var(--panel);
+    color:var(--text);font:inherit;cursor:pointer;position:relative;overflow:hidden;}
+  .race-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--gold);}
+  .race-card.removed::before,.race-card.cancelled::before{background:#e03b2c;width:7px;}
+  .race-card.removed{border:2px solid #e03b2c;background:linear-gradient(90deg,rgba(224,59,44,.22),rgba(224,59,44,.06) 70%);}
+  .race-card.cancelled{border-color:rgba(192,57,43,.6);background:linear-gradient(90deg,rgba(192,57,43,.12),var(--panel) 60%);}
+  .race-card.past{opacity:.72;}
+  .rc-cal{flex:0 0 62px;border-radius:12px;overflow:hidden;text-align:center;background:#fff;color:#141414;align-self:flex-start;}
+  .rc-cal .m{display:block;background:var(--gold);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 0;}
+  .race-card.cancelled .rc-cal .m,.race-card.removed .rc-cal .m{background:#e03b2c;color:#fff;}
+  .race-card.removed .rc-body .nm{color:#ffb3aa;}
+  .rc-cal b{display:block;font-family:'Fjalla One',sans-serif;font-size:28px;line-height:1.1;font-weight:400;}
+  .rc-cal small{display:block;font-size:11px;padding-bottom:4px;color:#555;}
+  .rc-body{flex:1 1 auto;min-width:0;}
+  .rc-body .nm{display:block;font-family:'Fjalla One',sans-serif;font-weight:400;font-size:20px;letter-spacing:.02em;line-height:1.15;}
+  .race-card.cancelled .rc-body .nm,.race-card.removed .rc-body .nm{text-decoration:line-through;text-decoration-color:rgba(255,255,255,.45);}
+  .rc-body .meta{display:block;font-size:13px;color:var(--text-muted);margin-top:3px;}
+  .rc-body .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px;}
+  .rc-body .when{font-size:12.5px;color:var(--gold);}
+  .faces{display:flex;align-items:center;}
+  .face{width:28px;height:28px;border-radius:50%;margin-left:-7px;border:2px solid var(--panel);background:var(--panel-alt) center/cover no-repeat;
+    display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;}
+  .face:first-child{margin-left:0;}
+  .faces small{margin-left:8px;font-size:12px;color:var(--text-muted);}
+  #raceModal{position:fixed;inset:0;z-index:4600;display:none;align-items:flex-start;justify-content:center;padding:24px 16px;background:rgba(6,10,8,.9);overflow-y:auto;}
+  #raceModal.open{display:flex;}
+  .rm-card{width:min(640px,100%);background:var(--panel);border:1px solid var(--line);border-radius:18px;overflow:hidden;}
+  .rm-top{padding:18px 18px 14px;background:linear-gradient(135deg,rgba(217,181,86,.22),transparent 70%);}
+  .rm-top.cancelled{background:linear-gradient(135deg,rgba(192,57,43,.4),transparent 70%);}
+  .rm-top h2{margin:6px 0 2px;font-family:'Fjalla One',sans-serif;font-weight:400;font-size:28px;letter-spacing:.02em;line-height:1.1;}
+  .rm-top .meta{font-size:14px;color:var(--text-muted);}
+  .rm-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;padding:0 18px 4px;}
+  .rm-fact{background:var(--panel-alt);border-radius:10px;padding:8px 10px;}
+  .rm-fact small{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);}
+  .rm-fact b{font-size:15px;}
+  .rm-note{margin:12px 18px 0;padding:10px 12px;border-radius:10px;font-size:14px;}
+  .rm-note.removed{background:#e03b2c;color:#fff;border:none;font-weight:600;}
+  .rm-top.removed{background:linear-gradient(135deg,rgba(224,59,44,.45),transparent 70%);}
+  .rm-note.cancelled{background:rgba(192,57,43,.2);border:1px solid #c0392b;}
+  .rm-note.info{background:var(--panel-alt);}
+  .rm-lineup-h{margin:18px 18px 8px;font-family:'Fjalla One',sans-serif;font-weight:400;letter-spacing:.06em;text-transform:uppercase;font-size:15px;color:var(--gold);}
+  .rm-lineup{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding:0 18px 18px;}
+  .lu{display:flex;align-items:center;gap:10px;padding:8px;border-radius:12px;background:var(--panel-alt);border-left:4px solid var(--tc,#888);}
+  .lu .ph{width:42px;height:42px;flex:0 0 auto;border-radius:50%;background:var(--tc,#555) center/cover no-repeat;display:flex;align-items:center;justify-content:center;
+    font-family:'Fjalla One',sans-serif;color:#fff;font-size:15px;}
+  .lu b{display:block;font-size:13.5px;line-height:1.2;}
+  .lu i{display:block;font-size:12px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .lu .you{display:inline-block;margin-left:4px;font-style:normal;font-size:10px;background:var(--gold);color:#141414;border-radius:8px;padding:0 6px;font-weight:700;}
+  .rm-close{display:block;margin:0 auto 18px;}
+  /* ---------- TEAM (overview of all riders) ---------- */
+  .dash-nick{font-size:12px;font-style:italic;color:var(--text-muted);margin-top:1px;}
+  .dash-nick:empty{display:none;}
+  .pe-grid label.wide{grid-column:1 / -1;}
+  #teamView{position:fixed;inset:0;z-index:4050;overflow-y:auto;background:var(--bg);padding-bottom:env(safe-area-inset-bottom,0px);}
+  #teamView.hidden{display:none;}
+  #teamView .tv-head{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:12px;
+    padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#132018,#101a14 90%);}
+  #teamView .tv-brand{height:36px;width:auto;max-width:150px;margin:0;filter:none;}
+  #teamView .tv-title{margin-left:auto;font-family:'Fjalla One',sans-serif;font-size:20px;letter-spacing:.06em;color:var(--gold);}
+  .tm-chips{position:sticky;top:calc(57px + env(safe-area-inset-top,0px));z-index:2;display:flex;gap:8px;overflow-x:auto;padding:10px 16px;
+    background:rgba(16,26,20,.94);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);scrollbar-width:none;}
+  .tm-chips::-webkit-scrollbar{display:none;}
+  .tm-chip{flex:0 0 auto;display:flex;align-items:center;gap:7px;padding:7px 13px;border-radius:18px;border:1px solid var(--line);background:var(--panel);
+    color:var(--text);font:inherit;font-size:13px;cursor:pointer;white-space:nowrap;}
+  .tm-chip i{width:10px;height:10px;border-radius:50%;}
+  .tm-chip[aria-selected="true"]{background:var(--text);color:#111;border-color:var(--text);font-weight:600;}
+  .tm-body{max-width:1180px;margin:0 auto;padding:6px 16px 40px;}
+  .tm-sec{margin-top:22px;}
+  .tm-head{display:flex;align-items:center;gap:14px;padding:14px;border-radius:16px;
+    background:linear-gradient(120deg,color-mix(in srgb,var(--tc) 32%,transparent) 0%,transparent 75%),var(--panel);border:1px solid var(--line);border-left:6px solid var(--tc);}
+  .tm-logo-app{width:54px;height:54px;flex:0 0 auto;border-radius:12px;background:var(--tc) center/contain no-repeat;display:flex;align-items:center;justify-content:center;
+    font-family:'Fjalla One',sans-serif;font-size:15px;color:#141414;letter-spacing:0;overflow:hidden;}
+  .tm-logo-app.long{font-size:12px;}
+  .tm-logo-app.logo{background-color:#fff;}
+  .tm-head h2{margin:0;font-family:'Fjalla One',sans-serif;font-weight:400;font-size:24px;letter-spacing:.04em;line-height:1.1;}
+  .tm-head .cnt{font-size:12.5px;color:var(--text-muted);}
+  .tm-head p{margin:3px 0 0;font-size:13px;color:var(--text-muted);}
+  .tm-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px;}
+  @media (min-width:600px){ .tm-cards{grid-template-columns:repeat(3,minmax(0,1fr));} }
+  @media (min-width:900px){ .tm-cards{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px;} }
+  /* a rider card: photo fills the card, name + nickname on a dark fade */
+  .rcard{position:relative;display:block;width:100%;aspect-ratio:4/5;border-radius:16px;overflow:hidden;border:none;padding:0;cursor:pointer;
+    background:linear-gradient(160deg,var(--tc),#152019 85%);box-shadow:0 8px 22px rgba(0,0,0,.35);color:#fff;text-align:left;font:inherit;
+    transition:transform .15s ease, box-shadow .15s ease;}
+  .rcard:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.45);}
+  .rcard .ph{position:absolute;inset:0;background:center/cover no-repeat;}
+  .rcard .ini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Fjalla One',sans-serif;
+    font-size:clamp(40px,12vw,64px);color:rgba(255,255,255,.85);letter-spacing:.04em;padding-bottom:22%;}
+  .rcard .fade{position:absolute;left:0;right:0;bottom:0;padding:34px 12px 11px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.82) 55%);}
+  .rcard b{display:block;font-size:15px;line-height:1.2;text-shadow:0 1px 3px rgba(0,0,0,.6);}
+  .rcard .nk{display:block;font-size:13px;font-style:italic;color:var(--tcl,#ffd75e);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rcard .age{position:absolute;top:9px;right:9px;background:rgba(0,0,0,.55);border-radius:12px;padding:2px 9px;font-size:12px;font-weight:600;}
+  .rcard .you{position:absolute;top:9px;left:9px;background:var(--gold);color:#141414;border-radius:12px;padding:2px 9px;font-size:11.5px;font-weight:700;letter-spacing:.04em;}
+  .rcard::after{content:'';position:absolute;left:0;right:0;top:0;height:5px;background:var(--tc);}
+  #rcModal{position:fixed;inset:0;z-index:4600;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(6,10,8,.88);}
+  #rcModal.open{display:flex;}
+  .rc-big{width:min(380px,100%);}
+  .rc-big .rcard{cursor:default;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+  .rc-big .rcard b{font-size:24px;}
+  .rc-big .rcard .nk{font-size:18px;}
+  .rc-big .team{display:block;margin-top:6px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--tcl,#ffd75e);}
+  .rc-big .close{display:block;margin:14px auto 0;}
   /* ---------- TRAIN ---------- */
   #trainView{position:fixed;inset:0;z-index:4050;overflow-y:auto;background:var(--bg);
     padding-bottom:env(safe-area-inset-bottom,0px);}
@@ -416,6 +545,13 @@
   .tv-status.bad{color:#e07a5f;}
 
   /* plan summary */
+  .tv-waiting{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;}
+  .tv-waiting b{font-size:16px;color:var(--gold);}
+  .tv-waiting p{font-size:14px;color:var(--text-muted);margin:6px 0 0;}
+  .tv-route{margin-top:12px;padding:9px 12px;border-radius:8px;background:var(--panel-alt);font-size:13.5px;}
+  .tv-route b{color:var(--gold);}
+  .tv-route.off{border:1px solid #e07a5f;}
+  .tv-route.off small{display:block;color:#e07a5f;margin-top:3px;}
   .tv-ended{background:var(--panel);border:1px solid var(--gold);border-radius:10px;padding:14px;margin-bottom:14px;}
   .tv-ended b{font-size:16px;color:var(--gold);}
   .tv-ended p{font-size:14px;margin:6px 0 12px;}
@@ -458,6 +594,7 @@
   .tv-tile .bar i{display:block;width:100%;border-radius:3px 3px 1px 1px;}
   .tv-tile .mm{font-size:10.5px;font-family:'IBM Plex Mono',monospace;color:var(--text-muted);white-space:nowrap;}
   .tv-tile.today .dn{color:var(--gold);}
+  .tv-tile.routed .mm::after{content:' ⌖';color:var(--gold);}
   .tv-tile .ck{position:absolute;top:3px;right:5px;font-size:11px;color:var(--easy);}
   .tv-tile.skipped .ck{color:var(--text-muted);}
 
@@ -643,7 +780,15 @@
   .dash-greet{max-width:960px;width:100%;margin:10px auto 18px;padding:0 22px;color:var(--text-muted);font-size:14px;}
   .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:0 22px 28px;
     max-width:960px;width:100%;margin:0 auto;align-content:start;}
-  @media (min-width:760px){ .dash-grid{grid-template-columns:repeat(4,1fr);} }
+  @media (min-width:760px){ .dash-grid{grid-template-columns:repeat(5,1fr);} }
+  /* phone: the Team tile is a wide banner under the four squares */
+  @media (max-width:759px){
+    .dash-tile.team-tile{grid-column:1 / -1;aspect-ratio:auto;min-height:92px;flex-direction:row;align-items:center;justify-content:flex-start;gap:16px;padding:16px 18px;}
+    .dash-tile.team-tile .icon{position:static;flex:0 0 auto;width:44px;height:44px;}
+    .dash-tile.team-tile .t{order:1;} .dash-tile.team-tile .s{order:2;margin:0 0 0 auto;text-align:right;max-width:45%;}
+  }
+  .dash-tile.team-tile{background:linear-gradient(135deg,#1d2b45 0%,var(--panel) 75%);}
+  .dash-tile.team-tile .icon{stroke:#7fb3ff;}
   .dash-tile{
     position:relative;aspect-ratio:1/1;overflow:hidden;cursor:pointer;
     background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--text);
@@ -697,6 +842,42 @@
   .reg-err{color:#e07a5f;font-size:12px;min-height:16px;margin-top:10px;}
   .reg-actions{display:flex;gap:10px;align-items:center;}
   .reg-actions .btn.primary{flex:1 1 auto;}
+  /* in-app dialogs */
+  .ui-dlg{position:fixed;inset:0;z-index:9000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(6,10,8,.75);
+    -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);}
+  .ui-dlg.open{display:flex;}
+  .ui-card{width:min(420px,100%);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 24px 60px rgba(0,0,0,.6);}
+  .ui-title{font-family:'Fjalla One',sans-serif;font-weight:400;letter-spacing:.04em;font-size:20px;margin:0 0 8px;}
+  .ui-text{font-size:15px;line-height:1.5;white-space:pre-line;}
+  .ui-fields{display:grid;gap:12px;margin-top:6px;} .ui-fields:empty{display:none;}
+  .ui-field{display:flex;flex-direction:column;gap:6px;font-size:13px;}
+  .ui-field input,.ui-field select{font-size:16px;padding:9px;background:var(--panel-alt);border:1px solid var(--line);color:var(--text);border-radius:var(--radius);}
+  .ui-btns{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;flex-wrap:wrap;}
+  .ui-btns button{border-radius:10px;padding:11px 16px;font:inherit;font-size:15px;font-weight:600;cursor:pointer;flex:1 1 0;}
+  .ui-cancel{background:none;border:1px solid var(--line);color:var(--text);}
+  .ui-ok{background:var(--accent);border:none;color:#150c05;}
+  .ui-ok.danger{background:#e03b2c;color:#fff;}
+  .code-input{font-family:'IBM Plex Mono',monospace !important;font-size:22px !important;letter-spacing:.18em;text-transform:uppercase;text-align:center;}
+  #profOverlay{position:fixed;inset:0;z-index:4500;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(6,10,8,.92);overflow-y:auto;}
+  #profOverlay.open{display:flex;}
+  .prof-card{max-width:420px;}
+  .prof-head{display:flex;gap:14px;align-items:center;margin-bottom:12px;}
+  .prof-head h2{margin:0;}
+  .prof-photo,.dash-photo{flex:0 0 auto;border-radius:50%;background:var(--panel-alt) center/cover no-repeat;border:2px solid var(--gold);
+    display:flex;align-items:center;justify-content:center;font-family:'Fjalla One',sans-serif;color:var(--gold);}
+  .prof-photo{width:72px;height:72px;font-size:26px;}
+  .dash-photo{width:44px;height:44px;font-size:17px;margin:0 0 6px auto;}
+  .dash-photo:empty{display:none;}
+  .prof-teamrow{display:flex;align-items:center;gap:6px;margin-top:2px;}
+  .prof-teamlogo{width:22px;height:22px;border-radius:5px;background:#fff center/contain no-repeat;flex:0 0 auto;}
+  .prof-team{font-size:12px;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;margin-top:2px;}
+  .prof-list{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:6px 0 14px;font-size:14px;}
+  .prof-list dt{color:var(--text-muted);}
+  .prof-list dd{margin:0;}
+  .pe-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+  .pe-grid label{display:flex;flex-direction:column;gap:4px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin:0;}
+  .pe-grid input,.pe-grid select{font-size:16px;padding:8px;background:var(--panel-alt);border:1px solid var(--line);color:var(--text);border-radius:var(--radius);color-scheme:dark;width:100%;}
+  #profActions{flex-wrap:wrap;}
   .reg-note{font-size:11px;color:var(--text-muted);margin-top:12px;line-height:1.4;}
 
   /* home button in the planner header */
@@ -739,6 +920,10 @@
   /* Pick on map: panel hides, a card on the map guides the pick + confirm */
   body.picking:not(.is-mobile) aside.controls{display:none;}
   body.picking #map{cursor:crosshair;}
+  .train-route-banner{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:1650;width:min(520px,calc(100% - 24px));
+    background:var(--panel);border:1px solid var(--gold);border-radius:10px;padding:10px 14px;font-size:13.5px;line-height:1.4;box-shadow:0 6px 20px rgba(0,0,0,.5);}
+  .train-route-banner b{color:var(--gold);}
+  .train-route-banner.off{border-color:#e07a5f;}
   .pick-card{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:1700;display:none;
     width:min(440px,calc(100% - 24px));background:var(--panel);border:1px solid var(--gold);border-radius:10px;
     padding:14px;box-shadow:0 8px 28px rgba(0,0,0,.55);}
@@ -796,13 +981,19 @@
       <div class="tagline">Manage-Plot-Train</div>
     </div>
     <div class="dash-user" id="dashUser">
+      <div class="dash-photo" id="dashPhoto" aria-hidden="true"></div>
       <div class="name" id="dashUserName"></div>
+      <div class="dash-nick" id="dashUserNick"></div>
       <div class="team" id="dashUserTeam"></div>
       <button class="notify-btn" id="notifyBtn" type="button" hidden>🔔 Notifications</button>
-      <button class="edit" id="dashEditProfile" type="button">Edit profile</button>
+      <button class="edit" id="dashEditProfile" type="button">My profile</button>
     </div>
   </div>
   <div class="dash-greet" id="dashGreet"></div>
+  <div class="race-strip" id="raceStrip" hidden>
+    <div class="rs-head"><b>Your races</b><button type="button" class="rs-all" id="rsAll">See all ›</button></div>
+    <div id="rsItems"></div>
+  </div>
   <div class="dash-grid">
     <button class="dash-tile" type="button" data-view="train">
       <svg class="icon" viewBox="0 0 24 24"><polyline points="2,12 6,12 9,5 13,19 16,12 22,12"/></svg>
@@ -815,12 +1006,16 @@
     </button>
     <button class="dash-tile" type="button" data-view="race">
       <svg class="icon" viewBox="0 0 24 24"><path d="M5 22V3M5 4h13l-2.5 4.5L18 13H5"/></svg>
-      <span class="soon">Soon</span>
-      <span class="t">Race</span><span class="s">Calendar &amp; results</span>
+      <span class="badge-n" id="raceBadge" hidden></span>
+      <span class="t">Race</span><span class="s" id="raceTileSub">Your race calendar</span>
     </button>
     <button class="dash-tile primary" type="button" data-view="track">
       <svg class="icon" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h8a3.5 3.5 0 0 0 0-7H8a3.5 3.5 0 0 1 0-7h8"/></svg>
       <span class="t">Track</span><span class="s">Plan a route &amp; GPX</span>
+    </button>
+    <button class="dash-tile team-tile" type="button" data-view="team">
+      <svg class="icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.4"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M14.5 14.6c.8-.4 1.6-.6 2.5-.6 2.8 0 5 2.2 5 5"/></svg>
+      <span class="t">Team</span><span class="s">Who rides with you</span>
     </button>
   </div>
   <div class="install-card" id="installCard">
@@ -848,6 +1043,35 @@
   </div>
 </div>
 
+<!-- Race: the rider's own race calendar (made by the coach) -->
+<div id="raceView" class="hidden">
+  <header class="tv-head">
+    <button class="home-btn" id="raceHomeBtn" type="button">‹ Home</button>
+    <img class="brand-logo tv-brand" src="/logo-rootahead.png" alt="ROOT Ahead">
+    <span class="tv-title">Races</span>
+  </header>
+  <div class="rv-body" id="rvBody"></div>
+  <div class="tv-status" id="rvStatusApp" role="status" style="text-align:center;"></div>
+</div>
+<div id="raceModal" role="dialog" aria-modal="true" aria-labelledby="rmName">
+  <div class="rm-card" id="rmCard"></div>
+</div>
+
+<!-- Team: every rider per team (photo, name, nickname, age) -->
+<div id="teamView" class="hidden">
+  <header class="tv-head">
+    <button class="home-btn" id="teamHomeBtn" type="button">‹ Home</button>
+    <img class="brand-logo tv-brand" src="/logo-rootahead.png" alt="ROOT Ahead">
+    <span class="tv-title">Team</span>
+  </header>
+  <div class="tm-chips" id="tmChips" role="tablist" aria-label="Teams"></div>
+  <div class="tm-body" id="tmBody"></div>
+  <div class="tv-status" id="tmStatusApp" role="status" style="text-align:center;"></div>
+</div>
+<div id="rcModal" role="dialog" aria-modal="true" aria-label="Rider">
+  <div class="rc-big" id="rcBig"></div>
+</div>
+
 <!-- Train: personal training plan (app suggests, coach adjusts) -->
 <div id="trainView" class="hidden">
   <header class="tv-head">
@@ -856,6 +1080,10 @@
     <span class="tv-title">Train</span>
   </header>
   <div class="tv-body">
+    <div class="tv-waiting" id="tvWaiting" hidden>
+      <b>Your coach makes your training plan</b>
+      <p>As soon as it's ready it appears here, and you get a notification if notifications are on.</p>
+    </div>
     <div id="tvSetup" hidden>
       <h2 class="tv-h">Your training plan</h2>
       <p class="tv-lead">Tell the app what you're training for. It suggests a plan; your coach can adjust it.</p>
@@ -901,24 +1129,52 @@
 </div>
 
 <!-- First-run registration (stored on this device only) -->
+<!-- Sign in with the login code from the coach -->
 <div id="regOverlay" role="dialog" aria-modal="true" aria-labelledby="regTitle">
-  <form class="reg-card" id="regForm" novalidate autocomplete="on">
+  <form class="reg-card" id="regForm" novalidate autocomplete="off">
     <img class="brand-logo reg-brand" src="/logo-rootahead.png" alt="ROOT Ahead">
-    <h2 id="regTitle">Welcome</h2>
-    <p class="intro" id="regIntro">Tell us who you are. This is asked only once.</p>
-    <label for="regFirstName">First name</label>
-    <input type="text" id="regFirstName" maxlength="40" autocomplete="given-name">
-    <label for="regLastName">Last name</label>
-    <input type="text" id="regLastName" maxlength="40" autocomplete="family-name">
-    <label for="regTeam">Team</label>
-    <input type="text" id="regTeam" maxlength="40" autocomplete="organization">
-    <div class="reg-err" id="regErr"></div>
+    <h2 id="regTitle">Sign in</h2>
+    <p class="intro" id="regIntro">Enter the login code you got from your coach.</p>
+    <label for="regCode">Login code</label>
+    <input type="text" id="regCode" class="code-input" maxlength="12" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" placeholder="e.g. K7P4QX">
+    <div class="reg-err" id="regErr" role="alert"></div>
     <div class="reg-actions">
       <button class="btn ghost" type="button" id="regCancel" style="display:none;">Cancel</button>
-      <button class="btn primary" type="submit">Save</button>
+      <button class="btn primary" type="submit" id="regSubmit">Sign in</button>
     </div>
-    <div class="reg-note">Saved on this device. Your name and team are sent along with the routes you generate, so the team admin can see them; later also used for team messages.</div>
+    <div class="reg-note">No code yet? Your coach sets up every rider and gives you a code. After signing in, this phone remembers you.</div>
   </form>
+</div>
+
+<!-- My profile (details are set by the coach; changing them needs your code) -->
+<div id="profOverlay" role="dialog" aria-modal="true" aria-labelledby="profName">
+  <div class="reg-card prof-card">
+    <div class="prof-head">
+      <div class="prof-photo" id="profPhoto"></div>
+      <div><h2 id="profName"></h2><div class="prof-teamrow"><span class="prof-teamlogo" id="profTeamLogo" hidden></span><span class="prof-team" id="profTeam"></span></div></div>
+    </div>
+    <dl class="prof-list" id="profList"></dl>
+    <form id="profEdit" hidden novalidate>
+      <p class="intro">Enter your login code to change your details. Name, team and photo are managed by your coach.</p>
+      <label for="peCode">Login code</label>
+      <input type="text" id="peCode" class="code-input" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false">
+      <div class="pe-grid">
+        <label class="wide">Nickname<input type="text" id="peNick" maxlength="30" placeholder="just for fun"></label>
+        <label>Sex<select id="peSex"><option value="">—</option><option value="F">Female</option><option value="M">Male</option><option value="X">Other</option></select></label>
+        <label>Date of birth<input type="date" id="peBirth"></label>
+        <label>Height (cm)<input type="number" id="peHeight" min="100" max="230" step="1"></label>
+        <label>Weight (kg)<input type="number" id="peWeight" min="25" max="200" step="0.1"></label>
+        <label>FTP (watts)<input type="number" id="peFtp" min="50" max="700" step="1"></label>
+      </div>
+      <div class="reg-err" id="peErr" role="alert"></div>
+      <div class="reg-actions"><button class="btn ghost" type="button" id="peCancel">Cancel</button><button class="btn primary" type="submit" id="peSave">Save</button></div>
+    </form>
+    <div class="reg-actions" id="profActions">
+      <button class="btn ghost" type="button" id="profSwitch">Sign out</button>
+      <button class="btn ghost" type="button" id="profChange">Change my details</button>
+      <button class="btn primary" type="button" id="profClose">Close</button>
+    </div>
+  </div>
 </div>
 
 <div class="app">
@@ -1331,6 +1587,7 @@
 
     <main class="mapwrap">
       <div id="map"></div>
+      <div class="train-route-banner" id="trainRouteBanner" hidden role="status"></div>
       <div class="pick-card" id="pickCard" role="dialog" aria-live="polite">
         <div class="q" id="pickQ"></div>
         <div class="addr" id="pickAddr"></div>
@@ -1489,7 +1746,83 @@
   // rather than "how many page loads". Fire-and-forget: never blocks or
   // errors the app if the tracking endpoint is unavailable (e.g. this HTML
   // opened standalone without the Vercel backend deployed).
+  /* ================= IN-APP DIALOGS (instead of the browser's own pop-ups) =================
+     uiConfirm(text, opts) → Promise<boolean>   uiAlert(text) → Promise   uiPrompt(text, value) → Promise<string|null>
+     uiForm(title, fields) → Promise<object|null>   (fields: [{ key, label, value, type, options }])
+     The OK button is named after the action ("Delete", "Yes, cancel race"…); risky actions get a red button. */
+  var uiDlg = null;
+  function uiBuild(){
+    if (uiDlg) return uiDlg;
+    var o = document.createElement('div'); o.className = 'ui-dlg'; o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true');
+    o.innerHTML = '<div class="ui-card"><h3 class="ui-title"></h3><div class="ui-text"></div><div class="ui-fields"></div><div class="ui-btns">' +
+      '<button type="button" class="ui-cancel"></button><button type="button" class="ui-ok"></button></div></div>';
+    document.body.appendChild(o); uiDlg = o; return o;
+  }
+  function uiLabels(text){
+    var w = String(text).trim().split(/\s+/)[0].replace(/[^A-Za-z]/g, '').toLowerCase();
+    var map = { 'delete':['Delete','Keep it',1], remove:['Remove','Keep it',1], replace:['Replace','Keep current',0], send:['Send','Not now',0],
+      give:['Give plan','Not now',0], overwrite:['Overwrite','Keep it',1], make:['Yes, clear it','Keep it',1], cancel:['Yes, cancel race','No, keep it',1],
+      sign:['Sign out','Stay signed in',1], your:['Continue','Keep my plan',1] };
+    var m = map[w] || ['OK','Cancel',0];
+    return { ok: m[0], cancel: m[1], danger: !!m[2] };
+  }
+  function uiOpen(cfg){
+    var o = uiBuild();
+    return new Promise(function(resolve){
+      var card = o.querySelector('.ui-card'), ok = o.querySelector('.ui-ok'), cancel = o.querySelector('.ui-cancel');
+      var title = o.querySelector('.ui-title'), txt = o.querySelector('.ui-text'), fields = o.querySelector('.ui-fields');
+      title.textContent = cfg.title || ''; title.hidden = !cfg.title;
+      txt.textContent = cfg.text || ''; txt.hidden = !cfg.text;
+      fields.innerHTML = '';
+      var inputs = {};
+      (cfg.fields || []).forEach(function(f, i){
+        var l = document.createElement('label'); l.className = 'ui-field';
+        var s = document.createElement('span'); s.textContent = f.label || ''; l.appendChild(s);
+        var inp;
+        if (f.options){ inp = document.createElement('select'); f.options.forEach(function(op){ var x = document.createElement('option'); x.value = op[0]; x.textContent = op[1]; inp.appendChild(x); }); }
+        else { inp = document.createElement('input'); inp.type = f.type || 'text'; if (f.step) inp.step = f.step; if (f.min != null) inp.min = f.min; if (f.max != null) inp.max = f.max; }
+        inp.value = f.value == null ? '' : f.value; inputs[f.key || i] = inp; l.appendChild(inp); fields.appendChild(l);
+      });
+      ok.textContent = cfg.ok || 'OK'; ok.className = 'ui-ok' + (cfg.danger ? ' danger' : '');
+      cancel.textContent = cfg.cancel || 'Cancel'; cancel.hidden = !!cfg.noCancel;
+      var last = document.activeElement;
+      function done(val){
+        o.classList.remove('open'); ok.onclick = cancel.onclick = null; o.onclick = null; document.removeEventListener('keydown', key, true);
+        try{ if (last && last.focus) last.focus(); }catch(e){}
+        resolve(val);
+      }
+      function value(){ if (!cfg.fields) return true; var r = {}; Object.keys(inputs).forEach(function(k){ r[k] = inputs[k].value; }); return r; }
+      function key(e){
+        if (e.key === 'Escape'){ e.preventDefault(); done(cfg.fields ? null : false); }
+        else if (e.key === 'Enter' && (e.target.tagName === 'INPUT' || e.target === ok)){ e.preventDefault(); done(value()); }
+      }
+      ok.onclick = function(){ done(value()); };
+      cancel.onclick = function(){ done(cfg.fields ? null : false); };
+      o.onclick = function(e){ if (e.target === o) done(cfg.fields ? null : false); };
+      document.addEventListener('keydown', key, true);
+      o.classList.add('open');
+      setTimeout(function(){ var first = fields.querySelector('input,select'); (first || ok).focus(); if (first && first.select) first.select(); }, 30);
+    });
+  }
+  function uiConfirm(text, opts){ var l = uiLabels(text); opts = opts || {}; return uiOpen({ title: opts.title, text: text, ok: opts.ok || l.ok, cancel: opts.cancel || l.cancel, danger: opts.danger != null ? opts.danger : l.danger }); }
+  function uiAlert(text, opts){ opts = opts || {}; return uiOpen({ title: opts.title, text: text, ok: opts.ok || 'OK', noCancel: true }); }
+  function uiPrompt(text, value, opts){ opts = opts || {}; return uiOpen({ title: opts.title, text: opts.title ? text : '', fields: [{ key:'v', label: opts.title ? (opts.label || '') : text, value: value, type: opts.type }], ok: opts.ok || 'OK', cancel: 'Cancel' })
+    .then(function(r){ return r ? r.v : null; }); }
+  function uiForm(title, fields, opts){ opts = opts || {}; return uiOpen({ title: title, text: opts.text, fields: fields, ok: opts.ok || 'OK', cancel: opts.cancel || 'Cancel' }); }
+
+  // Clean sheet: data from before the rider sign-in is wiped once on every phone.
+  (function(){
+    var V = '2';
+    try{
+      if (localStorage.getItem('rootahead_data_version') !== V){
+        Object.keys(localStorage).forEach(function(k){ if (k.indexOf('rootahead') === 0) localStorage.removeItem(k); });
+        localStorage.setItem('rootahead_data_version', V);
+      }
+    }catch(e){}
+  })();
+  // Once signed in, this phone IS the rider: plans, feedback and messages use the rider's id.
   function getDeviceId(){
+    try{ var pr = JSON.parse(localStorage.getItem('rootahead_profile') || 'null'); if (pr && pr.id) return pr.id; }catch(e){}
     var key = 'rootahead_device_id';
     var id = localStorage.getItem(key);
     if (!id){
@@ -1510,7 +1843,7 @@
   // A generated route is sent once to the backend together with the device
   // profile (name/team) and the GPX itself, so it is stored per user. Fire-
   // and-forget, exactly like trackEvent — it never blocks or breaks routing.
-  function trackRoute(){
+  function trackRoute(forDay){
     var body = { type:'route', deviceId:deviceId };
     try{
       var prof = loadProfile();
@@ -1524,6 +1857,8 @@
           loop: !!state.loopMode,
           shape: state.routeStyle + (state.routeStyle === 'figure' ? ':' + state.figureShape : ''),
           activity: state.activity,
+          planDay: forDay ? forDay.d : undefined,
+          planWorkout: forDay ? forDay.title : undefined,
           gpx: buildGPX()
         };
       }
@@ -1581,73 +1916,138 @@
   function loadProfile(){
     try{
       var p = JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null');
-      return (p && p.firstName && p.lastName && p.team) ? p : null;
+      return (p && p.id && p.firstName) ? p : null;
     } catch(e){ return null; }
   }
   function saveProfile(p){
     try{ localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); return true; }
     catch(e){ return false; }
   }
+  function initials(p){ return ((p.firstName || '')[0] || '') + ((p.lastName || '')[0] || ''); }
+  function paintPhoto(el, p){
+    el.textContent = ''; el.style.backgroundImage = '';
+    if (!p) return;
+    if (p.photoUrl) el.style.backgroundImage = 'url("' + p.photoUrl + '")'; else el.textContent = initials(p).toUpperCase();
+  }
   function renderProfile(){
     var p = loadProfile();
     document.getElementById('dashUser').style.visibility = p ? 'visible' : 'hidden';
     document.getElementById('dashUserName').textContent = p ? (p.firstName + ' ' + p.lastName) : '';
-    document.getElementById('dashUserTeam').textContent = p ? p.team : '';
+    document.getElementById('dashUserNick').textContent = p && p.nickname ? '“' + p.nickname + '”' : '';
+    var dt = document.getElementById('dashUserTeam'); dt.textContent = p ? (p.team || '') : ''; dt.style.color = p && p.teamColor ? p.teamColor : '';
+    paintPhoto(document.getElementById('dashPhoto'), p);
     document.getElementById('dashGreet').textContent = p ? ('Hi ' + p.firstName + ', what are we doing today?') : '';
   }
-  function openRegistration(isEdit){
-    var p = loadProfile();
-    document.getElementById('regTitle').textContent = isEdit ? 'Your profile' : 'Welcome';
-    document.getElementById('regIntro').textContent = isEdit
-      ? 'Update your name or team.'
-      : 'Tell us who you are. This is asked only once.';
-    document.getElementById('regFirstName').value = p ? p.firstName : '';
-    document.getElementById('regLastName').value = p ? p.lastName : '';
-    document.getElementById('regTeam').value = p ? p.team : '';
-    document.getElementById('regCancel').style.display = (isEdit && p) ? '' : 'none';
+  // ---- sign in with the login code ----
+  function openRegistration(isSwitch){
+    document.getElementById('regTitle').textContent = isSwitch ? 'Sign in as another rider' : 'Sign in';
+    document.getElementById('regCode').value = '';
+    document.getElementById('regCancel').style.display = isSwitch && loadProfile() ? '' : 'none';
     regErr.textContent = '';
     regOverlay.classList.add('open');
+    setTimeout(function(){ try{ document.getElementById('regCode').focus(); }catch(e){} }, 80);
   }
   function closeRegistration(){ regOverlay.classList.remove('open'); }
-
+  function forgetRider(){
+    // everything that belonged to the previous rider on this phone
+    ['rootahead_profile', 'rootahead_plan_cache', 'rootahead_roster_cache', 'rootahead_races_cache'].forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
+  }
   regForm.addEventListener('submit', function(e){
     e.preventDefault();
-    var first = niceName(document.getElementById('regFirstName').value, false);
-    var last = niceName(document.getElementById('regLastName').value, true);
-    var team = document.getElementById('regTeam').value.trim().replace(/\s+/g, ' ');
-    if (!first || !last || !team){
-      regErr.textContent = 'Please fill in all three fields.';
-      (!first ? document.getElementById('regFirstName') : !last ? document.getElementById('regLastName') : document.getElementById('regTeam')).focus();
-      return;
-    }
-    var nameErr = nameProblem(first, last);
-    if (nameErr){ regErr.textContent = nameErr; return; }
-    var prev = loadProfile();
-    var now = new Date().toISOString();
-    var ok = saveProfile({
-      firstName: first, lastName: last, team: team,
-      deviceId: deviceId,
-      registeredAt: prev && prev.registeredAt ? prev.registeredAt : now,
-      updatedAt: now
-    });
-    if (!ok){
-      regErr.textContent = 'Could not save on this device (storage is blocked, e.g. private browsing).';
-      return;
-    }
-    renderProfile();
-    closeRegistration();
+    var code = document.getElementById('regCode').value.trim();
+    if (!code){ regErr.textContent = 'Enter your login code.'; return; }
+    var btn = document.getElementById('regSubmit'); btn.disabled = true; regErr.textContent = '';
+    fetch('/api/rider-login', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ code: code }) })
+      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(d){ return { ok:r.ok, data:d }; }); })
+      .then(function(res){
+        btn.disabled = false;
+        if (!res.ok || !res.data.rider){ regErr.textContent = (res.data && res.data.error) || 'Signing in did not work. Try again.'; return; }
+        forgetRider();
+        var rd = res.data.rider; rd.signedInAt = new Date().toISOString();
+        if (!saveProfile(rd)){ regErr.textContent = 'Could not save on this phone (private browsing?).'; return; }
+        location.reload();   // start fresh as this rider
+      })
+      .catch(function(){ btn.disabled = false; regErr.textContent = 'No connection. Check your internet and try again.'; });
   });
   document.getElementById('regCancel').addEventListener('click', closeRegistration);
-  document.getElementById('dashEditProfile').addEventListener('click', function(){ openRegistration(true); });
 
-  function showDashboard(){ homeDash.classList.remove('hidden'); hideTrain(); }
+  // ---- my profile ----
+  var profOverlay = document.getElementById('profOverlay');
+  function ageFrom(d){ if (!d) return null; var b = new Date(d + 'T12:00:00'), n = new Date(), a = n.getFullYear() - b.getFullYear(); if (n.getMonth() < b.getMonth() || (n.getMonth() === b.getMonth() && n.getDate() < b.getDate())) a--; return a; }
+  function renderProfileCard(){
+    var p = loadProfile(); if (!p) return;
+    paintPhoto(document.getElementById('profPhoto'), p);
+    document.getElementById('profName').textContent = p.firstName + ' ' + p.lastName;
+    var pt = document.getElementById('profTeam'); pt.textContent = p.team || 'No team yet'; pt.style.color = p.teamColor || '';
+    var tl = document.getElementById('profTeamLogo'); tl.hidden = !p.teamLogoUrl; if (p.teamLogoUrl) tl.style.backgroundImage = 'url("' + p.teamLogoUrl + '")';
+    var rows = [['Nickname', p.nickname ? '“' + p.nickname + '”' : '—'], ['Sex', { F:'Female', M:'Male', X:'Other' }[p.sex] || '—'],
+                ['Date of birth', p.birthDate ? new Date(p.birthDate + 'T12:00:00').toLocaleDateString() + ' (' + ageFrom(p.birthDate) + ')' : '—'],
+                ['Height', p.heightCm ? p.heightCm + ' cm' : '—'], ['Weight', p.weightKg ? p.weightKg + ' kg' : '—'],
+                ['FTP', p.ftp ? p.ftp + ' W' + (p.weightKg ? ' (' + (p.ftp / p.weightKg).toFixed(1) + ' W/kg)' : '') : '—']];
+    var dl = document.getElementById('profList'); dl.innerHTML = '';
+    rows.forEach(function(r){ var dt = document.createElement('dt'), dd = document.createElement('dd'); dt.textContent = r[0]; dd.textContent = r[1]; dl.appendChild(dt); dl.appendChild(dd); });
+  }
+  function openProfile(){
+    renderProfileCard();
+    document.getElementById('profEdit').hidden = true; document.getElementById('profActions').hidden = false; document.getElementById('profList').hidden = false;
+    profOverlay.classList.add('open');
+    refreshRider();
+  }
+  document.getElementById('dashEditProfile').addEventListener('click', openProfile);
+  document.getElementById('profClose').addEventListener('click', function(){ profOverlay.classList.remove('open'); });
+  document.getElementById('profSwitch').addEventListener('click', async function(){
+    if (!(await uiConfirm('Sign out on this phone? You need your login code to sign in again.'))) return;
+    forgetRider(); location.reload();
+  });
+  document.getElementById('profChange').addEventListener('click', function(){
+    var p = loadProfile() || {};
+    document.getElementById('peCode').value = '';
+    document.getElementById('peNick').value = p.nickname || '';
+    document.getElementById('peSex').value = p.sex || ''; document.getElementById('peBirth').value = p.birthDate || '';
+    document.getElementById('peHeight').value = p.heightCm || ''; document.getElementById('peWeight').value = p.weightKg || ''; document.getElementById('peFtp').value = p.ftp || '';
+    document.getElementById('peErr').textContent = '';
+    document.getElementById('profEdit').hidden = false; document.getElementById('profActions').hidden = true; document.getElementById('profList').hidden = true;
+    setTimeout(function(){ try{ document.getElementById('peCode').focus(); }catch(e){} }, 50);
+  });
+  document.getElementById('peCancel').addEventListener('click', openProfile);
+  document.getElementById('profEdit').addEventListener('submit', function(e){
+    e.preventDefault();
+    var code = document.getElementById('peCode').value.trim(), err = document.getElementById('peErr');
+    if (!code){ err.textContent = 'Enter your login code to save.'; return; }
+    var upd = { nickname: document.getElementById('peNick').value.trim(), sex: document.getElementById('peSex').value, birthDate: document.getElementById('peBirth').value,
+                heightCm: document.getElementById('peHeight').value, weightKg: document.getElementById('peWeight').value, ftp: document.getElementById('peFtp').value };
+    var btn = document.getElementById('peSave'); btn.disabled = true; err.textContent = '';
+    fetch('/api/rider-login', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ code: code, id: (loadProfile() || {}).id, update: upd }) })
+      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(d){ return { ok:r.ok, data:d }; }); })
+      .then(function(res){
+        btn.disabled = false;
+        if (!res.ok || !res.data.rider){ err.textContent = (res.data && res.data.error) || 'Could not save.'; return; }
+        if (res.data.rider.id !== (loadProfile() || {}).id){ err.textContent = 'That is not your code.'; return; }
+        saveProfile(Object.assign(loadProfile() || {}, res.data.rider));
+        renderProfile(); openProfile();
+      })
+      .catch(function(){ btn.disabled = false; err.textContent = 'No connection. Not saved.'; });
+  });
+  // keep the local copy in step with what the coach changed (name, team, photo…)
+  function refreshRider(){
+    var p = loadProfile(); if (!p) return;
+    fetch('/api/rider-login?id=' + encodeURIComponent(p.id), { cache:'no-store' })
+      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(d){ return { status:r.status, data:d }; }); })
+      .then(async function(res){
+        if (res.status === 404 && res.data.gone){ forgetRider(); (await uiAlert('Your rider profile was removed by your coach. Ask your coach for a new code.')); location.reload(); return; }
+        if (res.data && res.data.rider){ saveProfile(Object.assign({}, p, res.data.rider)); renderProfile(); if (profOverlay.classList.contains('open') && document.getElementById('profEdit').hidden) renderProfileCard(); }
+      }).catch(function(){});
+  }
+
+  function showDashboard(){ homeDash.classList.remove('hidden'); hideTrain(); hideTeam(); hideRace(); endTrainRoute(); }
+  function endTrainRoute(){ if (typeof trainRouteCtx !== 'undefined' && trainRouteCtx){ trainRouteCtx = null; var b = document.getElementById('trainRouteBanner'); if (b) b.hidden = true; } }
   function showTrack(){
-    homeDash.classList.add('hidden');
+    homeDash.classList.add('hidden'); hideTeam(); hideRace();
     hideTrain();
     // the map was laid out while covered — let Leaflet re-measure it
     setTimeout(function(){ if (typeof map !== 'undefined' && map) map.invalidateSize(); }, 60);
   }
-  function applyHashView(){ if (location.hash === '#track') showTrack(); else if (location.hash === '#train') showTrain(); else showDashboard(); }
+  function applyHashView(){ if (location.hash === '#track') showTrack(); else if (location.hash === '#train') showTrain(); else if (location.hash === '#team') showTeam(); else if (location.hash === '#race') showRace(); else showDashboard(); }
   window.addEventListener('hashchange', applyHashView);
 
   function showDashToast(msg, ms){
@@ -1659,6 +2059,16 @@
   Array.prototype.forEach.call(document.querySelectorAll('.dash-tile'), function(tile){
     tile.addEventListener('click', function(){
       var view = tile.getAttribute('data-view');
+      if (view === 'race'){
+        openedTrackFromDash = true;
+        if (location.hash === '#race') showRace(); else location.hash = 'race';
+        return;
+      }
+      if (view === 'team'){
+        openedTrackFromDash = true;
+        if (location.hash === '#team') showTeam(); else location.hash = 'team';
+        return;
+      }
       if (view === 'train'){
         openedTrackFromDash = true;
         if (location.hash === '#train') showTrain(); else location.hash = 'train';
@@ -1683,7 +2093,7 @@
 
   renderProfile();
   if (!loadProfile()) openRegistration(false);
-  else applyHashView();
+  else { applyHashView(); refreshRider(); }
 
   /* ---------------- NO PAGE ZOOM (map excepted) ---------------- */
   // iOS Safari ignores user-scalable=no, so pinch is also blocked here;
@@ -4850,6 +5260,243 @@
   function daySteps(day){ return day.type === 'custom' && day.custom ? day.custom.steps : trainSteps(day.type, day.min); }
   function stepsMinutes(steps){ return Math.round((steps || []).reduce(function(t, s){ return t + (Number(s.min) || 0); }, 0)); }
 
+  function escapeHtml(t){ return String(t).replace(/[&<>"']/g, function(c){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); }
+  // after a route is generated: compare it with the training day and remember it on that day
+  function linkRouteToTrainDay(){
+    if (!trainRouteCtx || !state.route) return null;
+    var c = trainRouteCtx, km = Math.round(state.route.distanceKm * 10) / 10, gain = 0;
+    try{ if (state.route.elevations) gain = Math.round(computeGain(state.route.elevations).gain); }catch(e){}
+    var est = routeMinutes(km, gain, c);
+    var link = { km: km, gainM: gain, estMin: est, planMin: c.min };
+    (trainState.routes = trainState.routes || {})[c.d] = link;
+    cachePlan();
+    var off = Math.abs(est - c.min) > Math.max(10, c.min * 0.15);
+    setRouteBanner('<b>' + escapeHtml(c.title) + '</b>: route ' + km + ' km, ' + gain + ' m climbing, about ' + trainHours(est) + ' riding (plan ' + trainHours(c.min) + ').' +
+      (off ? ' ' + (est > c.min ? 'A bit long: try “New route” or lower the distance.' : 'A bit short: try “New route” or raise the distance.') : ' Fits your plan ✓'), off);
+    fetch('/api/plan', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ deviceId: deviceId, routeLink: Object.assign({ d: c.d }, link) }) }).catch(function(){});
+    return c;
+  }
+
+  /* ================= RACES: the rider's own calendar ================= */
+  var raceState = { list: null };
+  var RACE_CACHE = 'rootahead_races_cache';
+  function rIso(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function rDate(s){ return new Date(s + 'T12:00:00'); }
+  function raceStatus(rc){ return rc.cancelled ? 'cancelled' : rc.myStatus === 'removed' ? 'removed' : 'selected'; }
+  function statusText(rc){ var st = raceStatus(rc); return st === 'cancelled' ? 'CANCELLED' : st === 'removed' ? '✕ NO LONGER SELECTED' : '✓ Selected'; }
+  function daysTo(s){ return Math.round((rDate(s) - rDate(rIso(new Date()))) / 86400000); }
+  function whenText(s){ var n = daysTo(s); return n === 0 ? 'Today' : n === 1 ? 'Tomorrow' : n > 1 ? 'In ' + n + ' days' : n === -1 ? 'Yesterday' : Math.abs(n) + ' days ago'; }
+  function loadRaces(cb){
+    if (!loadProfile()) return;
+    if (!raceState.list){ try{ raceState.list = JSON.parse(localStorage.getItem(RACE_CACHE) || 'null'); }catch(e){} }
+    renderRaceBits();
+    fetch('/api/races?rider=' + encodeURIComponent(deviceId), { cache:'no-store' })
+      .then(function(r){ return r.json().then(function(d){ return { ok:r.ok, data:d }; }); })
+      .then(function(res){
+        var st = document.getElementById('rvStatusApp');
+        if (!res.ok){ st.textContent = (res.data && res.data.error) || 'Your races could not be loaded.'; return; }
+        st.textContent = ''; raceState.list = res.data.races || [];
+        try{ localStorage.setItem(RACE_CACHE, JSON.stringify(raceState.list)); }catch(e){}
+        renderRaceBits(); if (cb) cb();
+      })
+      .catch(function(){ document.getElementById('rvStatusApp').textContent = raceState.list ? 'Offline: your races as last seen.' : 'No connection.'; });
+  }
+  function initials2(r){ return (((r.firstName || '')[0] || '') + ((r.lastName || '')[0] || '')).toUpperCase(); }
+  function faceEl(r){ var f = document.createElement('span'); f.className = 'face'; f.style.backgroundColor = r.teamColor || '#555';
+    if (r.photoUrl) f.style.backgroundImage = 'url("' + r.photoUrl + '")'; else f.textContent = initials2(r); f.title = r.firstName + ' ' + r.lastName; return f; }
+  // dashboard strip + Race tile
+  function renderRaceBits(){
+    var list = raceState.list || [], today = rIso(new Date());
+    var up = list.filter(function(r){ return r.date >= today; });
+    var next = up.filter(function(r){ return raceStatus(r) === 'selected'; })[0];
+    document.getElementById('raceTileSub').textContent = next ? 'Next: ' + rDate(next.date).toLocaleDateString([], { day:'numeric', month:'short' }) + ' · ' + next.name : 'Your race calendar';
+    var bd = document.getElementById('raceBadge'), n = up.filter(function(r){ return raceStatus(r) === 'selected'; }).length;
+    bd.hidden = !n; bd.textContent = n;
+    var strip = document.getElementById('raceStrip'), items = document.getElementById('rsItems');
+    items.innerHTML = '';
+    strip.hidden = !up.length;
+    up.slice(0, 3).forEach(function(rc){
+      var st = raceStatus(rc), b = document.createElement('button'); b.type = 'button'; b.className = 'rs-item ' + st;
+      var d = document.createElement('span'); d.className = 'd'; d.textContent = rDate(rc.date).toLocaleDateString([], { day:'2-digit', month:'2-digit' });
+      var nm = document.createElement('span'); nm.className = 'n'; nm.textContent = rc.name + (rc.location ? ' · ' + rc.location : '');
+      var p = document.createElement('span'); p.className = 'pill ' + st; p.textContent = st === 'removed' ? '✕ NOT SELECTED' : statusText(rc);
+      b.appendChild(d); b.appendChild(nm); b.appendChild(p);
+      b.addEventListener('click', function(){ openRace(rc); });
+      items.appendChild(b);
+    });
+    if (!document.getElementById('raceView').classList.contains('hidden')) renderRaceView();
+  }
+  function raceCard(rc, past){
+    var st = raceStatus(rc), c = document.createElement('button'); c.type = 'button'; c.className = 'race-card ' + st + (past ? ' past' : '');
+    var d = rDate(rc.date), cal = document.createElement('span'); cal.className = 'rc-cal';
+    cal.innerHTML = '<span class="m"></span><b></b><small></small>';
+    cal.querySelector('.m').textContent = d.toLocaleDateString([], { month:'short' });
+    cal.querySelector('b').textContent = d.getDate();
+    cal.querySelector('small').textContent = d.toLocaleDateString([], { weekday:'short' });
+    c.appendChild(cal);
+    var body = document.createElement('span'); body.className = 'rc-body';
+    var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = rc.name; body.appendChild(nm);
+    var meta = document.createElement('span'); meta.className = 'meta';
+    meta.textContent = [rc.type, rc.location, rc.distanceKm ? rc.distanceKm + ' km' : ''].filter(Boolean).join(' · '); body.appendChild(meta);
+    var row = document.createElement('span'); row.className = 'row';
+    var p = document.createElement('span'); p.className = 'pill ' + st; p.textContent = statusText(rc); row.appendChild(p);
+    if (st !== 'cancelled'){ var w = document.createElement('span'); w.className = 'when'; w.textContent = whenText(rc.date); row.appendChild(w); }
+    var fc = document.createElement('span'); fc.className = 'faces';
+    rc.lineup.slice(0, 6).forEach(function(r){ fc.appendChild(faceEl(r)); });
+    var sm = document.createElement('small'); sm.textContent = rc.lineup.length + ' rider' + (rc.lineup.length === 1 ? '' : 's'); fc.appendChild(sm);
+    row.appendChild(fc);
+    body.appendChild(row); c.appendChild(body);
+    c.addEventListener('click', function(){ openRace(rc); });
+    return c;
+  }
+  function renderRaceView(){
+    var list = raceState.list, body = document.getElementById('rvBody'); body.innerHTML = '';
+    if (!list) return;
+    if (!list.length){ body.innerHTML = '<p class="tv-status" style="text-align:center;margin-top:30px;">You are not selected for a race yet. Your coach picks the riders.</p>'; return; }
+    var today = rIso(new Date());
+    var up = list.filter(function(r){ return r.date >= today; }), past = list.filter(function(r){ return r.date < today; }).reverse();
+    function sec(title, arr, isPast){ if (!arr.length) return; var h = document.createElement('h2'); h.className = 'rv-sec-h'; h.textContent = title; body.appendChild(h); arr.forEach(function(r){ body.appendChild(raceCard(r, isPast)); }); }
+    sec('Coming up', up, false); sec('Past', past, true);
+  }
+  function openRace(rc){
+    var st = raceStatus(rc), box = document.getElementById('rmCard'); box.innerHTML = '';
+    var top = document.createElement('div'); top.className = 'rm-top' + (st === 'cancelled' ? ' cancelled' : st === 'removed' ? ' removed' : '');
+    var p = document.createElement('span'); p.className = 'pill ' + st; p.textContent = statusText(rc); top.appendChild(p);
+    var h = document.createElement('h2'); h.id = 'rmName'; h.textContent = rc.name; top.appendChild(h);
+    var m = document.createElement('div'); m.className = 'meta';
+    m.textContent = rDate(rc.date).toLocaleDateString([], { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + (st !== 'cancelled' ? ' · ' + whenText(rc.date) : '');
+    top.appendChild(m); box.appendChild(top);
+    var facts = document.createElement('div'); facts.className = 'rm-facts';
+    [['Type', rc.type], ['Where', rc.location || '—'], ['Distance', rc.distanceKm ? rc.distanceKm + ' km' : '—']].forEach(function(f){
+      var x = document.createElement('div'); x.className = 'rm-fact'; x.innerHTML = '<small></small><b></b>'; x.firstChild.textContent = f[0]; x.lastChild.textContent = f[1]; facts.appendChild(x);
+    });
+    box.appendChild(facts);
+    function note(cls, text){ var n = document.createElement('div'); n.className = 'rm-note ' + cls; n.textContent = text; box.appendChild(n); }
+    if (st === 'cancelled') note('cancelled', 'This race has been cancelled' + (rc.cancelledAt ? ' (' + new Date(rc.cancelledAt).toLocaleDateString() + ')' : '') + '.');
+    if (rc.myStatus === 'removed') note('removed', '✕ You are no longer selected for this race. Your coach took you off the selection' + (rc.myChangedAt ? ' on ' + new Date(rc.myChangedAt).toLocaleDateString() : '') + '.');
+    if (rc.notes) note('info', rc.notes);
+    var lh = document.createElement('h3'); lh.className = 'rm-lineup-h'; lh.textContent = 'Selected riders (' + rc.lineup.length + ')'; box.appendChild(lh);
+    var lu = document.createElement('div'); lu.className = 'rm-lineup';
+    if (!rc.lineup.length){ var e = document.createElement('p'); e.className = 'tv-status'; e.textContent = 'Nobody selected yet.'; lu.appendChild(e); }
+    rc.lineup.forEach(function(r){
+      var it = document.createElement('div'); it.className = 'lu'; it.style.setProperty('--tc', r.teamColor || '#888');
+      var ph = document.createElement('span'); ph.className = 'ph'; if (r.photoUrl) ph.style.backgroundImage = 'url("' + r.photoUrl + '")'; else ph.textContent = initials2(r);
+      var tx = document.createElement('div'); var b = document.createElement('b'); b.textContent = r.firstName + ' ' + r.lastName;
+      if (r.me){ var y = document.createElement('span'); y.className = 'you'; y.textContent = 'YOU'; b.appendChild(y); }
+      var i = document.createElement('i'); i.textContent = [r.nickname ? '“' + r.nickname + '”' : '', r.team].filter(Boolean).join(' · ');
+      tx.appendChild(b); tx.appendChild(i); it.appendChild(ph); it.appendChild(tx); lu.appendChild(it);
+    });
+    box.appendChild(lu);
+    var cl = document.createElement('button'); cl.type = 'button'; cl.className = 'btn ghost rm-close'; cl.textContent = 'Close';
+    cl.addEventListener('click', closeRace); box.appendChild(cl);
+    document.getElementById('raceModal').classList.add('open');
+  }
+  function closeRace(){ document.getElementById('raceModal').classList.remove('open'); }
+  document.getElementById('raceModal').addEventListener('click', function(e){ if (e.target === this) closeRace(); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeRace(); });
+  function showRace(){
+    if (!raceState){ setTimeout(showRace, 0); return; }
+    homeDash.classList.add('hidden'); hideTeam(); hideTrain();
+    document.getElementById('raceView').classList.remove('hidden');
+    renderRaceView(); loadRaces();
+  }
+  function hideRace(){ var v = document.getElementById('raceView'); if (v) v.classList.add('hidden'); }
+  document.getElementById('raceHomeBtn').addEventListener('click', function(){ goDashboard(); });
+  document.getElementById('rsAll').addEventListener('click', function(){ openedTrackFromDash = true; location.hash = 'race'; });
+  document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'visible') loadRaces(); });
+  setTimeout(function(){ loadRaces(); }, 0);
+
+  /* ================= TEAM: overview of every rider per team ================= */
+  var teamState = { data: null, filter: '' };
+  var ROSTER_CACHE = 'rootahead_roster_cache';
+  function showTeam(){
+    if (!teamState){ setTimeout(showTeam, 0); return; }
+    hideRace();
+    homeDash.classList.add('hidden');
+    document.getElementById('teamView').classList.remove('hidden');
+    loadRoster();
+  }
+  function hideTeam(){ var v = document.getElementById('teamView'); if (v) v.classList.add('hidden'); }
+  function loadRoster(){
+    if (!teamState.data){ try{ teamState.data = JSON.parse(localStorage.getItem(ROSTER_CACHE) || 'null'); }catch(e){} }
+    renderRoster();
+    var st = document.getElementById('tmStatusApp');
+    if (!teamState.data) st.textContent = 'Loading the team…';
+    fetch('/api/team-roster?id=' + encodeURIComponent(deviceId), { cache:'no-store' })
+      .then(function(r){ return r.json().then(function(d){ return { ok:r.ok, data:d }; }); })
+      .then(function(res){
+        if (!res.ok){ st.textContent = (res.data && res.data.error) || 'The team could not be loaded.'; return; }
+        st.textContent = ''; teamState.data = res.data;
+        try{ localStorage.setItem(ROSTER_CACHE, JSON.stringify(res.data)); }catch(e){}
+        renderRoster();
+      })
+      .catch(function(){ st.textContent = teamState.data ? 'Offline: showing the team as last seen.' : 'No connection.'; });
+  }
+  // a light version of the team colour for text on dark
+  function lighten(hex){ var m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return '#ffd75e'; var n = parseInt(m[1], 16);
+    var r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255; function up(x){ return Math.round(x + (255 - x) * 0.45); }
+    return 'rgb(' + up(r) + ',' + up(g) + ',' + up(b) + ')'; }
+  function riderCard(r, t, big){
+    var c = document.createElement(big ? 'div' : 'button'); c.className = 'rcard'; if (!big) c.type = 'button';
+    c.style.setProperty('--tc', t.color); c.style.setProperty('--tcl', lighten(t.color));
+    if (r.photoUrl){ var ph = document.createElement('span'); ph.className = 'ph'; ph.style.backgroundImage = 'url("' + r.photoUrl + '")'; c.appendChild(ph); }
+    else { var ini = document.createElement('span'); ini.className = 'ini'; ini.textContent = (((r.firstName || '')[0] || '') + ((r.lastName || '')[0] || '')).toUpperCase(); c.appendChild(ini); }
+    if (r.age != null){ var a = document.createElement('span'); a.className = 'age'; a.textContent = r.age + ' yrs'; c.appendChild(a); }
+    if (r.me){ var y = document.createElement('span'); y.className = 'you'; y.textContent = 'YOU'; c.appendChild(y); }
+    var f = document.createElement('span'); f.className = 'fade';
+    var b = document.createElement('b'); b.textContent = r.firstName + ' ' + r.lastName; f.appendChild(b);
+    if (r.nickname){ var n = document.createElement('span'); n.className = 'nk'; n.textContent = '“' + r.nickname + '”'; f.appendChild(n); }
+    if (big && t.name){ var tn = document.createElement('span'); tn.className = 'team'; tn.textContent = t.name; f.appendChild(tn); }
+    c.appendChild(f);
+    if (!big){
+      c.setAttribute('aria-label', r.firstName + ' ' + r.lastName + (r.nickname ? ', ' + r.nickname : '') + (r.age != null ? ', ' + r.age + ' years' : '') + (r.me ? ' (you)' : ''));
+      c.addEventListener('click', function(){ openRiderCard(r, t); });
+    }
+    return c;
+  }
+  function openRiderCard(r, t){
+    var box = document.getElementById('rcBig'); box.innerHTML = '';
+    box.appendChild(riderCard(r, t, true));
+    var cl = document.createElement('button'); cl.type = 'button'; cl.className = 'btn ghost close'; cl.textContent = 'Close';
+    cl.addEventListener('click', closeRiderCard); box.appendChild(cl);
+    document.getElementById('rcModal').classList.add('open');
+  }
+  function closeRiderCard(){ document.getElementById('rcModal').classList.remove('open'); }
+  document.getElementById('rcModal').addEventListener('click', function(e){ if (e.target === this) closeRiderCard(); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeRiderCard(); });
+  function renderRoster(){
+    var d = teamState.data, body = document.getElementById('tmBody'), chips = document.getElementById('tmChips');
+    body.innerHTML = ''; chips.innerHTML = '';
+    if (!d) return;
+    if (!d.teams.length){ body.innerHTML = '<p class="tv-status" style="text-align:center;margin-top:30px;">No teams yet. Your coach sets them up.</p>'; return; }
+    function chip(label, val, color){
+      var c = document.createElement('button'); c.type = 'button'; c.className = 'tm-chip'; c.setAttribute('role', 'tab');
+      c.setAttribute('aria-selected', String(teamState.filter === val));
+      if (color){ var i = document.createElement('i'); i.style.background = color; c.appendChild(i); }
+      c.appendChild(document.createTextNode(label));
+      c.addEventListener('click', function(){ teamState.filter = val; renderRoster(); document.getElementById('teamView').scrollTo(0, 0); });
+      chips.appendChild(c);
+    }
+    chip('All teams · ' + d.total, '', null);
+    d.teams.forEach(function(t){ chip(t.name + ' · ' + t.riders.length, t.id || '_none', t.color); });
+    d.teams.filter(function(t){ return !teamState.filter || (t.id || '_none') === teamState.filter; }).forEach(function(t){
+      var sec = document.createElement('section'); sec.className = 'tm-sec'; sec.style.setProperty('--tc', t.color);
+      var hd = document.createElement('header'); hd.className = 'tm-head';
+      var lg = document.createElement('span'); lg.className = 'tm-logo-app' + (t.logoUrl ? ' logo' : '');
+      if (t.logoUrl) lg.style.backgroundImage = 'url("' + t.logoUrl + '")'; else { lg.textContent = t.name.replace(/\s+/g, '').slice(0, 4).toUpperCase(); if (lg.textContent.length > 3) lg.classList.add('long'); }
+      hd.appendChild(lg);
+      var tx = document.createElement('div');
+      var h2 = document.createElement('h2'); h2.textContent = t.name; tx.appendChild(h2);
+      var cnt = document.createElement('div'); cnt.className = 'cnt'; cnt.textContent = t.riders.length + ' rider' + (t.riders.length === 1 ? '' : 's'); tx.appendChild(cnt);
+      if (t.about){ var ab = document.createElement('p'); ab.textContent = t.about; tx.appendChild(ab); }
+      hd.appendChild(tx); sec.appendChild(hd);
+      var grid = document.createElement('div'); grid.className = 'tm-cards';
+      t.riders.forEach(function(r){ grid.appendChild(riderCard(r, t, false)); });
+      sec.appendChild(grid); body.appendChild(sec);
+    });
+  }
+  document.getElementById('teamHomeBtn').addEventListener('click', function(){ goDashboard(); });
+
   /* ================= TRAIN: rider screen ================= */
   var trainState = { plan:null, log:{}, week:0, open:null, settings:null, loaded:false };
   var PLAN_CACHE = 'rootahead_plan_cache';
@@ -4857,6 +5504,8 @@
   // (these can be called by the start-up routing before this part of the script has run)
   function showTrain(){
     if (!trainState){ setTimeout(showTrain, 0); return; }
+    hideTeam(); hideRace();
+    endTrainRoute();
     homeDash.classList.add('hidden');
     document.getElementById('trainView').classList.remove('hidden');
     loadTrain();   // shows the saved copy at once, then fetches the latest (coach changes)
@@ -4864,12 +5513,12 @@
   function hideTrain(){ var v = document.getElementById('trainView'); if (v) v.classList.add('hidden'); }
 
   function trainStatus(msg, bad){ var el = document.getElementById('tvStatus'); el.textContent = msg || ''; el.classList.toggle('bad', !!bad); }
-  function cachePlan(){ try{ localStorage.setItem(PLAN_CACHE, JSON.stringify({ plan:trainState.plan, log:trainState.log, history:trainState.history || [] })); }catch(e){} }
+  function cachePlan(){ try{ localStorage.setItem(PLAN_CACHE, JSON.stringify({ plan:trainState.plan, log:trainState.log, history:trainState.history || [], canEdit:!!trainState.canEdit, routes:trainState.routes || {} })); }catch(e){} }
   var trainFetchAt = 0;
   function loadTrain(opts){
     opts = opts || {};
     if (!trainState.loaded){
-      try{ var c = JSON.parse(localStorage.getItem(PLAN_CACHE) || 'null'); if (c){ trainState.plan = c.plan; trainState.log = c.log || {}; trainState.history = c.history || []; } }catch(e){}
+      try{ var c = JSON.parse(localStorage.getItem(PLAN_CACHE) || 'null'); if (c){ trainState.plan = c.plan; trainState.log = c.log || {}; trainState.history = c.history || []; trainState.canEdit = !!c.canEdit; trainState.routes = c.routes || {}; } }catch(e){}
       trainState.loaded = true;
     }
     renderTrain();
@@ -4881,6 +5530,7 @@
         if (!res.ok){ if (!trainState.plan) trainStatus('Your plan could not be loaded right now.', true); return; }
         var before = trainState.plan, changed = JSON.stringify(res.data.plan) !== JSON.stringify(before);
         trainState.plan = res.data.plan; trainState.log = res.data.log || {}; trainState.history = res.data.history || [];
+        trainState.canEdit = !!res.data.canEdit; trainState.routes = res.data.routes || {};
         cachePlan();
         if (changed && before && res.data.plan && res.data.plan.source === 'coach' && res.data.plan.adjustedAt !== before.adjustedAt){
           showDashToast('Your coach updated your training plan.', 4000);
@@ -4897,9 +5547,13 @@
   }
 
   function renderTrain(){
-    var p = trainState.plan, prof = loadProfile();
-    document.getElementById('tvSetup').hidden = !!p && !trainState.editing;
+    var p = trainState.plan, prof = loadProfile(), may = !!trainState.canEdit;
+    if (!may) trainState.editing = false;
+    document.getElementById('tvWaiting').hidden = !!p || may;
+    document.getElementById('tvSetup').hidden = !may || (!!p && !trainState.editing);
     document.getElementById('tvPlan').hidden = !p || !!trainState.editing;
+    document.getElementById('tvEditSettings').hidden = !may;
+    if (!p && !may) return;
     if (!p || trainState.editing){ fillSetup(); return; }
     var n = Math.ceil(p.days.length / 7);
     if (trainState.week < 0 || trainState.week >= n) trainState.week = currentWeekIndex(p);
@@ -4912,10 +5566,12 @@
       var sm = planSummary(p, trainState.log);
       document.getElementById('tvEndedTitle').textContent = 'This plan ended on ' + tParse(lastDay).toLocaleDateString([], { day:'numeric', month:'long' });
       document.getElementById('tvEndedText').textContent = 'You did ' + sm.done + ' of ' + sm.workouts + ' workouts (' + trainHours(sm.minDone) + ' of ' + trainHours(sm.minPlanned) + '). ' +
-        'Everything stays saved. Make a new plan to keep going' + (recentEventDays(p) !== null ? '; it starts with an easy week after your event.' : '.');
+        (may ? 'Everything stays saved. Make a new plan to keep going' + (recentEventDays(p) !== null ? '; it starts with an easy week after your event.' : '.')
+             : 'Everything stays saved. Your coach will set your next plan.');
+      document.getElementById('tvNextPlan').hidden = !may;
     }
     // summary
-    document.getElementById('tvGoal').textContent = (TRAIN_GOALS[s.goal] || 'Training plan') + ' · ' + s.hours + ' h a week';
+    document.getElementById('tvGoal').textContent = (p.templateName || TRAIN_GOALS[s.goal] || 'Training plan') + ' · about ' + trainHours(avgWeekMinutes(p)) + ' a week';
     var src = document.getElementById('tvSource');
     src.textContent = p.source === 'coach' ? 'Adjusted by your coach' + (p.adjustedAt ? ' on ' + new Date(p.adjustedAt).toLocaleDateString() : '') : 'Suggested by the app';
     src.className = 'tv-badge' + (p.source === 'coach' ? ' coach' : '');
@@ -4930,7 +5586,8 @@
     // week
     var w = trainState.week, t = trainWeekTotals(p, w, trainState.log);
     document.getElementById('tvWeekLabel').textContent = 'Week ' + (w + 1) + ' of ' + n + ' · ' + (TRAIN_PHASES[p.phases[w]] || '');
-    document.getElementById('tvWeekTotals').textContent = trainHours(t.planned) + ' planned · ' + trainHours(t.done) + ' done';
+    var wkKm = p.days.slice(w * 7, w * 7 + 7).reduce(function(a, x){ return a + dayKm(x); }, 0);
+    document.getElementById('tvWeekTotals').textContent = trainHours(t.planned) + ' · about ' + wkKm + ' km planned · ' + trainHours(t.done) + ' done';
     document.getElementById('tvPrev').disabled = w === 0;
     document.getElementById('tvNext').disabled = w >= n - 1;
     var bar = document.getElementById('tvWeekBar');
@@ -4954,6 +5611,7 @@
       b.querySelector('.dd').textContent = dt.getDate() + '/' + (dt.getMonth() + 1);
       var bar = b.querySelector('.bar i'); bar.style.height = h + '%'; bar.style.background = info.zone ? TRAIN_ZONES[info.zone].color : 'transparent';
       b.querySelector('.mm').textContent = day.type === 'rest' ? 'rest' : trainHours(day.min);
+      if (routeFits(day, (trainState.routes || {})[day.d])) b.classList.add('routed');
       b.addEventListener('click', function(){ trainState.open = day.d; renderTrain(); });
       strip.appendChild(b);
     });
@@ -4963,6 +5621,7 @@
     holder.appendChild(trainDayCard(sel, p));
   }
 
+  function el2(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
   function planSummary(plan, log){
     var r = { workouts:0, done:0, minPlanned:0, minDone:0 };
     plan.days.forEach(function(x){
@@ -5001,13 +5660,13 @@
     when.textContent = dt.toLocaleDateString([], { weekday:'long', day:'numeric', month:'long' }) + (day.d === tIso(new Date()) ? ' · today' : '');
     var h3 = document.createElement('h3'); h3.textContent = info.title;
     var sum = document.createElement('div'); sum.className = 'sum';
-    sum.textContent = day.type === 'rest' ? 'No riding' : trainHours(day.min) + (info.zone ? ' · ' + TRAIN_ZONES[info.zone].name : '');
+    sum.textContent = day.type === 'rest' ? 'No riding' : trainHours(day.min) + ' · about ' + dayKm(day) + ' km' + (info.zone ? ' · ' + TRAIN_ZONES[info.zone].name : '');
     tx.appendChild(when); tx.appendChild(h3); tx.appendChild(sum); top.appendChild(tx);
     if (lg){ var st = document.createElement('span'); st.className = 'state ' + lg.status; st.textContent = lg.status === 'done' ? '✓ Done' : 'Skipped'; top.appendChild(st); }
     card.appendChild(top);
     var about = document.createElement('p'); about.className = 'tv-about'; about.textContent = info.about; card.appendChild(about);
     if (day.note){ var cn = document.createElement('p'); cn.className = 'tv-daynote'; cn.textContent = 'Coach: ' + day.note; card.appendChild(cn); }
-    var steps = daySteps(day), ftp = (p.settings && p.settings.ftp) || 0;
+    var steps = daySteps(day), ftp = (p.settings && p.settings.ftp) || (loadProfile() || {}).ftp || 0;
     if (day.type === 'custom'){ var cb = document.createElement('p'); cb.className = 'tv-daynote'; cb.textContent = 'Workout from your coach'; card.insertBefore(cb, card.querySelector('.tv-about')); }
     if (steps.length){
       var prof = document.createElement('div'); prof.className = 'tv-profile'; prof.setAttribute('aria-hidden', 'true');
@@ -5032,7 +5691,7 @@
         li.appendChild(dot); li.appendChild(m); li.appendChild(l); li.appendChild(tg); ol.appendChild(li);
       });
       card.appendChild(ol);
-      if (!ftp){ var hint = document.createElement('p'); hint.className = 'tv-hint'; hint.textContent = 'Add your FTP under “Change settings” to see power targets in watts.'; card.appendChild(hint); }
+      if (!ftp){ var hint = document.createElement('p'); hint.className = 'tv-hint'; hint.textContent = 'Add your FTP in My profile (dashboard) to see power targets in watts.'; card.appendChild(hint); }
     } else if (day.type === 'rest'){
       var rp = document.createElement('p'); rp.className = 'tv-restday'; rp.textContent = 'Easy walking or stretching is fine.'; card.appendChild(rp);
     }
@@ -5044,6 +5703,16 @@
         rf.innerHTML = '<span class="sc"></span><span class="tx"></span>';
         rf.firstChild.textContent = lg.score + '/10'; rf.lastChild.textContent = '“' + lg.text + '”';
         card.appendChild(rf);
+      }
+      var link = (trainState.routes || {})[day.d];
+      if (link){
+        var made = link.planMin === day.min, off = Math.abs(link.estMin - day.min) > Math.max(10, day.min * 0.15), fits = made && !off;
+        var rb = el2('div', 'tv-route' + (fits ? '' : ' off'));
+        rb.innerHTML = '<b>Route</b> ';
+        rb.appendChild(document.createTextNode(link.km + ' km · ' + link.gainM + ' m climbing · about ' + trainHours(link.estMin) + ' riding'));
+        if (!made) rb.appendChild(el2('small', null, 'The plan changed to ' + trainHours(day.min) + ' after this route was made. Make a new route.'));
+        else if (off) rb.appendChild(el2('small', null, 'This route takes about ' + trainHours(link.estMin) + ', the plan says ' + trainHours(day.min) + '. Try “New route” in Track.'));
+        card.appendChild(rb);
       }
       if (trainState.reflecting === day.d){ card.appendChild(reflectionForm(day)); return card; }
       if (!lg){
@@ -5086,7 +5755,23 @@
       .catch(function(){ trainStatus('Offline: saved on this phone only.', true); });
   }
   // average road speed per kind of ride (a ride with intervals includes easy parts)
-  var TRAIN_PACE = { rec:24, end:27, long:27, tempo:28, ss:28, thr:28, vo2:26, hills:22, sprint:26 };
+  var TRAIN_PACE = { rec:24, end:27, long:27, tempo:28, ss:28, thr:28, vo2:26, hills:22, sprint:26, custom:27, event:28 };
+  function dayPace(day){ return TRAIN_PACE[day.type] || 27; }
+  // planned distance for a day: the linked route if it still fits the plan, otherwise minutes × pace
+  // a linked route counts only if it was made for the current duration AND its riding time fits (±15%, min. 10 min)
+  function routeFits(day, link){ return !!link && link.planMin === day.min && Math.abs(link.estMin - day.min) <= Math.max(10, day.min * 0.15); }
+  function dayKm(day){
+    if (day.type === 'rest') return 0;
+    var link = (trainState.routes || {})[day.d];
+    return routeFits(day, link) ? link.km : Math.round(day.min / 60 * dayPace(day));
+  }
+  // riding time for a real route: distance at the day's pace + about 5 min per 100 m of climbing
+  function routeMinutes(km, gainM, day){ return Math.round(km / dayPace(day) * 60 + (gainM || 0) / 100 * 5); }
+  function avgWeekMinutes(plan){
+    var weeks = Math.max(1, Math.ceil(plan.days.length / 7)), t = 0;
+    plan.days.forEach(function(x){ if (x.type !== 'rest') t += x.min || 0; });
+    return Math.round(t / weeks);
+  }
   var TRAIN_ROUTE_TIP = {
     tempo:'Pick a loop with long, quiet stretches for the tempo blocks.',
     ss:'Pick a loop with long, quiet stretches without stops for the sweet spot efforts.',
@@ -5095,8 +5780,17 @@
     hills:'Start near hills, or use Max Alt in Track for a hillier route.',
     sprint:'A short, safe loop is enough.'
   };
+  // the training day a route is being made for (until the rider leaves Track)
+  var trainRouteCtx = null;
+  function setRouteBanner(html, bad){
+    var b = document.getElementById('trainRouteBanner');
+    if (!html){ b.hidden = true; return; }
+    b.hidden = false; b.className = 'train-route-banner' + (bad ? ' off' : ''); b.innerHTML = html;
+  }
   function planRouteFor(day){
-    var km = Math.round(day.min / 60 * (TRAIN_PACE[day.type] || 27));
+    var km = Math.round(day.min / 60 * dayPace(day));
+    trainRouteCtx = { d: day.d, min: day.min, type: day.type, title: dayInfo(day).title, km: km };
+    setRouteBanner('<b>' + escapeHtml(trainRouteCtx.title) + '</b> · ' + trainHours(day.min) + ' · aim ≈ ' + km + ' km. Pick your start and tap Generate.');
     var slider = document.getElementById('distSlider');
     slider.value = String(tClamp(km, +slider.min || 3, +slider.max || 250));
     slider.dispatchEvent(new Event('input'));
@@ -5160,7 +5854,7 @@
 
   segPick('tvGoalSeg', false, 'goal'); segPick('tvLevelSeg', false, 'level'); segPick('tvDaysSeg', true);
   document.getElementById('tvHours').addEventListener('input', function(){ trainState.settings.hours = +this.value; document.getElementById('tvHoursVal').textContent = this.value + ' h'; });
-  document.getElementById('tvMakeBtn').addEventListener('click', function(){
+  document.getElementById('tvMakeBtn').addEventListener('click', async function(){
     var s = trainState.settings, err = document.getElementById('tvSetupErr');
     s.eventDate = document.getElementById('tvEventDate').value || '';
     s.eventName = document.getElementById('tvEventName').value.trim().slice(0, 60);
@@ -5168,7 +5862,7 @@
     if (s.days.length < 2){ err.textContent = 'Pick at least 2 days you can ride.'; return; }
     if (s.eventDate && s.eventDate < tIso(new Date())){ err.textContent = 'The event date is in the past.'; return; }
     var oldEnded = trainState.plan && trainState.plan.days.length && trainState.plan.days[trainState.plan.days.length - 1].d < tIso(new Date());
-    if (trainState.plan && trainState.plan.source === 'coach' && !oldEnded && !confirm('Your coach adjusted your current plan. A new plan replaces those changes. Continue?')) return;
+    if (trainState.plan && trainState.plan.source === 'coach' && !oldEnded && !(await uiConfirm('Your coach adjusted your current plan. A new plan replaces those changes. Continue?'))) return;
     var plan = generateTrainPlan(JSON.parse(JSON.stringify(s)));
     var btn = this; btn.disabled = true;
     fetch('/api/plan', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ deviceId:deviceId, plan:plan }) })
@@ -5269,10 +5963,15 @@
         renderCoachWeek();
       }).catch(function(){ note.textContent = 'Could not load this plan.'; });
   }
-  function renderCoachWeek(){
+  function coachWeekLabel(){
     var p = coachState.plan, w = coachState.week, n = Math.ceil(p.days.length / 7);
     var t = trainWeekTotals(p, w, coachState.log);
-    document.getElementById('trWeekLabel').textContent = 'Week ' + (w + 1) + '/' + n + ' · ' + (TRAIN_PHASES[p.phases[w]] || '') + ' · ' + trainHours(t.planned);
+    var km = p.days.slice(w * 7, w * 7 + 7).reduce(function(a, x){ return a + (x.type === 'rest' ? 0 : Math.round(x.min / 60 * dayPace(x))); }, 0);
+    document.getElementById('trWeekLabel').textContent = 'Week ' + (w + 1) + '/' + n + ' · ' + (TRAIN_PHASES[p.phases[w]] || '') + ' · ' + trainHours(t.planned) + ' · ≈ ' + km + ' km';
+  }
+  function renderCoachWeek(){
+    var p = coachState.plan, w = coachState.week, n = Math.ceil(p.days.length / 7);
+    coachWeekLabel();
     document.getElementById('trPrev').disabled = w === 0; document.getElementById('trNext').disabled = w >= n - 1;
     var box = document.getElementById('trWeek'); box.innerHTML = '';
     p.days.slice(w * 7, w * 7 + 7).forEach(function(day){
@@ -5286,7 +5985,7 @@
       mins.disabled = day.type === 'rest' || day.type === 'custom';
       var noteIn = document.createElement('input'); noteIn.type = 'text'; noteIn.maxLength = 200; noteIn.placeholder = 'Note for the rider (optional)'; noteIn.value = day.note || '';
       sel.addEventListener('change', function(){ applyWorkoutChoice(day, sel.value, coachState.library.workouts); renderCoachWeek(); });
-      mins.addEventListener('input', function(){ day.min = tClamp(Math.round(+mins.value || 0), 0, 480); });
+      mins.addEventListener('input', function(){ day.min = tClamp(Math.round(+mins.value || 0), 0, 480); coachWeekLabel(); });
       noteIn.addEventListener('input', function(){ if (noteIn.value.trim()) day.note = noteIn.value.trim(); else delete day.note; });
       row.appendChild(lab); row.appendChild(sel); row.appendChild(mins); row.appendChild(noteIn);
       if (lg && lg.status === 'done' && lg.score){
@@ -6195,7 +6894,8 @@
 
       await applyRouteResult(result, note);
       if (detectMobile()) closeSidebar(); // reveal the map full-screen to show the result
-      trackRoute();
+      var forDay = linkRouteToTrainDay();   // a route made for a training day: compare + remember
+      trackRoute(forDay);
     } catch(err){
       setStatus('Could not build that route: ' + err.message, true);
     } finally {

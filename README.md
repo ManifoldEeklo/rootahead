@@ -194,6 +194,87 @@ Storage: `rootahead:push:users` (device → subscription), `rootahead:messages`
 - Storage: `rootahead:coach:workouts`, `rootahead:coach:templates` (admin only).
 - The installed admin app is now called "RA Admin" (reinstall to see the new name).
 
+### 4e. Who makes the plan, Build plan, hours & km
+
+- **Default: only the coach makes plans.** Per rider in RA Admin → Training →
+  Riders → "Rider may make their own plan" (off by default). When off, the
+  rider sees the coach's plan, cannot change it (the server refuses), and only
+  marks days Done (score + reflection) or Skipped. Key: `rootahead:planperm`.
+- **Build plan** (RA Admin → Training): 1) start from empty / app suggestion /
+  template / a rider's plan, 2) fill the weeks (copy week → next, clear week,
+  ± week, live hours + km per week), 3) pick riders (search, Everyone, Team …)
+  and a start Monday → "Give this plan to N riders". Existing plans go to the
+  riders' history. From a rider: "Make a plan for this rider" / "Copy this
+  plan to other riders".
+- **Hours & km stay in sync**: week totals update while typing; the rider's
+  summary shows hours from the plan itself; km = minutes × pace per workout
+  type. A route made with "Plan a route for this ride" is linked to that day
+  (`rootahead:planroutes:<device>`) with its real km, climbing and riding time
+  (km at the day's pace + 5 min per 100 m climbing) and flagged when it is
+  >15% off or the plan changed since. Saving an own workout can update all
+  plans (today and later) and templates that use it.
+
+### 4f. RA Admin on phone, tablet and PC
+
+From 760 px wide (iPad / Android tablet, laptop, desktop) RA Admin uses the
+whole screen: riders as a table; a rider's plan, Build plan and templates as a
+table (weeks × Mon–Sun, totals per week, ⧉ copy week → next, ⌫ clear week,
+🗑 remove week, ✎ note per day, reflections and routes in the cells); Messages
+in two columns; the workout editor with steps left and profile right.
+Phones keep the one-column, week-by-week layout. It switches on rotate/resize.
+
+### 4g. Riders, login codes and the clean sheet
+
+- **Only the admin sets up riders** (RA Admin → Riders): name, team, sex, date
+  of birth, height, weight, FTP, notes, photo (shrunk to max 640 px in the
+  browser) and a **login code** (6 characters, auto-made; can be changed; must
+  be unique; always visible to the admin).
+- **The rider app asks for the code** (no self-registration any more). After
+  signing in, the phone is that rider: plans, feedback, routes and notifications
+  are stored under the rider's id, so the same code on another phone shows the
+  same plan. "My profile" shows the details; sex, date of birth, height, weight
+  and FTP can be changed with the code (the code must be the signed-in rider's);
+  name, team, photo and code are admin-only. FTP from the profile is used for
+  power targets. 10 wrong codes from one network → 15 min wait.
+- **Clean sheet**: RA Admin → Riders → "Start with a clean sheet" deletes all
+  `rootahead:*` data (optionally keep riders and/or own workouts + templates).
+  Every phone wipes its old local data once on its next start.
+- Keys: `rootahead:riders`, `rootahead:ridercodes`, `rootahead:riderphoto:<id>`.
+- Deleting a rider also deletes their plan, feedback, routes and push sign-up.
+
+- **Teams** (RA Admin → Teams): name (unique), colour, description, logo or
+  team photo. Link riders in the team editor (tick riders; a rider in another
+  team moves) or in the rider form (team dropdown). Renaming a team renames it
+  for all its riders; deleting a team leaves its riders without a team. The
+  rider app shows the team name in the team colour and the logo in My profile.
+  Keys: `rootahead:teams`, `rootahead:teamphoto:<id>`. The clean sheet option
+  "keep riders" also keeps the teams.
+
+- **Nickname** (just for fun): set by the admin, riders may change it in My
+  profile (with their code). Shown on the dashboard, in My profile and in Team.
+- **Team tile** on the dashboard: all riders per team as cards (photo or
+  initials on the team colour, name, nickname, age; "YOU" on your own card),
+  own team first, filter chips per team, tap a card to see it large.
+  `/api/team-roster?id=<rider id>` only answers signed-in riders and sends ages,
+  never birth dates, codes or notes.
+- In the rider form the team dropdown has "＋ New team…" to make a team on the spot.
+
+- **Race calendar** (RA Admin → Races): only the admin adds races (date, name,
+  type, where, distance, notes) and picks the riders (per team or one by one).
+  Taking a rider off keeps their entry as "removed": the rider still sees the
+  race, marked "Not selected anymore". "Cancel this race" keeps it in every
+  calendar, marked CANCELLED in red; "Race is on again" undoes it; "Delete for
+  good" exists only for cancelled races (mistakes).
+  The rider app: Race tile (next race + count), a "Your races" strip on the
+  dashboard (next 3, including changes), and the calendar (coming up / past)
+  with each race's selected riders. `/api/races?rider=<id>` only answers
+  signed-in riders and only shows races they are or were selected for.
+  Key: `rootahead:races`. Notifications about races: not yet (to be discussed).
+
+**Test files**: `root-ahead-test.html` and `ra-admin-test.html` share one test
+database when opened in the same browser: make a rider in RA Admin, then sign
+in with the code in the app. Demo codes: ELS2026, JAN2026, LOTTE26.
+
 ### 5. (Optional) Turn on Vercel Web Analytics
 
 The page already ships the plain-HTML tracking snippet (no `@vercel/analytics`

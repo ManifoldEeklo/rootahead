@@ -68,7 +68,28 @@ module.exports = async function handler(req, res){
       item.createdAt = (prev && prev.createdAt) || now; item.updatedAt = now;
       var e = {}; e[item.id] = JSON.stringify(item);
       await redis.hset(key, e);
-      res.status(200).json({ ok: true, item: item });
+      var updated = { plans: 0, templates: 0 };
+      if (b.kind === 'workout' && b.propagate){
+        // copy the new version into every plan (today and later) and template that uses this workout
+        var copy = { title: item.title, about: item.about, steps: item.steps };
+        var mins = Math.round(item.steps.reduce(function(t, x){ return t + x.min; }, 0));
+        var today = new Date().toISOString().slice(0, 10);
+        var ids = (await redis.smembers('rootahead:plans')) || [];
+        for (var i = 0; i < ids.length; i++){
+          var pl = parse(await redis.get('rootahead:plan:' + ids[i])), changed = false;
+          if (!pl || !pl.days) continue;
+          pl.days.forEach(function(d){ if (d.type === 'custom' && d.wid === item.id && d.d >= today){ d.custom = JSON.parse(JSON.stringify(copy)); d.min = mins; changed = true; } });
+          if (changed){ await redis.set('rootahead:plan:' + ids[i], JSON.stringify(pl)); updated.plans++; }
+        }
+        var tpls = (await redis.hgetall('rootahead:coach:templates')) || {};
+        for (var tk in tpls){
+          var tp = parse(tpls[tk]), tch = false;
+          if (!tp || !tp.weeks) continue;
+          tp.weeks.forEach(function(w){ w.days.forEach(function(d){ if (d.type === 'custom' && d.wid === item.id){ d.custom = JSON.parse(JSON.stringify(copy)); d.min = mins; tch = true; } }); });
+          if (tch){ var te = {}; te[tk] = JSON.stringify(tp); await redis.hset('rootahead:coach:templates', te); updated.templates++; }
+        }
+      }
+      res.status(200).json({ ok: true, item: item, updated: updated });
       return;
     }
     if (req.method === 'DELETE'){

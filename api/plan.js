@@ -6,6 +6,10 @@
 // Coach (header x-admin-key):
 //   GET  /api/plan?all=1                             → riders with a plan + progress
 //   PUT  { deviceId, plan, notify }                  → save the coach's version, push the rider
+// Who makes the plan: by default only the coach. rootahead:planperm (hash id → '1') = rider may make
+// their own plan. Routes made for a plan day: rootahead:planroutes:<id> (hash day → {km, gainM, estMin, planMin}).
+//   POST { deviceId, routeLink:{ d, km, gainM, estMin, planMin } }  → rider links a generated route to a day
+//   PUT  { deviceId, canEdit:true|false }  (coach)                 → allow / forbid the rider's own plan
 // Keys: rootahead:plan:<id> (plan), rootahead:planlog:<id> (hash day → status), rootahead:plans (set of ids),
 //       rootahead:planarchive:<id> (list of earlier plans: summary + full plan, last 20)
 var getRedis = require('./_redis').getRedis;
@@ -82,6 +86,7 @@ module.exports = async function handler(req, res){
         var plan = parse(await redis.get('rootahead:plan:' + ids[i]));
         if (!plan) continue;
         var log = (await redis.hgetall('rootahead:planlog:' + ids[i])) || {};
+        var perm = (await redis.hget('rootahead:planperm', ids[i])) == '1';
         var p = parse(profiles[ids[i]]) || {};
         var past = plan.days.filter(function(x){ return x.d <= today && x.type !== 'rest'; });
         var since = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10), scores = [], lastRef = null;
@@ -92,7 +97,7 @@ module.exports = async function handler(req, res){
           source: plan.source, adjustedAt: plan.adjustedAt, generatedAt: plan.generatedAt, done: done, due: past.length,
           ended: plan.days.length ? plan.days[plan.days.length - 1].d < today : false,
           avgScore: scores.length ? Math.round(scores.reduce(function(a, b){ return a + b; }, 0) / scores.length * 10) / 10 : null,
-          lastReflection: lastRef, templateName: plan.templateName || '',
+          lastReflection: lastRef, templateName: plan.templateName || '', canEdit: perm,
           endDate: plan.days.length ? plan.days[plan.days.length - 1].d : '' });
       }
       res.status(200).json({ riders: out });
@@ -107,13 +112,26 @@ module.exports = async function handler(req, res){
       var logOut = {}; Object.keys(lg).forEach(function(k){ var v = parse(lg[k]); if (v) logOut[k] = v; });
       var hist = ((await redis.lrange('rootahead:planarchive:' + id, 0, 19)) || []).map(parse).filter(Boolean)
         .map(function(h){ return h.summary || h; });
-      res.status(200).json({ plan: pl, log: logOut, history: hist });
+      var canEdit = (await redis.hget('rootahead:planperm', id)) == '1';
+      var rts = (await redis.hgetall('rootahead:planroutes:' + id)) || {}, routesOut = {};
+      Object.keys(rts).forEach(function(k){ var v = parse(rts[k]); if (v) routesOut[k] = v; });
+      res.status(200).json({ plan: pl, log: logOut, history: hist, canEdit: canEdit, routes: routesOut });
       return;
     }
 
     if (req.method === 'POST'){
       var rid = idOf(b.deviceId);
       if (!rid){ res.status(400).json({ error: 'deviceId is required' }); return; }
+      if (b.routeLink){
+        var rl = b.routeLink, rd = String(rl.d || '').slice(0, 10);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(rd)){ res.status(400).json({ error: 'bad day' }); return; }
+        var link = { km: Math.round((Number(rl.km) || 0) * 10) / 10, gainM: Math.round(Number(rl.gainM) || 0),
+                     estMin: Math.round(Number(rl.estMin) || 0), planMin: Math.round(Number(rl.planMin) || 0), at: new Date().toISOString() };
+        var le = {}; le[rd] = JSON.stringify(link);
+        await redis.hset('rootahead:planroutes:' + rid, le);
+        res.status(200).json({ ok: true, link: link });
+        return;
+      }
       if (b.log){
         var day = String(b.log.d || '').slice(0, 10);
         if (!/^\d{4}-\d{2}-\d{2}$/.test(day)){ res.status(400).json({ error: 'bad day' }); return; }
@@ -134,6 +152,9 @@ module.exports = async function handler(req, res){
       }
       var plan2 = cleanPlan(b.plan);
       if (!plan2){ res.status(400).json({ error: 'plan is required' }); return; }
+      if ((await redis.hget('rootahead:planperm', rid)) != '1'){
+        res.status(403).json({ error: 'Your coach makes your training plan.' }); return;
+      }
       // the previous plan is archived (summary + full plan), never thrown away
       var old = parse(await redis.get('rootahead:plan:' + rid));
       if (old && old.days && old.days.length){
@@ -151,6 +172,13 @@ module.exports = async function handler(req, res){
     if (req.method === 'PUT'){
       if (!admin.requireAdmin(req, res)) return;
       var cid = idOf(b.deviceId);
+      if (typeof b.canEdit === 'boolean' && !b.plan){
+        if (!cid){ res.status(400).json({ error: 'deviceId is required' }); return; }
+        if (b.canEdit) { var pe = {}; pe[cid] = '1'; await redis.hset('rootahead:planperm', pe); }
+        else await redis.hdel('rootahead:planperm', cid);
+        res.status(200).json({ ok: true, canEdit: b.canEdit });
+        return;
+      }
       var plan3 = cleanPlan(b.plan);
       if (!cid || !plan3){ res.status(400).json({ error: 'deviceId and plan are required' }); return; }
       plan3.source = 'coach'; plan3.adjustedAt = new Date().toISOString();

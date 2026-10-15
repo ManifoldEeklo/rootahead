@@ -70,6 +70,8 @@ async function storeRouteForUser(redis, deviceId, body){
       loop: !!r.loop,
       shape: clean(r.shape, 40),
       activity: clean(r.activity, 20),
+      planDay: /^\d{4}-\d{2}-\d{2}$/.test(String(r.planDay || '')) ? String(r.planDay) : undefined,
+      planWorkout: r.planWorkout ? clean(r.planWorkout, 60) : undefined,
       gpx: gpx.length <= MAX_GPX_CHARS ? gpx : null,
       gpxTooLarge: gpx.length > MAX_GPX_CHARS
     };

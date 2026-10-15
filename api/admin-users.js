@@ -48,9 +48,13 @@ module.exports = async function handler(req, res){
     var counts = (await redis.hgetall('rootahead:users:routecount')) || {};
     var profiles = (await redis.hgetall('rootahead:users')) || {};
     var pushSubs = (await redis.hgetall('rootahead:push:users')) || {};
+    // riders set up by the admin are the users; their registry entry wins over older profile copies
+    var registry = await require('./_riders').allRiders(redis);
+    registry.forEach(function(r){ profiles[r.id] = { firstName: r.firstName, lastName: r.lastName, team: r.team,
+      lastRouteAt: (parse(profiles[r.id]) || {}).lastRouteAt || null, device: (parse(profiles[r.id]) || {}).device || null,
+      photoUrl: require('./_riders').photoUrl(r), lastLoginAt: r.lastLoginAt || null }; });
     var total = 0;
-    var ids = Object.keys(counts);
-    Object.keys(profiles).concat(Object.keys(pushSubs)).forEach(function(id){ if (ids.indexOf(id) === -1) ids.push(id); });
+    var ids = registry.map(function(r){ return r.id; });
     var users = ids.map(function(id){
       var p = parse(profiles[id]) || {};
       var n = Number(counts[id]) || 0;
@@ -63,7 +67,8 @@ module.exports = async function handler(req, res){
         lastRouteAt: p.lastRouteAt || null,
         routes: n,
         pushEnabled: !!pushSubs[id],
-        device: p.device || null
+        device: p.device || null,
+        photoUrl: p.photoUrl || '', lastLoginAt: p.lastLoginAt || null
       };
     }).sort(function(a, b){ return b.routes - a.routes; });
     res.status(200).json({ users: users, totalRoutes: total });
