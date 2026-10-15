@@ -359,6 +359,27 @@
   .bstep{margin-top:16px;padding:16px;border:1px solid var(--char-3);border-radius:14px;background:rgba(255,255,255,.015);}
   .bstep h3{font-family:'Archivo',sans-serif;font-size:17px;margin:0 0 10px;color:var(--yellow);}
   .weektools{display:flex;gap:8px;margin-top:8px;}
+  .bstep h3 .sn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--yellow);color:#1a1a1a;
+    font-size:14px;margin-right:10px;vertical-align:2px;}
+  .bd-hint{font-size:13.5px;color:var(--muted);margin:0 0 12px;}
+  .bd-picked{font-size:14px;margin:10px 0 0;color:var(--yellow);min-height:20px;}
+  .bd-summary{font-size:14px;background:var(--char);border-radius:10px;padding:10px 12px;margin:0 0 6px;line-height:1.5;}
+  .q{margin:0 0 16px;}
+  .q .ql{display:flex;justify-content:space-between;font-size:14px;font-weight:600;margin-bottom:8px;}
+  .q .ql b{color:var(--yellow);font-family:'Archivo',sans-serif;}
+  .q.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .q.two label{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600;}
+  .daychips{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+  .daychips button,.segbtns button{border:1px solid var(--char-3);background:var(--char);color:var(--grey);border-radius:10px;padding:11px 4px;font:inherit;font-size:14px;cursor:pointer;}
+  .daychips button[aria-pressed="true"],.segbtns button[aria-pressed="true"]{background:var(--yellow);border-color:var(--yellow);color:#1a1a1a;font-weight:700;}
+  .segbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+  .segbtns.four{grid-template-columns:repeat(4,1fr);}
+  @media (max-width:520px){ .segbtns.four{grid-template-columns:1fr 1fr;} .q.two{grid-template-columns:1fr;} }
+  #bdHours{width:100%;accent-color:var(--yellow);}
+  #bdTplSel,#bdCopySel{margin-top:8px;}
+  .pgrid th.rideday{color:var(--yellow);}
+  .pgrid th.rideday::after{content:' ●';font-size:9px;vertical-align:2px;}
+  body.wide #subBuild > .bstep{max-width:900px;}
   .weektools .ghost{flex:1 1 0;padding:9px 6px;font-size:14px;}
   .daypick{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px;}
   .daypick label{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12.5px;padding:6px 0;border:1px solid var(--char-3);border-radius:8px;cursor:pointer;}
@@ -669,24 +690,38 @@
     <!-- build a plan and give it to riders -->
     <div id="subBuild" hidden>
       <div class="bstep">
-        <h3>1. Start from</h3>
-        <select id="bdFrom" aria-label="Start from"></select>
-        <div id="bdEmptyBox" class="inline" style="margin-top:10px;">Number of weeks <input type="number" id="bdWeeks" min="1" max="16" value="4" style="width:80px;"></div>
-        <div id="bdSuggest" hidden>
-          <div class="two"><select id="bdGoal" aria-label="Goal"><option value="fitness">General fitness</option><option value="endurance">Longer rides</option><option value="race">Race / event</option><option value="climb">Climbing</option></select>
-            <select id="bdLevel" aria-label="Level"><option value="beginner">Beginner</option><option value="intermediate" selected>Intermediate</option><option value="advanced">Advanced</option></select></div>
-          <div class="inline" style="margin-top:10px;">Hours per week <input type="number" id="bdHours" min="2" max="20" value="6" style="width:80px;"></div>
-          <div class="daypick" id="bdDays"><label><input type="checkbox" value="0">Mon</label><label><input type="checkbox" value="1" checked>Tue</label><label><input type="checkbox" value="2">Wed</label><label><input type="checkbox" value="3" checked>Thu</label><label><input type="checkbox" value="4">Fri</label><label><input type="checkbox" value="5" checked>Sat</label><label><input type="checkbox" value="6" checked>Sun</label></div>
-        </div>
-        <button class="go" type="button" id="bdStart">Start</button>
+        <h3><span class="sn">1</span>Who is the plan for?</h3>
+        <div class="chips" id="bdTeams"></div>
+        <input type="search" id="bdSearch" placeholder="Search riders" aria-label="Search riders" style="margin-top:10px;">
+        <div class="people members" id="bdRiders"></div>
+        <p class="bd-picked" id="bdPicked"></p>
+      </div>
+      <div class="bstep">
+        <h3><span class="sn">2</span>Availability and goal</h3>
+        <p class="bd-hint" id="bdPrefill">The same questions a rider answers for their own plan.</p>
+        <div class="q"><span class="ql">Riding days</span>
+          <div class="daychips" id="bdDays" role="group" aria-label="Riding days"><button type="button" data-v="0">Mon</button><button type="button" data-v="1">Tue</button><button type="button" data-v="2">Wed</button><button type="button" data-v="3">Thu</button><button type="button" data-v="4">Fri</button><button type="button" data-v="5">Sat</button><button type="button" data-v="6">Sun</button></div></div>
+        <div class="q"><span class="ql">Hours per week <b id="bdHoursVal">6 h</b></span><input type="range" id="bdHours" min="2" max="20" step="1" value="6" aria-label="Hours per week"></div>
+        <div class="q"><span class="ql">Level</span>
+          <div class="segbtns" id="bdLevel" role="group" aria-label="Level"><button type="button" data-v="beginner">Beginner</button><button type="button" data-v="intermediate">Intermediate</button><button type="button" data-v="advanced">Advanced</button></div></div>
+        <div class="q"><span class="ql">Goal</span>
+          <div class="segbtns four" id="bdGoal" role="group" aria-label="Goal"><button type="button" data-v="fitness">General fitness</button><button type="button" data-v="endurance">Longer rides</button><button type="button" data-v="race">Race / event</button><button type="button" data-v="climb">Climbing</button></div></div>
+        <div class="q two"><label>Race or event (optional)<input type="date" id="bdEventDate"></label><label>Event name<input type="text" id="bdEventName" maxlength="60" placeholder="e.g. Cyclocross Eeklo"></label></div>
+        <div class="q two"><label>Starts the week of<input type="date" id="bdStartDate"></label><label>Length <small class="opt">(without an event)</small><select id="bdWeeks"><option value="4">4 weeks</option><option value="6">6 weeks</option><option value="8" selected>8 weeks</option><option value="10">10 weeks</option><option value="12">12 weeks</option><option value="16">16 weeks</option></select></label></div>
+        <div class="q"><span class="ql">How to fill the weeks</span>
+          <div class="segbtns four" id="bdHow" role="group" aria-label="How to fill the weeks"><button type="button" data-v="suggest">Suggestion</button><button type="button" data-v="template">Template</button><button type="button" data-v="copy">Copy a plan</button><button type="button" data-v="basic">Basic</button></div>
+          <p class="bd-hint" id="bdHowHint"></p>
+          <select id="bdTplSel" aria-label="Template" hidden></select><select id="bdCopySel" aria-label="Rider plan to copy" hidden></select></div>
+        <button class="go" type="button" id="bdStart">Make the plan</button>
         <div class="result" id="bdStartMsg" role="status"></div>
       </div>
       <div id="bdEdit" hidden>
         <div class="bstep">
-          <h3>2. Fill in the weeks</h3>
+          <h3><span class="sn">3</span>Fill in the weeks</h3>
+          <p class="bd-summary" id="bdSummary"></p>
           <label class="field" for="bdName">Name (to recognise it, and for saving as a template)</label>
           <input type="text" id="bdName" maxlength="60" placeholder="e.g. Winter base U23">
-          <label class="field" for="bdNote">Note for the riders (shown above their plan)</label>
+          <label class="field" for="bdNote">Note for the rider (shown above their plan)</label>
           <textarea id="bdNote" maxlength="600"></textarea>
           <div class="weeknav mob"><button class="ghost" type="button" id="bdPrev" aria-label="Previous week">‹</button><b id="bdWeekLabel"></b><button class="ghost" type="button" id="bdNext" aria-label="Next week">›</button></div>
           <div class="two mob"><label class="inline">Phase <select id="bdPhase"><option value="base">Base</option><option value="build">Build</option><option value="peak">Peak</option><option value="recovery">Recovery</option><option value="taper">Taper</option></select></label>
@@ -698,14 +733,10 @@
           <div class="result" id="bdTplResult" role="status"></div>
         </div>
         <div class="bstep">
-          <h3>3. Give it to riders</h3>
-          <label class="field" for="bdStartDate">First day (the plan starts on that week's Monday)</label>
-          <input type="date" id="bdStartDate">
-          <div class="chips" id="bdTeams" style="margin-top:12px;"></div>
-          <input type="search" id="bdSearch" placeholder="Search riders" aria-label="Search riders" style="margin-top:10px;">
-          <div class="people" id="bdRiders"></div>
-          <label class="check"><input type="checkbox" id="bdNotify" checked> Notify the riders</label>
-          <button class="go" type="button" id="bdGive" disabled>Pick riders first</button>
+          <h3><span class="sn">4</span>Give the plan</h3>
+          <p class="bd-summary" id="bdGiveSummary"></p>
+          <label class="check"><input type="checkbox" id="bdNotify" checked> Notify the rider (their app updates right away)</label>
+          <button class="go" type="button" id="bdGive" disabled>Pick a rider in step 1</button>
           <div class="result" id="bdResult" role="status"></div>
         </div>
       </div>
@@ -1086,7 +1117,7 @@
   function generateTrainPlan(s, today){
     today = today || new Date();
     var start = tIso(tMonday(today));
-    var weeks = 8, hasEvent = /^\d{4}-\d{2}-\d{2}$/.test(s.eventDate || '') && s.eventDate >= tIso(today);
+    var weeks = Math.max(1, Math.min(16, parseInt(s.weeks, 10) || 8)), hasEvent = /^\d{4}-\d{2}-\d{2}$/.test(s.eventDate || '') && s.eventDate >= tIso(today);
     if (hasEvent){
       var span = Math.round((tParse(s.eventDate) - tParse(start)) / 86400000);
       if (span >= 16 * 7) hasEvent = false, weeks = 16;   // event further than 16 weeks: plan the first 16, taper comes in a later plan
@@ -1225,7 +1256,7 @@
     if (name === 'riders'){ $('riderView').hidden = true; $('riderListBox').hidden = false; renderRiders(); }
     if (name === 'workouts'){ $('woEditor').hidden = true; $('woListBox').hidden = false; renderWorkouts(); }
     if (name === 'templates'){ $('tplEditor').hidden = true; $('tplListBox').hidden = false; renderTemplates(); }
-    if (name === 'build' && !TR.build){ fillBuildFrom(); $('bdEdit').hidden = true; }
+    if (name === 'build'){ fillBuildFrom(); if (!TR.build) $('bdEdit').hidden = true; afterPick(); }
   }
   Array.prototype.forEach.call(document.querySelectorAll('#trSeg button'), function(b){ b.addEventListener('click', function(){ showSub(b.dataset.sub); }); });
 
@@ -1405,7 +1436,7 @@
     savePlanFor(TR.rider.deviceId, TR.plan, false, 'rvResult').then(function(p){ btn.disabled = false; if (p){ TR.plan = p; loadTrainingQuiet(); } });
   });
   // a template becomes a real plan for one rider, starting on a Monday
-  function planFromTemplate(t, startIso, existing){
+  function planFromTemplate(t, startIso, existing, answers){
     var start = tIso(tMonday(tParse(startIso))), days = [], phases = [];
     t.weeks.forEach(function(w, wi){
       phases.push(w.phase || 'base');
@@ -1419,6 +1450,7 @@
     var s = (existing && existing.settings) ? JSON.parse(JSON.stringify(existing.settings)) : {};
     var total = days.reduce(function(a, x){ return a + (x.type === 'rest' ? 0 : x.min); }, 0);
     s.hours = Math.round(total / 60 / t.weeks.length); s.eventDate = ''; s.eventName = ''; s.recoveryFirst = false;
+    if (answers){ ['goal','level','days','hours','eventDate','eventName'].forEach(function(k){ if (answers[k] != null) s[k] = answers[k]; }); if (answers.ftp) s.ftp = answers.ftp; }
     return { v:1, start: start, days: days, phases: phases, settings: s, templateName: t.name, coachNote: t.about || '', source:'coach', generatedAt: new Date().toISOString() };
   }
   $('rvAssign').addEventListener('click', async function(){
@@ -1479,57 +1511,130 @@
     return weeks;
   }
   TR.build = null;
-  function fillBuildFrom(preset){
-    TR.buildPick = TR.buildPick || {};
-    var sel = $('bdFrom'); sel.innerHTML = '';
-    function opt(v, t, g){ var o = el('option', null, t); o.value = v; (g || sel).appendChild(o); }
-    opt('empty', 'An empty plan'); opt('suggest', 'An app suggestion (goal, hours, days)');
-    if (TR.lib.templates.length){ var g = el('optgroup'); g.label = 'Your templates'; TR.lib.templates.forEach(function(t){ opt('t:' + t.id, t.name + ' (' + t.weeks.length + ' wk)', g); }); sel.appendChild(g); }
-    var withPlan = Object.keys(TR.plans).map(function(id){ return TR.plans[id]; });
-    if (withPlan.length){ var g2 = el('optgroup'); g2.label = 'A rider’s current plan'; withPlan.forEach(function(p){ opt('r:' + p.deviceId, riderName(p) + (p.team ? ' · ' + p.team : ''), g2); }); sel.appendChild(g2); }
-    sel.value = preset || 'empty';
-    $('bdSuggest').hidden = sel.value !== 'suggest'; $('bdEmptyBox').hidden = sel.value !== 'empty';
+  TR.buildPick = TR.buildPick || {};
+  var BD = { days:[1,3,5,6], hours:6, level:'intermediate', goal:'fitness', how:'suggest', touched:false, prefillFor:'' };
+  function setPressed(groupId, test){ Array.prototype.forEach.call(document.querySelectorAll('#' + groupId + ' button'), function(x){ x.setAttribute('aria-pressed', String(test(x.dataset.v))); }); }
+  function paintAnswers(){
+    setPressed('bdDays', function(v){ return BD.days.indexOf(+v) !== -1; });
+    setPressed('bdLevel', function(v){ return v === BD.level; });
+    setPressed('bdGoal', function(v){ return v === BD.goal; });
+    setPressed('bdHow', function(v){ return v === BD.how; });
+    $('bdHours').value = BD.hours; $('bdHoursVal').textContent = BD.hours + ' h';
+    $('bdTplSel').hidden = BD.how !== 'template'; $('bdCopySel').hidden = BD.how !== 'copy';
+    $('bdHowHint').textContent = { suggest:'The app builds the weeks from these answers (base, build, peak and an easy week every 4th week; tapers before an event).',
+      template:'Uses one of your templates; the answers are kept with the plan.', copy:'Starts from another rider’s plan.',
+      basic:'An endurance ride on every riding day, hours spread evenly. Then you fill in the details.' }[BD.how];
   }
-  $('bdFrom').addEventListener('change', function(){ $('bdSuggest').hidden = this.value !== 'suggest'; $('bdEmptyBox').hidden = this.value !== 'empty'; });
+  function bindGroup(id, key, multi){
+    Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' button'), function(btn){
+      btn.addEventListener('click', function(){
+        if (multi){ var v = +btn.dataset.v, i = BD.days.indexOf(v); if (i === -1) BD.days.push(v); else BD.days.splice(i, 1); BD.days.sort(); }
+        else BD[key] = btn.dataset.v;
+        if (key !== 'how') BD.touched = true;
+        paintAnswers();
+      });
+    });
+  }
+  bindGroup('bdDays', 'days', true); bindGroup('bdLevel', 'level'); bindGroup('bdGoal', 'goal'); bindGroup('bdHow', 'how');
+  $('bdHours').addEventListener('input', function(){ BD.hours = +this.value; BD.touched = true; $('bdHoursVal').textContent = BD.hours + ' h'; });
+  ['bdEventDate','bdEventName','bdWeeks'].forEach(function(id){ $(id).addEventListener('input', function(){ BD.touched = true; }); });
+  function riderInfo(id){ return RD.list.filter(function(r){ return r.id === id; })[0] || TR.users.filter(function(u){ return u.deviceId === id; })[0] || { deviceId:id }; }
+  function pickedIds(){ return Object.keys(TR.buildPick); }
+  function fillBuildFrom(){
+    $('bdStartDate').value = $('bdStartDate').value || nextMonday();
+    var ts = $('bdTplSel'); ts.innerHTML = '';
+    if (!TR.lib.templates.length){ var o0 = el('option', null, 'No templates yet'); o0.value = ''; ts.appendChild(o0); }
+    TR.lib.templates.forEach(function(t){ var o = el('option', null, t.name + ' (' + t.weeks.length + ' wk)'); o.value = t.id; ts.appendChild(o); });
+    var cs = $('bdCopySel'); cs.innerHTML = '';
+    var withPlan = Object.keys(TR.plans).map(function(id){ return TR.plans[id]; });
+    if (!withPlan.length){ var o1 = el('option', null, 'No rider has a plan yet'); o1.value = ''; cs.appendChild(o1); }
+    withPlan.forEach(function(pl){ var o = el('option', null, riderName(pl) + (pl.team ? ' · ' + pl.team : '')); o.value = pl.deviceId; cs.appendChild(o); });
+    paintAnswers(); renderBuildRiders();
+    if (!RD.list.length) loadRiders().then(function(){ renderBuildRiders(); });
+  }
   function openBuilder(opts){
     opts = opts || {};
+    TR.build = null; TR.buildPick = {}; BD.touched = false; BD.prefillFor = '';
+    (opts.riders || []).forEach(function(id){ TR.buildPick[id] = true; });
+    if (opts.copyFrom){ BD.how = 'copy'; }
     showSub('build');
-    fillBuildFrom(opts.from);
-    TR.buildPick = {}; (opts.riders || []).forEach(function(id){ TR.buildPick[id] = true; });
-    if (opts.from && opts.from !== 'empty') startBuild(); else { $('bdEdit').hidden = true; }
+    $('bdEdit').hidden = true;
+    fillBuildFrom();
+    if (opts.copyFrom) $('bdCopySel').value = opts.copyFrom;
+    afterPick();
+    window.scrollTo(0, 0);
+  }
+  // one rider picked: fill in their answers from their current plan + FTP from the profile
+  function afterPick(){
+    var ids = pickedIds(), note = $('bdPrefill');
+    $('bdPicked').textContent = !ids.length ? '' : ids.length === 1 ? 'Plan for ' + riderName(riderInfo(ids[0])) : 'One plan for ' + ids.length + ' riders';
+    if (ids.length !== 1){ note.textContent = ids.length > 1 ? 'One plan for ' + ids.length + ' riders. Power targets use each rider’s own FTP from their profile.' : 'The same questions a rider answers for their own plan.'; return; }
+    var id = ids[0], r = riderInfo(id);
+    if (BD.prefillFor === id) return;
+    BD.prefillFor = id;
+    var ftpTxt = r.ftp ? ' FTP ' + r.ftp + ' W (from the profile).' : ' No FTP in the profile: targets show as effort.';
+    note.textContent = 'Loading ' + riderName(r) + '’s answers…';
+    api('/api/plan?deviceId=' + encodeURIComponent(id)).then(function(res){
+      var st = res.ok && res.data.plan && res.data.plan.settings;
+      if (st && !BD.touched && Array.isArray(st.days) && st.days.length){
+        BD.days = st.days.slice(); if (st.hours) BD.hours = Math.max(2, Math.min(20, Math.round(st.hours)));
+        if (st.level) BD.level = st.level; if (st.goal) BD.goal = st.goal;
+        if (st.eventDate && st.eventDate >= tIso(new Date())){ $('bdEventDate').value = st.eventDate; $('bdEventName').value = st.eventName || ''; }
+        paintAnswers();
+        note.textContent = 'Filled in from ' + r.firstName + '’s current plan: change whatever you like.' + ftpTxt;
+      } else note.textContent = (BD.touched ? 'Your answers are kept.' : r.firstName + ' has no plan yet: fill in the answers.') + ftpTxt;
+    }).catch(function(){ note.textContent = ftpTxt.trim(); });
+  }
+  function answers(){
+    return { goal: BD.goal, hours: BD.hours, days: BD.days.slice(), level: BD.level, eventDate: $('bdEventDate').value || '',
+             eventName: $('bdEventName').value.trim().slice(0, 60), weeks: +$('bdWeeks').value || 8 };
+  }
+  function answersText(a, start){
+    var dn = a.days.map(function(d){ return TRAIN_DAYS[d]; }).join(' ');
+    return dn + ' · about ' + a.hours + ' h a week · ' + a.level.charAt(0).toUpperCase() + a.level.slice(1) + ' · ' + (TRAIN_GOALS[a.goal] || '') +
+      (a.eventDate ? ' · ' + (a.eventName || 'event') + ' on ' + tParse(a.eventDate).toLocaleDateString([], { day:'numeric', month:'short' }) : '') +
+      ' · from the week of ' + tParse(start).toLocaleDateString([], { day:'numeric', month:'short' });
   }
   function startBuild(){
-    var v = $('bdFrom').value, weeks, name = '', about = '';
-    if (v === 'empty'){
-      var n = Math.max(1, Math.min(16, parseInt($('bdWeeks').value, 10) || 4));
-      weeks = []; for (var i = 0; i < n; i++) weeks.push(blankWeek());
-    } else if (v === 'suggest'){
-      var days = Array.prototype.filter.call(document.querySelectorAll('#bdDays input:checked'), function(){ return true; }).map(function(c){ return +c.value; });
-      if (days.length < 2){ trMsg('bdStartMsg', 'Pick at least 2 riding days.', true); return; }
-      var plan = generateTrainPlan({ goal: $('bdGoal').value, hours: Math.max(2, Math.min(20, +$('bdHours').value || 5)), days: days, level: $('bdLevel').value });
-      weeks = planToWeeks(plan); name = TRAIN_GOALS[$('bdGoal').value] + ', ' + $('bdHours').value + ' h';
-    } else if (v.indexOf('t:') === 0){
-      var t = TR.lib.templates.filter(function(x){ return 't:' + x.id === v; })[0];
-      weeks = JSON.parse(JSON.stringify(t.weeks)); name = t.name; about = t.about || '';
-    } else {
-      var id = v.slice(2);
+    var a = answers(), start = tIso(tMonday(tParse($('bdStartDate').value || nextMonday())));
+    if (a.days.length < 1){ trMsg('bdStartMsg', 'Pick at least one riding day.', true); return; }
+    if (a.eventDate && a.eventDate < start){ trMsg('bdStartMsg', 'The event is before the start week.', true); return; }
+    function go(weeks, name, about){
+      TR.build = { weeks: weeks, week: 0, answers: a, start: start };
+      trMsg('bdStartMsg', ''); beginEdit(weeks, name, about);
+    }
+    if (BD.how === 'suggest'){
+      if (a.days.length < 2){ trMsg('bdStartMsg', 'A suggestion needs at least 2 riding days.', true); return; }
+      var plan = generateTrainPlan(a, tParse(start));
+      go(planToWeeks(plan), (TRAIN_GOALS[a.goal] || 'Plan') + (a.eventName ? ' → ' + a.eventName : ''), '');
+    } else if (BD.how === 'template'){
+      var t = TR.lib.templates.filter(function(x){ return x.id === $('bdTplSel').value; })[0];
+      if (!t){ trMsg('bdStartMsg', 'Make a template first (Plan templates), or pick another way.', true); return; }
+      go(JSON.parse(JSON.stringify(t.weeks)), t.name, t.about || '');
+    } else if (BD.how === 'copy'){
+      var id = $('bdCopySel').value;
+      if (!id){ trMsg('bdStartMsg', 'No rider plan to copy yet.', true); return; }
       trMsg('bdStartMsg', 'Loading…');
       api('/api/plan?deviceId=' + encodeURIComponent(id)).then(function(res){
         if (!res.ok || !res.data.plan){ trMsg('bdStartMsg', 'Could not load that plan.', true); return; }
-        trMsg('bdStartMsg', '');
-        beginEdit(planToWeeks(res.data.plan), 'Copy of ' + riderName(TR.plans[id] || {}) + '’s plan', res.data.plan.coachNote || '');
+        go(planToWeeks(res.data.plan), 'Copy of ' + riderName(TR.plans[id] || {}) + '’s plan', res.data.plan.coachNote || '');
       });
-      return;
+    } else {
+      var n = a.eventDate ? Math.max(1, Math.min(16, Math.floor((tParse(a.eventDate) - tParse(start)) / (7 * 86400000)) + 1)) : a.weeks;
+      var per = Math.max(30, Math.round(a.hours * 60 / Math.max(1, a.days.length) / 5) * 5), weeks = [];
+      for (var w = 0; w < n; w++) weeks.push({ phase:'base', days:[0,1,2,3,4,5,6].map(function(d){ return a.days.indexOf(d) !== -1 ? { type:'end', min: per } : { type:'rest', min:0 }; }) });
+      go(weeks, 'Basic plan', '');
     }
-    trMsg('bdStartMsg', '');
-    beginEdit(weeks, name, about);
   }
-  $('bdStart').addEventListener('click', startBuild);
+  $('bdStart').addEventListener('click', function(){
+    if (TR.build && !$('bdEdit').hidden){
+      uiConfirm('Replace the weeks you are working on with a new plan from these answers?', { ok:'Make new plan', cancel:'Keep my weeks' }).then(function(ok){ if (ok) startBuild(); });
+    } else startBuild();
+  });
   function beginEdit(weeks, name, about){
-    TR.build = { weeks: weeks, week: 0 };
     $('bdName').value = name || ''; $('bdNote').value = about || '';
-    $('bdStartDate').value = nextMonday();
     $('bdEdit').hidden = false; trMsg('bdResult', ''); trMsg('bdTplResult', '');
+    $('bdSummary').textContent = answersText(TR.build.answers, TR.build.start);
     renderBuildWeek(); renderBuildRiders();
     $('bdEdit').scrollIntoView({ behavior:'smooth', block:'start' });
   }
@@ -1545,7 +1650,7 @@
     if (b.week >= b.weeks.length) b.week = b.weeks.length - 1;
     if (isWide()){
       var allDays = function(){ var a = []; b.weeks.forEach(function(w){ a = a.concat(w.days); }); return a; };
-      planGrid($('bdWeek'), b.weeks, { canResize:true, redraw: renderBuildWeek, onChange: function(){ $('bdTotals').textContent = planTotalsText(allDays(), b.weeks.length); } });
+      planGrid($('bdWeek'), b.weeks, { canResize:true, ridingDays: b.answers ? b.answers.days : null, redraw: renderBuildWeek, onChange: function(){ $('bdTotals').textContent = planTotalsText(allDays(), b.weeks.length); } });
       $('bdTotals').textContent = planTotalsText(allDays(), b.weeks.length); return;
     }
     var wk = b.weeks[b.week];
@@ -1553,7 +1658,7 @@
     $('bdPhase').value = wk.phase || 'base';
     $('bdRemoveWeek').disabled = b.weeks.length <= 1;
     var box = $('bdWeek'); box.innerHTML = '';
-    wk.days.forEach(function(day, i){ box.appendChild(dayRow(day, TRAIN_DAYS[i], renderBuildWeek, null, refreshBuildTotals)); });
+    wk.days.forEach(function(day, i){ box.appendChild(dayRow(day, TRAIN_DAYS[i] + (b.answers && b.answers.days.indexOf(i) !== -1 ? ' ●' : ''), renderBuildWeek, null, refreshBuildTotals)); });
     refreshBuildTotals();
   }
   $('bdPhase').addEventListener('change', function(){ TR.build.weeks[TR.build.week].phase = this.value; });
@@ -1576,14 +1681,14 @@
     var q = $('bdSearch').value.trim().toLowerCase(), box = $('bdRiders'), chips = $('bdTeams');
     box.innerHTML = ''; chips.innerHTML = '';
     var all = buildRiderList();
-    function chip(t, fn){ var c = el('button', 'chip', t); c.type = 'button'; c.addEventListener('click', function(){ fn(); renderBuildRiders(); }); chips.appendChild(c); }
+    function chip(t, fn){ var c = el('button', 'chip', t); c.type = 'button'; c.addEventListener('click', function(){ fn(); renderBuildRiders(); afterPick(); }); chips.appendChild(c); }
     chip('Everyone', function(){ all.forEach(function(u){ TR.buildPick[u.deviceId] = true; }); });
     chip('Nobody', function(){ TR.buildPick = {}; });
     var teams = []; all.forEach(function(u){ if (u.team && teams.indexOf(u.team) === -1) teams.push(u.team); });
     teams.sort().forEach(function(t){ chip('Team ' + t, function(){ TR.buildPick = {}; all.forEach(function(u){ if (u.team === t) TR.buildPick[u.deviceId] = true; }); }); });
     all.filter(function(u){ return !q || (riderName(u) + ' ' + (u.team || '')).toLowerCase().indexOf(q) !== -1; }).forEach(function(u){
       var l = el('label'); var c = el('input'); c.type = 'checkbox'; c.checked = !!TR.buildPick[u.deviceId];
-      c.addEventListener('change', function(){ if (c.checked) TR.buildPick[u.deviceId] = true; else delete TR.buildPick[u.deviceId]; buildCount(); });
+      c.addEventListener('change', function(){ if (c.checked) TR.buildPick[u.deviceId] = true; else delete TR.buildPick[u.deviceId]; buildCount(); afterPick(); });
       var nm = el('span', 'nm', riderName(u)), p = TR.plans[u.deviceId];
       nm.appendChild(el('span', 'sub', (u.team || 'No team') + (p ? (p.ended ? ' · plan ended' : ' · has a plan (it will be replaced, kept in history)') : ' · no plan yet')));
       l.appendChild(c); l.appendChild(nm); box.appendChild(l);
@@ -1592,13 +1697,18 @@
     buildCount();
   }
   function buildCount(){
-    var n = Object.keys(TR.buildPick).length;
-    $('bdGive').textContent = n ? 'Give this plan to ' + n + ' rider' + (n === 1 ? '' : 's') : 'Pick riders first';
-    $('bdGive').disabled = !n;
+    var ids = pickedIds(), n = ids.length;
+    $('bdGive').textContent = n === 1 ? 'Give this plan to ' + riderName(riderInfo(ids[0])) : n ? 'Give this plan to ' + n + ' riders' : 'Pick a rider in step 1';
+    $('bdGive').disabled = !n || !TR.build;
+    if (TR.build){
+      var has = ids.filter(function(id){ return TR.plans[id] && !TR.plans[id].ended; }).map(function(id){ return riderName(riderInfo(id)); });
+      $('bdGiveSummary').textContent = (n ? 'For ' + ids.map(function(id){ return riderName(riderInfo(id)); }).join(', ') : 'No rider picked yet (step 1)') + ' · ' + TR.build.weeks.length + ' weeks from ' +
+        tParse(TR.build.start).toLocaleDateString([], { day:'numeric', month:'long' }) + '.' + (has.length ? ' Replaces the current plan of ' + has.join(', ') + ' (kept in their history).' : '');
+    }
   }
   $('bdSearch').addEventListener('input', renderBuildRiders);
   $('bdGive').addEventListener('click', async function(){
-    var ids = Object.keys(TR.buildPick), start = $('bdStartDate').value || nextMonday(), btn = this;
+    var ids = Object.keys(TR.buildPick), start = TR.build.start, btn = this;
     var hasPlan = ids.filter(function(id){ return TR.plans[id] && !TR.plans[id].ended; }).length;
     if (!(await uiConfirm('Give this ' + TR.build.weeks.length + '-week plan to ' + ids.length + ' rider' + (ids.length === 1 ? '' : 's') + ', starting ' + start + '?' +
       (hasPlan ? '\n' + hasPlan + ' of them already have a plan; it is replaced and kept in their history.' : '')))) return;
@@ -1614,7 +1724,8 @@
       var id = ids[i++], u = TR.users.filter(function(x){ return x.deviceId === id; })[0] || { deviceId:id };
       trMsg('bdResult', 'Saving ' + i + ' of ' + ids.length + '…');
       api('/api/plan?deviceId=' + encodeURIComponent(id)).then(function(res){
-        var plan = planFromTemplate(tpl, start, res.ok ? res.data.plan : null);
+        var ans = Object.assign({}, TR.build.answers, { ftp: riderInfo(id).ftp || 0 });
+        var plan = planFromTemplate(tpl, start, res.ok ? res.data.plan : null, ans);
         return api('/api/plan', { method:'PUT', headers:{ 'Content-Type':'application/json' },
           body: JSON.stringify({ deviceId: id, plan: plan, notify: $('bdNotify').checked, replace: true }) });
       }).then(function(r){ if (r && r.ok) ok++; else failed.push(riderName(u)); next(); })
@@ -1623,7 +1734,7 @@
   });
   $('bdSaveTpl').addEventListener('click', function(){
     var name = $('bdName').value.trim();
-    if (!name){ trMsg('bdTplResult', 'Give the plan a name first (top of step 2).', true); return; }
+    if (!name){ trMsg('bdTplResult', 'Give the plan a name first (top of step 3).', true); return; }
     saveLibrary('template', { name: name, about: $('bdNote').value.trim(), weeks: TR.build.weeks }, 'bdTplResult')
       .then(function(item){ if (item) trMsg('bdTplResult', 'Saved as template “' + item.name + '”.'); });
   });
@@ -1657,7 +1768,7 @@
     var today = tIso(new Date());
     var wrap = el('div', 'pgrid-wrap'), t = el('table', 'pgrid'), thead = el('thead'), hr = el('tr');
     hr.appendChild(el('th', 'wkh', 'Week'));
-    TRAIN_DAYS.forEach(function(d){ hr.appendChild(el('th', null, d)); });
+    TRAIN_DAYS.forEach(function(d, i){ var th0 = el('th', o.ridingDays && o.ridingDays.indexOf(i) !== -1 ? 'rideday' : null, d); if (th0.className) th0.title = 'Riding day'; hr.appendChild(th0); });
     hr.appendChild(el('th', 'toth', 'Total'));
     thead.appendChild(hr); t.appendChild(thead);
     var tb = el('tbody');
@@ -2235,8 +2346,8 @@
     api('/api/plan', { method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ deviceId: u.deviceId, canEdit: on }) })
       .then(function(res){ if (!res.ok){ setPermUI(!on); trMsg('rvResult', (res.data && res.data.error) || 'Could not change this.', true); } else { if (TR.plans[u.deviceId]) TR.plans[u.deviceId].canEdit = on; } });
   });
-  $('rvMake').addEventListener('click', function(){ openBuilder({ from:'empty', riders:[TR.rider.deviceId] }); });
-  $('rvCopy').addEventListener('click', function(){ openBuilder({ from:'r:' + TR.rider.deviceId, riders:[] }); });
+  $('rvMake').addEventListener('click', function(){ openBuilder({ riders:[TR.rider.deviceId] }); });
+  $('rvCopy').addEventListener('click', function(){ openBuilder({ copyFrom: TR.rider.deviceId }); });
 
   // ---------- WORKOUTS ----------
   function profileInto(box, steps){

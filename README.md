@@ -280,6 +280,15 @@ Phones keep the one-column, week-by-week layout. It switches on rotate/resize.
   signed-in riders and only shows races they are or were selected for.
   Key: `rootahead:races`. Notifications about races: not yet (to be discussed).
 
+- **Build plan** (RA Admin → Training) works in four steps, like a rider's own
+  plan: 1) who (one rider, several, or a team), 2) availability and goal (riding
+  days, hours per week, level, goal, optional race/event, start week, length;
+  filled in from the rider's current plan when one rider is picked; FTP comes
+  from each rider's profile), then how to fill the weeks: Suggestion (the app's
+  periodised plan), Template, Copy a plan, or Basic (endurance on riding days),
+  3) adjust the weeks (riding days marked ●), 4) give the plan. The answers are
+  stored with the plan, so next time they are filled in again.
+
 **Test files**: `root-ahead-test.html` and `ra-admin-test.html` share one test
 database when opened in the same browser: make a rider in RA Admin, then sign
 in with the code in the app. Demo codes: ELS2026, JAN2026, LOTTE26.
