@@ -458,6 +458,9 @@
   .lu .you{display:inline-block;margin-left:4px;font-style:normal;font-size:10px;background:var(--gold);color:#141414;border-radius:8px;padding:0 6px;font-weight:700;}
   .rm-close{display:block;margin:0 auto 18px;}
   /* ---------- TEAM (overview of all riders) ---------- */
+  .dash-foot{max-width:960px;width:calc(100% - 44px);margin:2px auto 30px;display:flex;justify-content:center;}
+  .dash-logout{background:none;border:1px solid var(--line);color:var(--text-muted);border-radius:22px;padding:10px 22px;font:inherit;font-size:14px;cursor:pointer;}
+  .dash-logout:hover{border-color:#e03b2c;color:#ff9c90;}
   .dash-nick{font-size:12px;font-style:italic;color:var(--text-muted);margin-top:1px;}
   .dash-nick:empty{display:none;}
   .pe-grid label.wide{grid-column:1 / -1;}
@@ -857,6 +860,7 @@
   .ui-cancel{background:none;border:1px solid var(--line);color:var(--text);}
   .ui-ok{background:var(--accent);border:none;color:#150c05;}
   .ui-ok.danger{background:#e03b2c;color:#fff;}
+  .reg-card .intro.warn{color:#fff;background:#e03b2c;border-radius:8px;padding:9px 11px;font-weight:600;}
   .code-input{font-family:'IBM Plex Mono',monospace !important;font-size:22px !important;letter-spacing:.18em;text-transform:uppercase;text-align:center;}
   #profOverlay{position:fixed;inset:0;z-index:4500;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(6,10,8,.92);overflow-y:auto;}
   #profOverlay.open{display:flex;}
@@ -1024,6 +1028,7 @@
     <button class="btn primary" type="button" id="installBtn">Install</button>
     <button class="x" type="button" id="installDismiss" aria-label="Not now">✕</button>
   </div>
+  <div class="dash-foot"><button type="button" class="dash-logout" id="dashLogout">⎋ Log out</button></div>
   <div class="dash-toast" id="dashToast"></div>
 </div>
 
@@ -1170,7 +1175,7 @@
       <div class="reg-actions"><button class="btn ghost" type="button" id="peCancel">Cancel</button><button class="btn primary" type="submit" id="peSave">Save</button></div>
     </form>
     <div class="reg-actions" id="profActions">
-      <button class="btn ghost" type="button" id="profSwitch">Sign out</button>
+      <button class="btn ghost" type="button" id="profSwitch">Log out</button>
       <button class="btn ghost" type="button" id="profChange">Change my details</button>
       <button class="btn primary" type="button" id="profClose">Close</button>
     </div>
@@ -1820,6 +1825,44 @@
       }
     }catch(e){}
   })();
+  // Every request to our server carries the version of the login code this phone signed in with.
+  // When the coach resets the code, the server refuses older versions → this phone is signed out.
+  function installId(){
+    try{
+      var k = 'rootahead_install', v = localStorage.getItem(k);
+      if (!v){ v = 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); localStorage.setItem(k, v); }
+      return v;
+    }catch(e){ return ''; }
+  }
+  (function(){
+    var origFetch = window.fetch.bind(window);
+    window.fetch = function(input, init){
+      var url = typeof input === 'string' ? input : (input && input.url) || '', pr = null;
+      var ours = url.indexOf('/api/') === 0 || url.indexOf(location.origin + '/api/') === 0;
+      if (ours){
+        try{ pr = JSON.parse(localStorage.getItem('rootahead_profile') || 'null'); }catch(e){}
+        if (pr && pr.id){
+          init = Object.assign({}, init || {});
+          var h = Object.assign({}, init.headers || {}); h['x-rider-v'] = String(pr.codeV || 1); h['x-install-id'] = installId(); init.headers = h;
+        }
+      }
+      return origFetch(input, init).then(function(res){
+        if (ours && pr && pr.id && res.status === 401){
+          res.clone().json().then(function(d){ if (d && d.signedOut) riderSignedOut(); }).catch(function(){});
+        }
+        return res;
+      });
+    };
+  })();
+  function riderSignedOut(){
+    if (window.__raSigningOut) return; window.__raSigningOut = true;
+    try{
+      ['rootahead_profile','rootahead_plan_cache','rootahead_roster_cache','rootahead_races_cache'].forEach(function(k){ localStorage.removeItem(k); });
+      localStorage.setItem('rootahead_signout_reason', 'code');
+    }catch(e){}
+    location.reload();
+  }
+
   // Once signed in, this phone IS the rider: plans, feedback and messages use the rider's id.
   function getDeviceId(){
     try{ var pr = JSON.parse(localStorage.getItem('rootahead_profile') || 'null'); if (pr && pr.id) return pr.id; }catch(e){}
@@ -1941,6 +1984,10 @@
   // ---- sign in with the login code ----
   function openRegistration(isSwitch){
     document.getElementById('regTitle').textContent = isSwitch ? 'Sign in as another rider' : 'Sign in';
+    var why = ''; try{ why = localStorage.getItem('rootahead_signout_reason') || ''; localStorage.removeItem('rootahead_signout_reason'); }catch(e){}
+    var intro = document.getElementById('regIntro');
+    intro.textContent = why === 'code' ? 'Your login code was changed by your coach. Sign in with your new code.' : 'Enter the login code you got from your coach.';
+    intro.classList.toggle('warn', why === 'code');
     document.getElementById('regCode').value = '';
     document.getElementById('regCancel').style.display = isSwitch && loadProfile() ? '' : 'none';
     regErr.textContent = '';
@@ -1950,14 +1997,14 @@
   function closeRegistration(){ regOverlay.classList.remove('open'); }
   function forgetRider(){
     // everything that belonged to the previous rider on this phone
-    ['rootahead_profile', 'rootahead_plan_cache', 'rootahead_roster_cache', 'rootahead_races_cache'].forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
+    ['rootahead_profile', 'rootahead_plan_cache', 'rootahead_roster_cache', 'rootahead_races_cache', 'rootahead_home_geo'].forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
   }
   regForm.addEventListener('submit', function(e){
     e.preventDefault();
     var code = document.getElementById('regCode').value.trim();
     if (!code){ regErr.textContent = 'Enter your login code.'; return; }
     var btn = document.getElementById('regSubmit'); btn.disabled = true; regErr.textContent = '';
-    fetch('/api/rider-login', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ code: code }) })
+    fetch('/api/rider-login', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ code: code, installId: installId() }) })
       .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(d){ return { ok:r.ok, data:d }; }); })
       .then(function(res){
         btn.disabled = false;
@@ -1980,7 +2027,7 @@
     document.getElementById('profName').textContent = p.firstName + ' ' + p.lastName;
     var pt = document.getElementById('profTeam'); pt.textContent = p.team || 'No team yet'; pt.style.color = p.teamColor || '';
     var tl = document.getElementById('profTeamLogo'); tl.hidden = !p.teamLogoUrl; if (p.teamLogoUrl) tl.style.backgroundImage = 'url("' + p.teamLogoUrl + '")';
-    var rows = [['Nickname', p.nickname ? '“' + p.nickname + '”' : '—'], ['Sex', { F:'Female', M:'Male', X:'Other' }[p.sex] || '—'],
+    var rows = [['Nickname', p.nickname ? '“' + p.nickname + '”' : '—'], ['Home town', p.homeTown || '—'], ['Sex', { F:'Female', M:'Male', X:'Other' }[p.sex] || '—'],
                 ['Date of birth', p.birthDate ? new Date(p.birthDate + 'T12:00:00').toLocaleDateString() + ' (' + ageFrom(p.birthDate) + ')' : '—'],
                 ['Height', p.heightCm ? p.heightCm + ' cm' : '—'], ['Weight', p.weightKg ? p.weightKg + ' kg' : '—'],
                 ['FTP', p.ftp ? p.ftp + ' W' + (p.weightKg ? ' (' + (p.ftp / p.weightKg).toFixed(1) + ' W/kg)' : '') : '—']];
@@ -1995,10 +2042,19 @@
   }
   document.getElementById('dashEditProfile').addEventListener('click', openProfile);
   document.getElementById('profClose').addEventListener('click', function(){ profOverlay.classList.remove('open'); });
-  document.getElementById('profSwitch').addEventListener('click', async function(){
-    if (!(await uiConfirm('Sign out on this phone? You need your login code to sign in again.'))) return;
+  async function logOut(){
+    if (!(await uiConfirm('Log out on this phone? You need your login code to sign in again.', { title:'Log out', ok:'Log out', cancel:'Stay signed in', danger:true }))) return;
+    var p = loadProfile();
+    try{
+      await Promise.race([
+        fetch('/api/rider-login', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ logout:true, id: p && p.id }) }),
+        new Promise(function(r){ setTimeout(r, 2500); })   // offline: log out here anyway
+      ]);
+    }catch(e){}
     forgetRider(); location.reload();
-  });
+  }
+  document.getElementById('dashLogout').addEventListener('click', logOut);
+  document.getElementById('profSwitch').addEventListener('click', logOut);
   document.getElementById('profChange').addEventListener('click', function(){
     var p = loadProfile() || {};
     document.getElementById('peCode').value = '';
@@ -2035,7 +2091,10 @@
       .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(d){ return { status:r.status, data:d }; }); })
       .then(async function(res){
         if (res.status === 404 && res.data.gone){ forgetRider(); (await uiAlert('Your rider profile was removed by your coach. Ask your coach for a new code.')); location.reload(); return; }
-        if (res.data && res.data.rider){ saveProfile(Object.assign({}, p, res.data.rider)); renderProfile(); if (profOverlay.classList.contains('open') && document.getElementById('profEdit').hidden) renderProfileCard(); }
+        if (res.data && res.data.rider){
+          var homeChanged = (res.data.rider.homeTown || '') !== (p.homeTown || '');
+          saveProfile(Object.assign({}, p, res.data.rider)); renderProfile();
+          if (homeChanged && (!state.start || state.start.fromHome)) useHomeAsStart(); if (profOverlay.classList.contains('open') && document.getElementById('profEdit').hidden) renderProfileCard(); }
       }).catch(function(){});
   }
 
@@ -2093,7 +2152,11 @@
 
   renderProfile();
   if (!loadProfile()) openRegistration(false);
-  else { applyHashView(); refreshRider(); }
+  else {
+    applyHashView(); refreshRider();
+    document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'visible') refreshRider(); });
+    setInterval(function(){ if (document.visibilityState === 'visible') refreshRider(); }, 5 * 60 * 1000);
+  }
 
   /* ---------------- NO PAGE ZOOM (map excepted) ---------------- */
   // iOS Safari ignores user-scalable=no, so pinch is also blocked here;
@@ -5787,10 +5850,16 @@
     if (!html){ b.hidden = true; return; }
     b.hidden = false; b.className = 'train-route-banner' + (bad ? ' off' : ''); b.innerHTML = html;
   }
+  // The route planner tends to come out a little short, so a training route asks for 15% more distance.
+  var TRAIN_ROUTE_EXTRA = 0.15;
   function planRouteFor(day){
-    var km = Math.round(day.min / 60 * dayPace(day));
+    var base = day.min / 60 * dayPace(day), km = Math.round(base * (1 + TRAIN_ROUTE_EXTRA));
     trainRouteCtx = { d: day.d, min: day.min, type: day.type, title: dayInfo(day).title, km: km };
-    setRouteBanner('<b>' + escapeHtml(trainRouteCtx.title) + '</b> · ' + trainHours(day.min) + ' · aim ≈ ' + km + ' km. Pick your start and tap Generate.');
+    var p = loadProfile(), home = p && p.homeTown;
+    // start from home, unless the rider already chose another start
+    if (!state.start || state.start.fromHome) useHomeAsStart();
+    setRouteBanner('<b>' + escapeHtml(trainRouteCtx.title) + '</b> · ' + trainHours(day.min) + ' · aim ≈ ' + km + ' km (+15% so the route is long enough). ' +
+      (home && (!state.start || state.start.fromHome) ? 'Start: your home, ' + escapeHtml(home) + '. ' : '') + 'Tap Generate.');
     var slider = document.getElementById('distSlider');
     slider.value = String(tClamp(km, +slider.min || 3, +slider.max || 250));
     slider.dispatchEvent(new Event('input'));
@@ -6973,24 +7042,40 @@
     setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
   });
 
-  /* ---------------- DEFAULT START ---------------- */
-  // Pre-fills Start with Eeklo, Belgium on load so the form isn't empty —
-  // "Use my location" or typing a new address still overrides this freely.
-  (function presetDefaultStart(){
-    fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent('Eeklo, Belgium'))
+  /* ---------------- DEFAULT START: the rider's home town ---------------- */
+  // Start is pre-filled with the home town the coach set for this rider (Eeklo when
+  // there is none). "Use my location", picking on the map or typing an address still
+  // override it; a start the rider chose stays until they leave it.
+  var HOME_GEO = 'rootahead_home_geo';
+  function homeQuery(){
+    var p = loadProfile(), t = p && p.homeTown ? String(p.homeTown).trim() : '';
+    if (!t) return 'Eeklo, Belgium';
+    return /,/.test(t) ? t : t + ', Belgium';
+  }
+  function lookupHome(){
+    var q = homeQuery();
+    try{ var c = JSON.parse(localStorage.getItem(HOME_GEO) || 'null'); if (c && c.q === q) return Promise.resolve(c); }catch(e){}
+    return fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(q))
       .then(function(r){ return r.json(); })
       .then(function(results){
-        if (!results || !results.length) return;
-        var r = results[0];
-        var lat = parseFloat(r.lat), lon = parseFloat(r.lon);
-        document.getElementById('startInput').value = r.display_name;
-        if (document.getElementById('startInput')._refreshClearBtn) document.getElementById('startInput')._refreshClearBtn();
-        setStartMarker(lat, lon, r.display_name);
-        map.setView([lat, lon], 12);
-      })
-      .catch(function(){ /* silent — form just stays empty, no default this time */ })
-      .finally(function(){ markSplashReady('start'); });
-  })();
+        if (!results || !results.length) return null;
+        var g = { q: q, lat: parseFloat(results[0].lat), lon: parseFloat(results[0].lon), label: results[0].display_name };
+        try{ localStorage.setItem(HOME_GEO, JSON.stringify(g)); }catch(e){}
+        return g;
+      });
+  }
+  function useHomeAsStart(){
+    return lookupHome().then(function(g){
+      if (!g) return false;
+      document.getElementById('startInput').value = g.label;
+      if (document.getElementById('startInput')._refreshClearBtn) document.getElementById('startInput')._refreshClearBtn();
+      setStartMarker(g.lat, g.lon, g.label);
+      state.start.fromHome = true;
+      map.setView([g.lat, g.lon], 12);
+      return true;
+    }).catch(function(){ return false; });
+  }
+  useHomeAsStart().finally(function(){ markSplashReady('start'); });
 
 })();
 </script>

@@ -181,6 +181,12 @@
   .rdtools input{flex:1 1 220px;max-width:420px;}
   .avatar{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;border-radius:50%;background:var(--char-3) center/cover no-repeat;
     color:var(--yellow);font-family:'Archivo',sans-serif;font-weight:800;border:2px solid var(--char-3);}
+  .odot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-left:8px;vertical-align:1px;flex:0 0 auto;}
+  .odot.on{background:#3ecf5a;box-shadow:0 0 0 3px rgba(62,207,90,.22);}
+  .odot.off{background:#e5483a;box-shadow:0 0 0 3px rgba(229,72,58,.18);}
+  .ostat{font-size:13px;white-space:nowrap;} .ostat.on{color:#7fe08f;} .ostat.off{color:#ff8f84;}
+  .rmain .ostat{display:block;margin-top:2px;}
+  .online-sum{margin:12px 0 0;font-size:14px;} .online-sum .odot{margin:0 8px 0 0;} .online-sum small{color:var(--muted);}
   .codebtn{font-family:'IBM Plex Mono',monospace;font-size:14px;letter-spacing:.12em;background:var(--char-2);border:1px dashed var(--yellow);color:var(--yellow);
     border-radius:8px;padding:6px 10px;cursor:pointer;flex:0 0 auto;}
   .rd-layout{display:grid;grid-template-columns:1fr;gap:16px;margin-top:12px;}
@@ -200,6 +206,14 @@
   .danger-zone{margin-top:40px;border:1px solid rgba(255,138,115,.4);border-radius:12px;padding:12px 16px;}
   .danger-zone summary{cursor:pointer;color:var(--bad);font-weight:600;}
   .danger-zone p{font-size:14px;color:var(--muted);}
+  .newcodes{margin-top:12px;border:1px solid var(--char-3);border-radius:12px;overflow:hidden;}
+  .newcodes table{width:100%;border-collapse:collapse;font-size:14px;}
+  .newcodes td{padding:8px 12px;border-top:1px solid var(--char-3);}
+  .newcodes tr:first-child td{border-top:none;}
+  .newcodes td.code{font-family:'IBM Plex Mono',monospace;letter-spacing:.14em;color:var(--yellow);font-size:16px;text-align:right;}
+  .newcodes .btns{display:flex;gap:8px;padding:10px 12px;background:var(--char-2);}
+  .newcodes .btns .ghost{padding:8px 12px;}
+  .danger-zone + .danger-zone{margin-top:14px;}
   .go.danger{background:var(--bad);color:#2a0d06;}
   body.wide .rd-layout{grid-template-columns:200px minmax(0,640px);gap:36px;}
   body.wide .rd-grid{grid-template-columns:repeat(4,1fr);}
@@ -459,7 +473,17 @@
       <div class="rdtools"><button class="go" type="button" id="rdAdd">+ Add rider</button>
         <input type="search" id="rdSearch" placeholder="Search name, team or code" aria-label="Search riders"></div>
       <div class="trstatus" id="rdStatus" role="status"></div>
+      <div class="online-sum" id="rdOnline"></div>
       <div id="rdList"></div>
+      <details class="danger-zone">
+        <summary>Reset all login codes</summary>
+        <p>Every rider gets a new login code and is <b>signed out on every phone</b> at once. They sign in again with their new code. Their plans, feedback and races stay.</p>
+        <label class="field" for="rcConfirmAll">Type RESET to confirm</label>
+        <input type="text" id="rcConfirmAll" autocomplete="off" autocapitalize="characters">
+        <button class="go danger" type="button" id="rcResetAll" disabled>Reset all codes</button>
+        <div class="result" id="rcResetResult" role="status"></div>
+        <div id="rcNewCodes"></div>
+      </details>
       <details class="danger-zone">
         <summary>Start with a clean sheet</summary>
         <p>Deletes <b>all</b> ROOT-Ahead data in the database: plans, feedback, routes, messages, notification sign-ups, statistics. Phones clear their own old data on their next start. This cannot be undone.</p>
@@ -487,6 +511,7 @@
             <label>Nickname <small class="opt">for fun</small><input type="text" id="rdNick" maxlength="30" autocomplete="off" placeholder="e.g. The Rocket"></label>
             <label class="teampick">Team <button class="linkbtn" type="button" id="rdManageTeams">manage teams</button><select id="rdTeam"><option value="">No team</option></select></label>
             <label>Sex<select id="rdSex"><option value="">—</option><option value="F">Female</option><option value="M">Male</option><option value="X">Other</option></select></label>
+            <label class="span2">Home town <small class="opt">start of the rider's routes</small><input type="text" id="rdHome" maxlength="80" autocomplete="off" placeholder="e.g. Lovendegem"></label>
             <label>Date of birth<input type="date" id="rdBirth"></label>
             <label>Height (cm)<input type="number" id="rdHeight" min="100" max="230" step="1"></label>
             <label>Weight (kg)<input type="number" id="rdWeight" min="25" max="200" step="0.1"></label>
@@ -498,6 +523,7 @@
             <label class="field" for="rdCode">Login code</label>
             <div class="coderow"><input type="text" id="rdCode" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false">
               <button class="ghost" type="button" id="rdNewCode">New code</button><button class="ghost" type="button" id="rdCopyCode">Copy</button></div>
+            <button class="ghost wide danger" type="button" id="rdResetCode" hidden>Reset code and sign out on every phone</button>
             <p class="rv-info" id="rdInfo"></p>
           </div>
           <button class="go" type="button" id="rdSave">Save rider</button>
@@ -659,6 +685,14 @@
         <input type="search" id="riderSearch" placeholder="Search by name or team" aria-label="Search riders" style="margin-top:14px;">
         <ul class="rlist" id="riderList"></ul>
         <div id="riderTable" hidden></div>
+        <details class="danger-zone">
+          <summary>Delete all training plans</summary>
+          <p>Deletes the plan of <b>every</b> rider, with their done/skipped feedback, scores, routes linked to plan days and earlier plans. Riders, teams, races and your own workouts and templates stay. Riders see "Your coach makes your training plan" until you give them a new plan. This cannot be undone.</p>
+          <label class="field" for="dpConfirm">Type DELETE to confirm</label>
+          <input type="text" id="dpConfirm" autocomplete="off" autocapitalize="characters">
+          <button class="go danger" type="button" id="dpGo" disabled>Delete all plans</button>
+          <div class="result" id="dpResult" role="status"></div>
+        </details>
       </div>
       <div id="riderView" hidden>
         <button class="ghost" type="button" id="rvBack">‹ All riders</button>
@@ -676,6 +710,7 @@
           <label class="check"><input type="checkbox" id="rvNotify" checked> Notify the rider (their app updates right away)</label>
           <button class="go" type="button" id="rvSave">Save plan</button>
           <button class="ghost wide" type="button" id="rvToTemplate">Save this plan as a template</button>
+          <button class="ghost wide danger" type="button" id="rvDeletePlan">Delete this plan</button>
           <div class="result" id="rvResult" role="status"></div>
         </div>
         <div class="assign">
@@ -1905,6 +1940,16 @@
 
 
   /* ======================= RIDERS (setup by the admin) ======================= */
+  function agoText(iso){
+    if (!iso) return '';
+    var m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+    return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' days ago';
+  }
+  // green = signed in on at least one phone, red = not signed in
+  function onlineDot(r){ var d = el('span', 'odot ' + (r.phones ? 'on' : 'off')); d.title = r.phones ? 'Signed in' : 'Not signed in'; d.setAttribute('aria-label', d.title); return d; }
+  function onlineText(r){
+    return r.phones ? 'Signed in' + (r.phones > 1 ? ' on ' + r.phones + ' phones' : '') + (r.lastSeenAt ? ' · seen ' + agoText(r.lastSeenAt) : '') : 'Signed out';
+  }
   var RD = { list: [], edit: null, photo: undefined };   // photo: undefined = keep, null = remove, 'data:…' = new
   function rdAge(d){ if (!d) return ''; var b = new Date(d + 'T12:00:00'), n = new Date(), a = n.getFullYear() - b.getFullYear(); if (n.getMonth() < b.getMonth() || (n.getMonth() === b.getMonth() && n.getDate() < b.getDate())) a--; return a; }
   function rdInitials(r){ return (((r.firstName || '')[0] || '') + ((r.lastName || '')[0] || '')).toUpperCase(); }
@@ -1920,6 +1965,8 @@
       if (!res.ok){ trMsg('rdStatus', (res.data && res.data.error) || 'Could not load riders.', true); return; }
       RD.list = res.data.riders || [];
       trMsg('rdStatus', RD.list.length ? '' : 'No riders yet. Add your first rider: they sign in to the app with the login code you give them.');
+      var on = RD.list.filter(function(r){ return r.phones; }).length;
+      $('rdOnline').innerHTML = RD.list.length ? '<span class="odot on"></span>' + on + ' of ' + RD.list.length + ' riders signed in <small>· updates every minute</small>' : '';
       renderRiderSetup();
     }).catch(function(){ trMsg('rdStatus', 'No connection.', true); });
   }
@@ -1935,14 +1982,15 @@
     if (!list.length){ if (RD.list.length) box.appendChild(el('p', 'empty-note', 'Nobody matches that search.')); return; }
     if (isWide()){
       var wrap = el('div', 'rtable-wrap'), t = el('table', 'rtable'), h = el('tr');
-      ['', 'Rider', 'Team', 'Sex', 'Age', 'Height', 'Weight', 'FTP', 'Login code', 'Signed in'].forEach(function(x){ h.appendChild(el('th', null, x)); });
+      ['', 'Rider', 'Team', 'Home town', 'Sex', 'Age', 'Height', 'Weight', 'FTP', 'Login code', 'Status'].forEach(function(x){ h.appendChild(el('th', null, x)); });
       var th = el('thead'); th.appendChild(h); t.appendChild(th);
       var tb = el('tbody');
       list.forEach(function(r){
         var tr = el('tr'); tr.tabIndex = 0;
         var c0 = el('td'); c0.appendChild(rdAvatar(r, 34)); tr.appendChild(c0);
-        var nmc = el('td', 'nm', r.firstName + ' ' + r.lastName); if (r.nickname) nmc.appendChild(el('span', 'nick', '“' + r.nickname + '”')); tr.appendChild(nmc);
+        var nmc = el('td', 'nm', r.firstName + ' ' + r.lastName); nmc.appendChild(onlineDot(r)); if (r.nickname) nmc.appendChild(el('span', 'nick', '“' + r.nickname + '”')); tr.appendChild(nmc);
         var tc = el('td'); if (r.teamId && teamById(r.teamId)){ var dot = el('span', 'tdot'); dot.style.background = teamById(r.teamId).color; tc.appendChild(dot); } tc.appendChild(document.createTextNode(r.team || '—')); tr.appendChild(tc);
+        tr.appendChild(el('td', 'refl', r.homeTown || '—'));
         tr.appendChild(el('td', null, { F:'F', M:'M', X:'X' }[r.sex] || '—'));
         tr.appendChild(el('td', 'num', r.birthDate ? String(rdAge(r.birthDate)) : '—'));
         tr.appendChild(el('td', 'num', r.heightCm ? r.heightCm + ' cm' : '—'));
@@ -1950,7 +1998,7 @@
         tr.appendChild(el('td', 'num', r.ftp ? r.ftp + ' W' + (r.weightKg ? ' · ' + (r.ftp / r.weightKg).toFixed(1) : '') : '—'));
         var cc = el('td'), cb = el('button', 'codebtn', r.code); cb.type = 'button'; cb.title = 'Copy the login code';
         cb.addEventListener('click', function(e){ e.stopPropagation(); copyCode(r.code, cb); }); cc.appendChild(cb); tr.appendChild(cc);
-        tr.appendChild(el('td', 'refl', r.lastLoginAt ? new Date(r.lastLoginAt).toLocaleDateString() : 'not yet'));
+        tr.appendChild(el('td', 'ostat ' + (r.phones ? 'on' : 'off'), onlineText(r)));
         tr.addEventListener('click', function(){ editRider(r); });
         tr.addEventListener('keydown', function(e){ if (e.key === 'Enter') editRider(r); });
         tb.appendChild(tr);
@@ -1962,8 +2010,9 @@
     list.forEach(function(r){
       var li = el('li', 'rrow'); li.tabIndex = 0;
       li.appendChild(rdAvatar(r, 44));
-      var main = el('div', 'rmain'); main.appendChild(el('b', null, r.firstName + ' ' + r.lastName));
-      main.appendChild(el('span', 'rsub', (r.nickname ? '“' + r.nickname + '” · ' : '') + (r.team || 'No team') + (r.lastLoginAt ? ' · signed in' : ' · not signed in yet')));
+      var main = el('div', 'rmain'), nb = el('b', null, r.firstName + ' ' + r.lastName); nb.appendChild(onlineDot(r)); main.appendChild(nb);
+      main.appendChild(el('span', 'rsub', (r.nickname ? '“' + r.nickname + '” · ' : '') + (r.team || 'No team')));
+      main.appendChild(el('span', 'ostat ' + (r.phones ? 'on' : 'off'), onlineText(r)));
       li.appendChild(main);
       var cb = el('button', 'codebtn', r.code); cb.type = 'button'; cb.title = 'Copy the login code';
       cb.addEventListener('click', function(e){ e.stopPropagation(); copyCode(r.code, cb); });
@@ -1974,6 +2023,9 @@
     box.appendChild(ul);
   }
   $('rdSearch').addEventListener('input', renderRiderSetup);
+  setInterval(function(){
+    if (!$('app').hidden && !$('paneRiders').hidden && !$('rdListBox').hidden && document.visibilityState === 'visible') loadRiders();
+  }, 60000);
 
   function editRider(r){
     RD.edit = r ? JSON.parse(JSON.stringify(r)) : { firstName:'', lastName:'', team:'', sex:'', birthDate:'', heightCm:'', weightKg:'', ftp:'', notes:'', code:'' };
@@ -1983,9 +2035,9 @@
     $('rdFirst').value = RD.edit.firstName; $('rdLast').value = RD.edit.lastName; fillTeamSelect(); $('rdTeam').value = RD.edit.teamId || '';
     $('rdSex').value = RD.edit.sex || ''; $('rdBirth').value = RD.edit.birthDate || '';
     $('rdHeight').value = RD.edit.heightCm || ''; $('rdWeight').value = RD.edit.weightKg || ''; $('rdFtp').value = RD.edit.ftp || '';
-    $('rdNotes').value = RD.edit.notes || ''; $('rdNick').value = RD.edit.nickname || '';
+    $('rdNotes').value = RD.edit.notes || ''; $('rdNick').value = RD.edit.nickname || ''; $('rdHome').value = RD.edit.homeTown || '';
     $('rdCode').value = RD.edit.code || newLocalCode();
-    $('rdDelete').hidden = !r; $('rdInfo').textContent = r ? (r.lastLoginAt ? 'Last signed in ' + new Date(r.lastLoginAt).toLocaleString() + '.' : 'Has not signed in yet.') +
+    $('rdDelete').hidden = !r; $('rdResetCode').hidden = !r; $('rdInfo').textContent = r ? (r.lastLoginAt ? 'Last signed in ' + new Date(r.lastLoginAt).toLocaleString() + '.' : 'Has not signed in yet.') +
       (r.updatedByRider ? ' Rider changed their details on ' + new Date(r.updatedByRider).toLocaleDateString() + '.' : '') : 'The rider signs in to the app with this code.';
     paintRdPhoto(RD.edit.photoUrl || '');
     trMsg('rdResult', '');
@@ -2023,24 +2075,34 @@
   });
   $('rdPhotoRemove').addEventListener('click', function(){ RD.photo = null; RD.edit.photoUrl = ''; paintRdPhoto(''); });
   $('rdBack').addEventListener('click', function(){ $('rdEditor').hidden = true; $('rdListBox').hidden = false; renderRiderSetup(); });
-  $('rdSave').addEventListener('click', function(){
+  $('rdSave').addEventListener('click', async function(){
+    var newCode = $('rdCode').value.trim().toUpperCase();
+    if (RD.edit.id && RD.edit.code && newCode !== RD.edit.code){
+      if (!(await uiConfirm(codeChangeWarning(RD.edit), { title:'Change the login code?', ok:'Change code', cancel:'Keep old code', danger:true }))){ $('rdCode').value = RD.edit.code; return; }
+    }
+    saveRiderNow(false);
+  });
+  function saveRiderNow(codeReset){
     var r = { id: RD.edit.id, firstName: $('rdFirst').value.trim(), lastName: $('rdLast').value.trim(), teamId: $('rdTeam').value,
               sex: $('rdSex').value, birthDate: $('rdBirth').value, heightCm: $('rdHeight').value, weightKg: $('rdWeight').value, ftp: $('rdFtp').value,
-              notes: $('rdNotes').value.trim(), nickname: $('rdNick').value.trim(), code: $('rdCode').value.trim() };
+              notes: $('rdNotes').value.trim(), nickname: $('rdNick').value.trim(), homeTown: $('rdHome').value.trim(), code: $('rdCode').value.trim() };
     if (!r.firstName || !r.lastName){ trMsg('rdResult', 'First and last name are required.', true); return; }
+    var codeChanged = !!(RD.edit.id && RD.edit.code && r.code.toUpperCase() !== RD.edit.code);
     if (r.code.length < 4){ trMsg('rdResult', 'The login code needs at least 4 letters or digits.', true); return; }
     var body = { rider: r }; if (RD.photo !== undefined) body.photo = RD.photo;
-    var btn = this; btn.disabled = true; trMsg('rdResult', 'Saving…');
+    var btn = $('rdSave'); btn.disabled = true; trMsg('rdResult', 'Saving…');
     api('/api/riders', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) }).then(function(res){
       btn.disabled = false;
       if (!res.ok){ trMsg('rdResult', (res.data && res.data.error) || 'Could not save.', true); return; }
       RD.edit = res.data.rider; RD.photo = undefined;
       $('rdTitle').textContent = RD.edit.firstName + ' ' + RD.edit.lastName; $('rdDelete').hidden = false;
       paintRdPhoto(RD.edit.photoUrl || '');
-      trMsg('rdResult', 'Saved. Login code: ' + RD.edit.code + '. Give this code to the rider; they enter it once in the app.');
+      trMsg('rdResult', codeChanged || codeReset
+        ? 'New login code: ' + RD.edit.code + '. ' + RD.edit.firstName + ' is signed out on every phone and signs in again with this code.'
+        : 'Saved. Login code: ' + RD.edit.code + '. Give this code to the rider; they enter it once in the app.');
       loadRiders();
     }).catch(function(){ btn.disabled = false; trMsg('rdResult', 'No connection. Not saved.', true); });
-  });
+  }
   $('rdDelete').addEventListener('click', async function(){
     var name = RD.edit.firstName + ' ' + RD.edit.lastName;
     if (!(await uiConfirm('Delete ' + name + '? Their plan, feedback, routes and notifications are deleted too. Their phone is signed out.'))) return;
@@ -2335,6 +2397,67 @@
       $('rcEditor').hidden = true; $('rcListBox').hidden = false; loadRaces();
     });
   });
+
+
+  /* ---------- delete training plans (all, or one rider) ---------- */
+  $('dpConfirm').addEventListener('input', function(){ $('dpGo').disabled = this.value.trim() !== 'DELETE'; });
+  $('dpGo').addEventListener('click', function(){
+    var btn = this; btn.disabled = true; trMsg('dpResult', 'Deleting…');
+    api('/api/plan', { method:'DELETE', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ all:true, confirm:'DELETE' }) }).then(function(res){
+      if (!res.ok){ btn.disabled = false; trMsg('dpResult', (res.data && res.data.error) || 'Could not delete.', true); return; }
+      $('dpConfirm').value = '';
+      trMsg('dpResult', 'All training plans are deleted (' + res.data.deleted + ' stored items).');
+      loadTraining();
+    }).catch(function(){ btn.disabled = false; trMsg('dpResult', 'No connection.', true); });
+  });
+  $('rvDeletePlan').addEventListener('click', async function(){
+    var u = TR.rider;
+    if (!(await uiConfirm('Delete ' + riderName(u) + '’s plan, with their feedback and linked routes?', { ok:'Delete plan', cancel:'Keep it', danger:true }))) return;
+    api('/api/plan', { method:'DELETE', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ deviceId: u.deviceId }) }).then(function(res){
+      if (!res.ok){ trMsg('rvResult', (res.data && res.data.error) || 'Could not delete.', true); return; }
+      loadTrainingQuiet().then(function(){ openRider(u); trMsg('rvResult', 'Plan deleted.'); });
+    });
+  });
+
+  /* ---------- login codes: reset one rider, or everyone ---------- */
+  function codeChangeWarning(r){ return r.firstName + ' ' + r.lastName + ' is signed out on every phone and signs in again with the new code.'; }
+  $('rdResetCode').addEventListener('click', async function(){
+    var r = RD.edit;
+    if (!(await uiConfirm(codeChangeWarning(r), { title:'Reset ' + r.firstName + '’s code?', ok:'Reset code', cancel:'Keep code', danger:true }))) return;
+    $('rdCode').value = newLocalCode();
+    saveRiderNow(true);
+  });
+  $('rcConfirmAll').addEventListener('input', function(){ $('rcResetAll').disabled = this.value.trim() !== 'RESET'; });
+  $('rcResetAll').addEventListener('click', function(){
+    var btn = this; btn.disabled = true; trMsg('rcResetResult', 'Resetting…'); $('rcNewCodes').innerHTML = '';
+    api('/api/riders', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ action:'resetCodes', ids:'all' }) }).then(function(res){
+      if (!res.ok){ btn.disabled = false; trMsg('rcResetResult', (res.data && res.data.error) || 'Could not reset.', true); return; }
+      $('rcConfirmAll').value = '';
+      var list = res.data.riders || [];
+      trMsg('rcResetResult', list.length + ' new code' + (list.length === 1 ? '' : 's') + '. Everyone is signed out; hand out the new codes:');
+      showNewCodes(list);
+      loadRiders();
+    }).catch(function(){ btn.disabled = false; trMsg('rcResetResult', 'No connection.', true); });
+  });
+  function showNewCodes(list){
+    var box = $('rcNewCodes'); box.innerHTML = '';
+    var wrap = el('div', 'newcodes'), t = el('table');
+    list.sort(function(a, b){ return (a.team + a.lastName + a.firstName).localeCompare(b.team + b.lastName + b.firstName); }).forEach(function(r){
+      var tr = el('tr'); tr.appendChild(el('td', null, r.firstName + ' ' + r.lastName)); tr.appendChild(el('td', null, r.team || '')); tr.appendChild(el('td', 'code', r.code)); t.appendChild(tr);
+    });
+    wrap.appendChild(t);
+    var btns = el('div', 'btns'), cp = el('button', 'ghost', 'Copy all'), pr = el('button', 'ghost', 'Print');
+    cp.type = pr.type = 'button';
+    var text = list.map(function(r){ return r.firstName + ' ' + r.lastName + (r.team ? ' (' + r.team + ')' : '') + ': ' + r.code; }).join('\n');
+    cp.addEventListener('click', function(){ if (navigator.clipboard) navigator.clipboard.writeText(text).then(function(){ cp.textContent = 'Copied'; }); });
+    pr.addEventListener('click', function(){
+      var w = window.open('', '_blank'); if (!w) return;
+      w.document.write('<title>ROOT Ahead login codes</title><style>body{font:16px system-ui;padding:24px}td{padding:8px 16px;border-bottom:1px solid #ccc}td:last-child{font:20px monospace;letter-spacing:.15em}</style><h2>ROOT Ahead: login codes</h2><table>' +
+        list.map(function(r){ return '<tr><td>' + (r.firstName + ' ' + r.lastName).replace(/</g, '&lt;') + '</td><td>' + (r.team || '').replace(/</g, '&lt;') + '</td><td>' + r.code + '</td></tr>'; }).join('') + '</table>');
+      w.document.close(); w.print();
+    });
+    btns.appendChild(cp); btns.appendChild(pr); wrap.appendChild(btns); box.appendChild(wrap);
+  }
 
   function setPermUI(on){
     $('rvPerm').setAttribute('aria-checked', String(on));

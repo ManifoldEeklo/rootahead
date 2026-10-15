@@ -289,6 +289,38 @@ Phones keep the one-column, week-by-week layout. It switches on rotate/resize.
   3) adjust the weeks (riding days marked ●), 4) give the plan. The answers are
   stored with the plan, so next time they are filled in again.
 
+- **Login codes are versioned** (`codeV`). The app sends its version with every
+  request (`x-rider-v`); after a code reset the server answers `401 signedOut`
+  for plans, feedback, races, team and profile, and the phone signs out with
+  "Your login code was changed by your coach". The app checks on start, when it
+  comes back to the screen, and every 5 minutes. Reset one rider (rider form →
+  "Reset code…", or by typing a new code) or everyone (Riders → "Reset all
+  login codes", type RESET → list of new codes to copy or print).
+- **Delete training plans**: Training → Rider plans → "Delete all training
+  plans" (type DELETE), or "Delete this plan" on a rider's page. Deletes plans,
+  feedback, linked routes and plan history; keeps riders, teams, races, own
+  workouts and templates.
+
+- **Log out** button on the dashboard (and in My profile): signs out on this
+  phone and on the server, back to the login screen.
+- **Who is signed in** (RA Admin → Riders): green bullet = signed in on at
+  least one phone (with "seen … ago"), red = signed out; summary "N of M riders
+  signed in", refreshed every minute. Each phone has its own id
+  (`rootahead_install`, header `x-install-id`); key
+  `rootahead:sessions:<rider id>` (phone id → last seen). Signing in adds the
+  phone, logging out removes it, a code reset removes all of them. Phones that
+  were signed in before this update turn green when their app next checks in.
+
+- **Home town** (rider form in RA Admin): the start of the rider's routes. The
+  app pre-fills Start in Track with it (", Belgium" is added when no country
+  is given; Eeklo when empty) and uses it for "Plan a route for this ride",
+  unless the rider already chose another start. Looked-up once and remembered
+  on the phone (`rootahead_home_geo`); a new home town from the coach is used
+  on the next check-in.
+- **Training routes ask for 15% more distance** (`TRAIN_ROUTE_EXTRA` in
+  index.html) because generated routes tend to come out a bit short; the fit
+  check against the planned time is unchanged.
+
 **Test files**: `root-ahead-test.html` and `ra-admin-test.html` share one test
 database when opened in the same browser: make a rider in RA Admin, then sign
 in with the code in the app. Demo codes: ELS2026, JAN2026, LOTTE26.
