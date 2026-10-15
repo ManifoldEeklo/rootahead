@@ -19,6 +19,15 @@ Two small serverless functions were added on top for **anonymous usage
 tracking** (app opens, unique devices, routes generated), stored in Upstash
 Redis and viewable from the app's own Admin panel.
 
+## Project structure: one serverless function
+
+Vercel's Hobby plan allows at most **12 serverless functions** per deployment.
+All API endpoints therefore live in `lib/api/*.js` and are served by ONE
+function, `api/[fn].js`, which picks the endpoint from the address
+(`/api/races` → `lib/api/races.js`). Addresses, the daily cron and the apps
+are unchanged. Adding an endpoint: put the file in `lib/api/` and add one line
+to the list in `api/[fn].js`. Files starting with `_` are shared helpers.
+
 ## What's in this repo
 
 ```
