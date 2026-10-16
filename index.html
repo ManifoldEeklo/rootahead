@@ -381,62 +381,89 @@
   .uh-row .d b{display:block;font-family:'IBM Plex Mono',monospace;color:var(--gold);font-weight:600;}
   .uh-row .d span{display:block;font-size:11px;color:var(--text-muted);}
   .uh-row .btn{flex:0 0 auto;}
-  /* ---------- RACES (rider's calendar) ---------- */
   .badge-n{position:absolute;top:14px;right:14px;min-width:24px;height:24px;border-radius:12px;background:var(--gold);color:#141414;font-weight:700;font-size:13px;
     display:flex;align-items:center;justify-content:center;padding:0 7px;}
   .badge-n[hidden]{display:none;}
+  /* ---------- CALENDAR (races, training, events) ---------- */
+  :root{--k-race:#d9b556;--k-training:#3fbf6a;--k-event:#a57bf0;}
+  .badge-n.red{background:#e03b2c;color:#fff;}
+  .cal-tiles{position:sticky;top:calc(57px + env(safe-area-inset-top,0px));z-index:2;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;
+    max-width:860px;margin:0 auto;padding:10px 16px;background:rgba(16,26,20,.95);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);}
+  .ctile{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px 9px;border-radius:14px;border:1px solid var(--line);
+    background:var(--panel);color:var(--text);font:inherit;cursor:pointer;}
+  .ctile .ic{font-size:20px;line-height:1.1;} .ctile .lb{font-family:'Fjalla One',sans-serif;letter-spacing:.05em;font-size:14px;text-transform:uppercase;}
+  .ctile .ct{font-size:10.5px;color:var(--text-muted);}
+  .ctile .ask{position:absolute;top:-6px;right:-4px;min-width:20px;height:20px;border-radius:10px;background:#e03b2c;color:#fff;font-size:11.5px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;padding:0 5px;box-shadow:0 0 0 2px var(--bg);}
+  .ctile[aria-pressed="true"]{border-color:var(--gold);background:linear-gradient(180deg,rgba(217,181,86,.2),var(--panel));}
+  .ctile.k-training[aria-pressed="true"]{border-color:var(--k-training);background:linear-gradient(180deg,rgba(63,191,106,.2),var(--panel));}
+  .ctile.k-event[aria-pressed="true"]{border-color:var(--k-event);background:linear-gradient(180deg,rgba(165,123,240,.22),var(--panel));}
   .race-strip{max-width:960px;width:calc(100% - 44px);margin:0 auto 16px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;}
   .rs-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
   .rs-head b{font-family:'Fjalla One',sans-serif;font-weight:400;letter-spacing:.06em;text-transform:uppercase;font-size:14px;color:var(--gold);}
   .rs-all{background:none;border:none;color:var(--text-muted);font:inherit;font-size:13px;cursor:pointer;}
-  .rs-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 2px;border:none;border-top:1px solid var(--line);background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer;}
+  .rs-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 4px;border-top:1px solid var(--line);color:var(--text);cursor:pointer;}
   .rs-item:first-child{border-top:none;}
-  .rs-item .d{flex:0 0 48px;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--gold);}
+  .rs-item .d{flex:0 0 46px;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--gold);}
   .rs-item .n{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px;}
-  .pill{flex:0 0 auto;border-radius:11px;padding:2px 9px;font-size:11.5px;font-weight:700;letter-spacing:.03em;white-space:nowrap;}
-  .pill.selected{background:rgba(107,156,91,.22);color:#9fd59a;border:1px solid rgba(159,213,154,.5);}
-  .pill.removed{background:#e03b2c;color:#fff;border:1px solid #ff7a6b;}
-  .pill.cancelled{background:#c0392b;color:#fff;}
   .rs-item.removed .n,.rs-item.cancelled .n{text-decoration:line-through;text-decoration-color:#ff7a6b;color:#ffb3aa;}
   .rs-item.removed,.rs-item.cancelled{background:rgba(224,59,44,.12);border-radius:8px;}
   .rs-item.removed .d,.rs-item.cancelled .d{color:#ff7a6b;}
+  .pill{flex:0 0 auto;border-radius:11px;padding:2px 9px;font-size:11.5px;font-weight:700;letter-spacing:.03em;white-space:nowrap;}
+  .pill.going{background:rgba(63,191,106,.2);color:#8be3a4;border:1px solid rgba(139,227,164,.5);}
+  .pill.notgoing{background:rgba(160,160,160,.16);color:#cfc9bd;border:1px solid #777;}
+  .pill.ask{background:rgba(217,181,86,.2);color:var(--gold);border:1px solid var(--gold);}
+  .pill.removed{background:#e03b2c;color:#fff;border:1px solid #ff7a6b;}
+  .pill.cancelled{background:#c0392b;color:#fff;}
+  .rbtns{display:flex;gap:8px;flex:0 0 auto;}
+  .rb{border:none;border-radius:10px;font:inherit;font-weight:700;cursor:pointer;padding:10px 14px;font-size:14px;}
+  .rb.yes{background:#3fbf6a;color:#06210f;} .rb.no{background:rgba(224,59,44,.9);color:#fff;}
+  .rbtns.compact .rb{padding:6px 12px;font-size:15px;border-radius:9px;}
   #raceView{position:fixed;inset:0;z-index:4050;overflow-y:auto;background:var(--bg);padding-bottom:env(safe-area-inset-bottom,0px);}
   #raceView.hidden{display:none;}
   #raceView .tv-head{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:12px;
     padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#132018,#101a14 90%);}
   #raceView .tv-brand{height:36px;width:auto;max-width:150px;margin:0;filter:none;}
   #raceView .tv-title{margin-left:auto;font-family:'Fjalla One',sans-serif;font-size:20px;letter-spacing:.06em;color:var(--gold);}
-  .rv-body{max-width:860px;margin:0 auto;padding:6px 16px 40px;}
-  .rv-sec-h{font-family:'Fjalla One',sans-serif;font-weight:400;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);font-size:15px;margin:22px 0 10px;}
+  .rv-body{max-width:860px;margin:0 auto;padding:0 16px 40px;}
+  .rv-sec-h{font-family:'Fjalla One',sans-serif;font-weight:400;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);font-size:15px;margin:18px 0 10px;}
+  .rv-sec-h.askh{color:var(--gold);}
   .race-card{display:flex;gap:14px;width:100%;text-align:left;padding:14px;margin-bottom:10px;border-radius:16px;border:1px solid var(--line);background:var(--panel);
-    color:var(--text);font:inherit;cursor:pointer;position:relative;overflow:hidden;}
-  .race-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--gold);}
+    color:var(--text);cursor:pointer;position:relative;overflow:hidden;}
+  .race-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--k-race);}
+  .race-card.k-training::before{background:var(--k-training);} .race-card.k-event::before{background:var(--k-event);}
+  .race-card.ask{border-color:var(--gold);box-shadow:0 0 0 1px rgba(217,181,86,.35) inset;}
   .race-card.removed::before,.race-card.cancelled::before{background:#e03b2c;width:7px;}
   .race-card.removed{border:2px solid #e03b2c;background:linear-gradient(90deg,rgba(224,59,44,.22),rgba(224,59,44,.06) 70%);}
   .race-card.cancelled{border-color:rgba(192,57,43,.6);background:linear-gradient(90deg,rgba(192,57,43,.12),var(--panel) 60%);}
   .race-card.past{opacity:.72;}
   .rc-cal{flex:0 0 62px;border-radius:12px;overflow:hidden;text-align:center;background:#fff;color:#141414;align-self:flex-start;}
-  .rc-cal .m{display:block;background:var(--gold);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 0;}
+  .rc-cal .m{display:block;background:var(--k-race);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 0;color:#141414;}
+  .race-card.k-training .rc-cal .m{background:var(--k-training);} .race-card.k-event .rc-cal .m{background:var(--k-event);color:#fff;}
   .race-card.cancelled .rc-cal .m,.race-card.removed .rc-cal .m{background:#e03b2c;color:#fff;}
-  .race-card.removed .rc-body .nm{color:#ffb3aa;}
   .rc-cal b{display:block;font-family:'Fjalla One',sans-serif;font-size:28px;line-height:1.1;font-weight:400;}
-  .rc-cal small{display:block;font-size:11px;padding-bottom:4px;color:#555;}
-  .rc-body{flex:1 1 auto;min-width:0;}
-  .rc-body .nm{display:block;font-family:'Fjalla One',sans-serif;font-weight:400;font-size:20px;letter-spacing:.02em;line-height:1.15;}
+  .rc-cal small{display:block;font-size:11px;padding-bottom:4px;color:#555;font-weight:600;}
+  .rc-body{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;}
+  .kchip{align-self:flex-start;font-size:11.5px;font-weight:700;color:var(--k-race);letter-spacing:.02em;}
+  .k-training .kchip{color:#7fe39c;} .k-event .kchip{color:#c7a9ff;}
+  .rc-body .nm{display:block;font-family:'Fjalla One',sans-serif;font-weight:400;font-size:20px;letter-spacing:.02em;line-height:1.15;margin-top:1px;}
   .race-card.cancelled .rc-body .nm,.race-card.removed .rc-body .nm{text-decoration:line-through;text-decoration-color:rgba(255,255,255,.45);}
+  .race-card.removed .rc-body .nm{color:#ffb3aa;}
   .rc-body .meta{display:block;font-size:13px;color:var(--text-muted);margin-top:3px;}
-  .rc-body .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px;}
+  .rc-body .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;}
   .rc-body .when{font-size:12.5px;color:var(--gold);}
-  .faces{display:flex;align-items:center;}
-  .face{width:28px;height:28px;border-radius:50%;margin-left:-7px;border:2px solid var(--panel);background:var(--panel-alt) center/cover no-repeat;
+  .rc-body .change{background:none;border:none;color:var(--text-muted);text-decoration:underline;font:inherit;font-size:12.5px;cursor:pointer;padding:0;}
+  .faces{display:flex;align-items:center;margin-top:10px;}
+  .face{width:26px;height:26px;border-radius:50%;margin-left:-7px;border:2px solid var(--panel);background:var(--panel-alt) center/cover no-repeat;
     display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;}
-  .face:first-child{margin-left:0;}
+  .face:first-child{margin-left:0;} .face.no{opacity:.35;}
   .faces small{margin-left:8px;font-size:12px;color:var(--text-muted);}
   #raceModal{position:fixed;inset:0;z-index:4600;display:none;align-items:flex-start;justify-content:center;padding:24px 16px;background:rgba(6,10,8,.9);overflow-y:auto;}
   #raceModal.open{display:flex;}
   .rm-card{width:min(640px,100%);background:var(--panel);border:1px solid var(--line);border-radius:18px;overflow:hidden;}
   .rm-top{padding:18px 18px 14px;background:linear-gradient(135deg,rgba(217,181,86,.22),transparent 70%);}
-  .rm-top.cancelled{background:linear-gradient(135deg,rgba(192,57,43,.4),transparent 70%);}
+  .rm-top.k-training{background:linear-gradient(135deg,rgba(63,191,106,.25),transparent 70%);} .rm-top.k-event{background:linear-gradient(135deg,rgba(165,123,240,.28),transparent 70%);}
+  .rm-top.cancelled{background:linear-gradient(135deg,rgba(192,57,43,.4),transparent 70%);} .rm-top.removed{background:linear-gradient(135deg,rgba(224,59,44,.45),transparent 70%);}
   .rm-top h2{margin:6px 0 2px;font-family:'Fjalla One',sans-serif;font-weight:400;font-size:28px;letter-spacing:.02em;line-height:1.1;}
   .rm-top .meta{font-size:14px;color:var(--text-muted);}
   .rm-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;padding:0 18px 4px;}
@@ -445,17 +472,22 @@
   .rm-fact b{font-size:15px;}
   .rm-note{margin:12px 18px 0;padding:10px 12px;border-radius:10px;font-size:14px;}
   .rm-note.removed{background:#e03b2c;color:#fff;border:none;font-weight:600;}
-  .rm-top.removed{background:linear-gradient(135deg,rgba(224,59,44,.45),transparent 70%);}
   .rm-note.cancelled{background:rgba(192,57,43,.2);border:1px solid #c0392b;}
   .rm-note.info{background:var(--panel-alt);}
+  .rm-ask{margin:14px 18px 0;padding:12px;border-radius:12px;background:var(--panel-alt);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;}
+  .rm-ask b{font-size:15px;}
   .rm-lineup-h{margin:18px 18px 8px;font-family:'Fjalla One',sans-serif;font-weight:400;letter-spacing:.06em;text-transform:uppercase;font-size:15px;color:var(--gold);}
-  .rm-lineup{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding:0 18px 18px;}
+  .rm-lineup{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;padding:0 18px 18px;}
   .lu{display:flex;align-items:center;gap:10px;padding:8px;border-radius:12px;background:var(--panel-alt);border-left:4px solid var(--tc,#888);}
-  .lu .ph{width:42px;height:42px;flex:0 0 auto;border-radius:50%;background:var(--tc,#555) center/cover no-repeat;display:flex;align-items:center;justify-content:center;
+  .lu.no{opacity:.55;}
+  .lu .ph{width:40px;height:40px;flex:0 0 auto;border-radius:50%;background:var(--tc,#555) center/cover no-repeat;display:flex;align-items:center;justify-content:center;
     font-family:'Fjalla One',sans-serif;color:#fff;font-size:15px;}
+  .lu > div{flex:1 1 auto;min-width:0;}
   .lu b{display:block;font-size:13.5px;line-height:1.2;}
   .lu i{display:block;font-size:12px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .lu .you{display:inline-block;margin-left:4px;font-style:normal;font-size:10px;background:var(--gold);color:#141414;border-radius:8px;padding:0 6px;font-weight:700;}
+  .lu .lr{flex:0 0 26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;}
+  .lu .lr.yes{background:#3fbf6a;color:#06210f;} .lu .lr.no{background:#e03b2c;color:#fff;} .lu .lr.open{background:var(--line);color:var(--text-muted);}
   .rm-close{display:block;margin:0 auto 18px;}
   /* ---------- TEAM (overview of all riders) ---------- */
   .dash-foot{max-width:960px;width:calc(100% - 44px);margin:2px auto 30px;display:flex;justify-content:center;}
@@ -995,7 +1027,7 @@
   </div>
   <div class="dash-greet" id="dashGreet"></div>
   <div class="race-strip" id="raceStrip" hidden>
-    <div class="rs-head"><b>Your races</b><button type="button" class="rs-all" id="rsAll">See all ›</button></div>
+    <div class="rs-head"><b id="rsHeadTxt">Your calendar</b><button type="button" class="rs-all" id="rsAll">See all ›</button></div>
     <div id="rsItems"></div>
   </div>
   <div class="dash-grid">
@@ -1009,9 +1041,9 @@
       <span class="t">Food</span><span class="s">Fuel &amp; nutrition</span>
     </button>
     <button class="dash-tile" type="button" data-view="race">
-      <svg class="icon" viewBox="0 0 24 24"><path d="M5 22V3M5 4h13l-2.5 4.5L18 13H5"/></svg>
-      <span class="badge-n" id="raceBadge" hidden></span>
-      <span class="t">Race</span><span class="s" id="raceTileSub">Your race calendar</span>
+      <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M7.5 14.5l2 2 4-4"/></svg>
+      <span class="badge-n red" id="raceBadge" hidden></span>
+      <span class="t">Calendar</span><span class="s" id="raceTileSub">Races, training, events</span>
     </button>
     <button class="dash-tile primary" type="button" data-view="track">
       <svg class="icon" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h8a3.5 3.5 0 0 0 0-7H8a3.5 3.5 0 0 1 0-7h8"/></svg>
@@ -1053,8 +1085,9 @@
   <header class="tv-head">
     <button class="home-btn" id="raceHomeBtn" type="button">‹ Home</button>
     <img class="brand-logo tv-brand" src="/logo-rootahead.png" alt="ROOT Ahead">
-    <span class="tv-title">Races</span>
+    <span class="tv-title">Calendar</span>
   </header>
+  <div class="cal-tiles" id="calTiles" role="group" aria-label="Show"></div>
   <div class="rv-body" id="rvBody"></div>
   <div class="tv-status" id="rvStatusApp" role="status" style="text-align:center;"></div>
 </div>
@@ -2106,7 +2139,7 @@
     // the map was laid out while covered — let Leaflet re-measure it
     setTimeout(function(){ if (typeof map !== 'undefined' && map) map.invalidateSize(); }, 60);
   }
-  function applyHashView(){ if (location.hash === '#track') showTrack(); else if (location.hash === '#train') showTrain(); else if (location.hash === '#team') showTeam(); else if (location.hash === '#race') showRace(); else showDashboard(); }
+  function applyHashView(){ if (location.hash === '#track') showTrack(); else if (location.hash === '#train') showTrain(); else if (location.hash === '#team') showTeam(); else if (location.hash === '#race' || location.hash === '#calendar') showRace(); else showDashboard(); }
   window.addEventListener('hashchange', applyHashView);
 
   function showDashToast(msg, ms){
@@ -2120,7 +2153,7 @@
       var view = tile.getAttribute('data-view');
       if (view === 'race'){
         openedTrackFromDash = true;
-        if (location.hash === '#race') showRace(); else location.hash = 'race';
+        if (location.hash === '#calendar') showRace(); else location.hash = 'calendar';
         return;
       }
       if (view === 'team'){
@@ -5340,13 +5373,17 @@
     return c;
   }
 
-  /* ================= RACES: the rider's own calendar ================= */
-  var raceState = { list: null };
+  /* ================= CALENDAR: races, club trainings, events (confirm with one tap) ================= */
+  var raceState = { list: null, filter: 'all', changing: {} };
   var RACE_CACHE = 'rootahead_races_cache';
+  var CAL_KIND = { race:{ one:'Race', many:'Races', icon:'🏁' }, training:{ one:'Training', many:'Training', icon:'🚴' }, event:{ one:'Event', many:'Events', icon:'🤝' } };
   function rIso(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   function rDate(s){ return new Date(s + 'T12:00:00'); }
+  function calKind(rc){ return CAL_KIND[rc.kind] ? rc.kind : 'race'; }
   function raceStatus(rc){ return rc.cancelled ? 'cancelled' : rc.myStatus === 'removed' ? 'removed' : 'selected'; }
-  function statusText(rc){ var st = raceStatus(rc); return st === 'cancelled' ? 'CANCELLED' : st === 'removed' ? '✕ NO LONGER SELECTED' : '✓ Selected'; }
+  function needsReply(rc){ return raceStatus(rc) === 'selected' && !rc.myReply && rc.date >= rIso(new Date()); }
+  function statusText(rc){ var st = raceStatus(rc); return st === 'cancelled' ? 'CANCELLED' : st === 'removed' ? '✕ NO LONGER SELECTED' : rc.myReply === 'yes' ? '✓ Going' : rc.myReply === 'no' ? '✗ Not going' : 'Please confirm'; }
+  function pillClass(rc){ var st = raceStatus(rc); return st !== 'selected' ? st : rc.myReply === 'yes' ? 'going' : rc.myReply === 'no' ? 'notgoing' : 'ask'; }
   function daysTo(s){ return Math.round((rDate(s) - rDate(rIso(new Date()))) / 86400000); }
   function whenText(s){ var n = daysTo(s); return n === 0 ? 'Today' : n === 1 ? 'Tomorrow' : n > 1 ? 'In ' + n + ' days' : n === -1 ? 'Yesterday' : Math.abs(n) + ' days ago'; }
   function loadRaces(cb){
@@ -5357,97 +5394,163 @@
       .then(function(r){ return r.json().then(function(d){ return { ok:r.ok, data:d }; }); })
       .then(function(res){
         var st = document.getElementById('rvStatusApp');
-        if (!res.ok){ st.textContent = (res.data && res.data.error) || 'Your races could not be loaded.'; return; }
+        if (!res.ok){ st.textContent = (res.data && res.data.error) || 'Your calendar could not be loaded.'; return; }
         st.textContent = ''; raceState.list = res.data.races || [];
         try{ localStorage.setItem(RACE_CACHE, JSON.stringify(raceState.list)); }catch(e){}
         renderRaceBits(); if (cb) cb();
       })
-      .catch(function(){ document.getElementById('rvStatusApp').textContent = raceState.list ? 'Offline: your races as last seen.' : 'No connection.'; });
+      .catch(function(){ document.getElementById('rvStatusApp').textContent = raceState.list ? 'Offline: your calendar as last seen.' : 'No connection.'; });
+  }
+  // one tap: yes / no
+  function sendReply(rc, reply){
+    var before = rc.myReply;
+    rc.myReply = reply; delete raceState.changing[rc.id];
+    (rc.lineup || []).forEach(function(r){ if (r.me) r.reply = reply; });
+    try{ localStorage.setItem(RACE_CACHE, JSON.stringify(raceState.list)); }catch(e){}
+    renderRaceBits(); if (document.getElementById('raceModal').classList.contains('open')) openRace(rc);
+    showDashToast(reply === 'yes' ? '✓ You’re going to ' + rc.name + '.' : '✗ Not going to ' + rc.name + '.', 2500);
+    fetch('/api/races', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ reply: reply, id: rc.id, rider: deviceId }) })
+      .then(function(r){ return r.json().then(function(d){ return { ok:r.ok, data:d }; }); })
+      .then(function(res){ if (!res.ok){ rc.myReply = before; renderRaceBits(); uiAlert((res.data && res.data.error) || 'Your answer could not be saved.'); } })
+      .catch(function(){ rc.myReply = before; renderRaceBits(); uiAlert('No connection: your answer was not saved. Try again.'); });
+  }
+  function replyButtons(rc, compact){
+    var w = document.createElement('span'); w.className = 'rbtns' + (compact ? ' compact' : '');
+    var y = document.createElement('button'); y.type = 'button'; y.className = 'rb yes'; y.textContent = compact ? '✓' : '✓ I’ll be there';
+    var n = document.createElement('button'); n.type = 'button'; n.className = 'rb no'; n.textContent = compact ? '✗' : '✗ Can’t come';
+    y.setAttribute('aria-label', 'Yes, I will be at ' + rc.name); n.setAttribute('aria-label', 'No, I can’t come to ' + rc.name);
+    y.addEventListener('click', function(e){ e.stopPropagation(); sendReply(rc, 'yes'); });
+    n.addEventListener('click', function(e){ e.stopPropagation(); sendReply(rc, 'no'); });
+    w.appendChild(y); w.appendChild(n); return w;
   }
   function initials2(r){ return (((r.firstName || '')[0] || '') + ((r.lastName || '')[0] || '')).toUpperCase(); }
   function faceEl(r){ var f = document.createElement('span'); f.className = 'face'; f.style.backgroundColor = r.teamColor || '#555';
     if (r.photoUrl) f.style.backgroundImage = 'url("' + r.photoUrl + '")'; else f.textContent = initials2(r); f.title = r.firstName + ' ' + r.lastName; return f; }
-  // dashboard strip + Race tile
+  // dashboard tile + "Your calendar" strip
   function renderRaceBits(){
     var list = raceState.list || [], today = rIso(new Date());
-    var up = list.filter(function(r){ return r.date >= today; });
-    var next = up.filter(function(r){ return raceStatus(r) === 'selected'; })[0];
-    document.getElementById('raceTileSub').textContent = next ? 'Next: ' + rDate(next.date).toLocaleDateString([], { day:'numeric', month:'short' }) + ' · ' + next.name : 'Your race calendar';
-    var bd = document.getElementById('raceBadge'), n = up.filter(function(r){ return raceStatus(r) === 'selected'; }).length;
-    bd.hidden = !n; bd.textContent = n;
+    var up = list.filter(function(r){ return r.date >= today; }), ask = up.filter(needsReply);
+    var next = up.filter(function(r){ return raceStatus(r) === 'selected' && r.myReply !== 'no'; })[0];
+    document.getElementById('raceTileSub').textContent = ask.length ? ask.length + ' to confirm' : next ? 'Next: ' + rDate(next.date).toLocaleDateString([], { day:'numeric', month:'short' }) + ' · ' + next.name : 'Races, training, events';
+    var bd = document.getElementById('raceBadge'); bd.hidden = !ask.length; bd.textContent = ask.length;
     var strip = document.getElementById('raceStrip'), items = document.getElementById('rsItems');
     items.innerHTML = '';
     strip.hidden = !up.length;
-    up.slice(0, 3).forEach(function(rc){
-      var st = raceStatus(rc), b = document.createElement('button'); b.type = 'button'; b.className = 'rs-item ' + st;
+    var show = ask.concat(up.filter(function(r){ return !needsReply(r); })).slice(0, 4);
+    show.sort(function(a, b){ return (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')); });
+    show.forEach(function(rc){
+      var st = raceStatus(rc), k = calKind(rc), b = document.createElement('div'); b.className = 'rs-item ' + st + ' k-' + k; b.tabIndex = 0; b.setAttribute('role', 'button');
       var d = document.createElement('span'); d.className = 'd'; d.textContent = rDate(rc.date).toLocaleDateString([], { day:'2-digit', month:'2-digit' });
-      var nm = document.createElement('span'); nm.className = 'n'; nm.textContent = rc.name + (rc.location ? ' · ' + rc.location : '');
-      var p = document.createElement('span'); p.className = 'pill ' + st; p.textContent = st === 'removed' ? '✕ NOT SELECTED' : statusText(rc);
-      b.appendChild(d); b.appendChild(nm); b.appendChild(p);
+      var nm = document.createElement('span'); nm.className = 'n'; nm.textContent = CAL_KIND[k].icon + ' ' + rc.name + (rc.time ? ' · ' + rc.time : '');
+      b.appendChild(d); b.appendChild(nm);
+      if (needsReply(rc)) b.appendChild(replyButtons(rc, true));
+      else { var p = document.createElement('span'); p.className = 'pill ' + pillClass(rc); p.textContent = st === 'removed' ? '✕ NOT SELECTED' : statusText(rc); b.appendChild(p); }
       b.addEventListener('click', function(){ openRace(rc); });
+      b.addEventListener('keydown', function(e){ if (e.key === 'Enter') openRace(rc); });
       items.appendChild(b);
     });
+    document.getElementById('rsHeadTxt').textContent = ask.length ? 'Your calendar · ' + ask.length + ' to confirm' : 'Your calendar';
     if (!document.getElementById('raceView').classList.contains('hidden')) renderRaceView();
   }
   function raceCard(rc, past){
-    var st = raceStatus(rc), c = document.createElement('button'); c.type = 'button'; c.className = 'race-card ' + st + (past ? ' past' : '');
+    var st = raceStatus(rc), k = calKind(rc), c = document.createElement('div'); c.className = 'race-card ' + st + ' k-' + k + (past ? ' past' : '') + (needsReply(rc) ? ' ask' : '');
+    c.tabIndex = 0; c.setAttribute('role', 'button');
     var d = rDate(rc.date), cal = document.createElement('span'); cal.className = 'rc-cal';
     cal.innerHTML = '<span class="m"></span><b></b><small></small>';
     cal.querySelector('.m').textContent = d.toLocaleDateString([], { month:'short' });
     cal.querySelector('b').textContent = d.getDate();
-    cal.querySelector('small').textContent = d.toLocaleDateString([], { weekday:'short' });
+    cal.querySelector('small').textContent = rc.time || d.toLocaleDateString([], { weekday:'short' });
     c.appendChild(cal);
     var body = document.createElement('span'); body.className = 'rc-body';
+    var kd = document.createElement('span'); kd.className = 'kchip'; kd.textContent = CAL_KIND[k].icon + ' ' + CAL_KIND[k].one + ' · ' + rc.type; body.appendChild(kd);
     var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = rc.name; body.appendChild(nm);
     var meta = document.createElement('span'); meta.className = 'meta';
-    meta.textContent = [rc.type, rc.location, rc.distanceKm ? rc.distanceKm + ' km' : ''].filter(Boolean).join(' · '); body.appendChild(meta);
+    meta.textContent = [d.toLocaleDateString([], { weekday:'short' }) + (rc.time ? ' ' + rc.time : ''), rc.location, rc.distanceKm ? rc.distanceKm + ' km' : ''].filter(Boolean).join(' · ');
+    body.appendChild(meta);
     var row = document.createElement('span'); row.className = 'row';
-    var p = document.createElement('span'); p.className = 'pill ' + st; p.textContent = statusText(rc); row.appendChild(p);
-    if (st !== 'cancelled'){ var w = document.createElement('span'); w.className = 'when'; w.textContent = whenText(rc.date); row.appendChild(w); }
+    if (needsReply(rc) || raceState.changing[rc.id]) row.appendChild(replyButtons(rc, false));
+    else {
+      var p = document.createElement('span'); p.className = 'pill ' + pillClass(rc); p.textContent = statusText(rc); row.appendChild(p);
+      if (st === 'selected' && !past){
+        var ch = document.createElement('button'); ch.type = 'button'; ch.className = 'change'; ch.textContent = 'change';
+        ch.addEventListener('click', function(e){ e.stopPropagation(); raceState.changing[rc.id] = true; renderRaceView(); });
+        row.appendChild(ch);
+      }
+    }
+    if (st !== 'cancelled' && !past){ var w = document.createElement('span'); w.className = 'when'; w.textContent = whenText(rc.date); row.appendChild(w); }
+    body.appendChild(row);
     var fc = document.createElement('span'); fc.className = 'faces';
-    rc.lineup.slice(0, 6).forEach(function(r){ fc.appendChild(faceEl(r)); });
-    var sm = document.createElement('small'); sm.textContent = rc.lineup.length + ' rider' + (rc.lineup.length === 1 ? '' : 's'); fc.appendChild(sm);
-    row.appendChild(fc);
-    body.appendChild(row); c.appendChild(body);
+    var going = rc.lineup.filter(function(r){ return r.reply === 'yes'; }).length;
+    rc.lineup.slice(0, 6).forEach(function(r){ var f = faceEl(r); if (r.reply === 'no') f.classList.add('no'); fc.appendChild(f); });
+    var sm = document.createElement('small'); sm.textContent = going + ' of ' + rc.lineup.length + ' going'; fc.appendChild(sm);
+    body.appendChild(fc);
+    c.appendChild(body);
     c.addEventListener('click', function(){ openRace(rc); });
+    c.addEventListener('keydown', function(e){ if (e.key === 'Enter') openRace(rc); });
     return c;
   }
+  function renderCalTiles(){
+    var box = document.getElementById('calTiles'); box.innerHTML = '';
+    var list = raceState.list || [], today = rIso(new Date());
+    [['all', 'All', '📅'], ['race', 'Races', '🏁'], ['training', 'Training', '🚴'], ['event', 'Events', '🤝']].forEach(function(t){
+      var mine = list.filter(function(r){ return r.date >= today && (t[0] === 'all' || calKind(r) === t[0]); });
+      var ask = mine.filter(needsReply).length;
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'ctile k-' + t[0]; b.setAttribute('aria-pressed', String(raceState.filter === t[0]));
+      b.innerHTML = '<span class="ic"></span><span class="lb"></span><span class="ct"></span>' + (ask ? '<span class="ask"></span>' : '');
+      b.querySelector('.ic').textContent = t[2]; b.querySelector('.lb').textContent = t[1];
+      b.querySelector('.ct').textContent = mine.length + ' coming up';
+      if (ask) b.querySelector('.ask').textContent = ask;
+      b.addEventListener('click', function(){ raceState.filter = t[0]; renderRaceView(); });
+      box.appendChild(b);
+    });
+  }
   function renderRaceView(){
-    var list = raceState.list, body = document.getElementById('rvBody'); body.innerHTML = '';
-    if (!list) return;
-    if (!list.length){ body.innerHTML = '<p class="tv-status" style="text-align:center;margin-top:30px;">You are not selected for a race yet. Your coach picks the riders.</p>'; return; }
+    renderCalTiles();
+    var list = (raceState.list || []).filter(function(r){ return raceState.filter === 'all' || calKind(r) === raceState.filter; });
+    var body = document.getElementById('rvBody'); body.innerHTML = '';
+    if (!raceState.list) return;
+    if (!list.length){ body.innerHTML = '<p class="tv-status" style="text-align:center;margin-top:30px;">Nothing here yet. Your coach invites you for races, club training and events.</p>'; return; }
     var today = rIso(new Date());
-    var up = list.filter(function(r){ return r.date >= today; }), past = list.filter(function(r){ return r.date < today; }).reverse();
-    function sec(title, arr, isPast){ if (!arr.length) return; var h = document.createElement('h2'); h.className = 'rv-sec-h'; h.textContent = title; body.appendChild(h); arr.forEach(function(r){ body.appendChild(raceCard(r, isPast)); }); }
-    sec('Coming up', up, false); sec('Past', past, true);
+    var ask = list.filter(needsReply);
+    var up = list.filter(function(r){ return r.date >= today && !needsReply(r); }), past = list.filter(function(r){ return r.date < today; }).reverse();
+    function sec(title, arr, isPast, cls){ if (!arr.length) return; var h = document.createElement('h2'); h.className = 'rv-sec-h' + (cls ? ' ' + cls : ''); h.textContent = title; body.appendChild(h); arr.forEach(function(r){ body.appendChild(raceCard(r, isPast)); }); }
+    sec('To confirm (' + ask.length + ')', ask, false, 'askh'); sec('Coming up', up, false); sec('Past', past, true);
   }
   function openRace(rc){
-    var st = raceStatus(rc), box = document.getElementById('rmCard'); box.innerHTML = '';
-    var top = document.createElement('div'); top.className = 'rm-top' + (st === 'cancelled' ? ' cancelled' : st === 'removed' ? ' removed' : '');
-    var p = document.createElement('span'); p.className = 'pill ' + st; p.textContent = statusText(rc); top.appendChild(p);
+    var st = raceStatus(rc), k = calKind(rc), box = document.getElementById('rmCard'); box.innerHTML = '';
+    var top = document.createElement('div'); top.className = 'rm-top k-' + k + (st === 'cancelled' ? ' cancelled' : st === 'removed' ? ' removed' : '');
+    var kc = document.createElement('span'); kc.className = 'kchip'; kc.textContent = CAL_KIND[k].icon + ' ' + CAL_KIND[k].one + ' · ' + rc.type; top.appendChild(kc);
     var h = document.createElement('h2'); h.id = 'rmName'; h.textContent = rc.name; top.appendChild(h);
     var m = document.createElement('div'); m.className = 'meta';
-    m.textContent = rDate(rc.date).toLocaleDateString([], { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + (st !== 'cancelled' ? ' · ' + whenText(rc.date) : '');
+    m.textContent = rDate(rc.date).toLocaleDateString([], { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + (rc.time ? ' · ' + rc.time : '') + (st !== 'cancelled' ? ' · ' + whenText(rc.date) : '');
     top.appendChild(m); box.appendChild(top);
     var facts = document.createElement('div'); facts.className = 'rm-facts';
-    [['Type', rc.type], ['Where', rc.location || '—'], ['Distance', rc.distanceKm ? rc.distanceKm + ' km' : '—']].forEach(function(f){
-      var x = document.createElement('div'); x.className = 'rm-fact'; x.innerHTML = '<small></small><b></b>'; x.firstChild.textContent = f[0]; x.lastChild.textContent = f[1]; facts.appendChild(x);
-    });
+    var fl = [['Where', rc.location || '—']]; if (k !== 'event') fl.push(['Distance', rc.distanceKm ? rc.distanceKm + ' km' : '—']);
+    fl.forEach(function(f){ var x = document.createElement('div'); x.className = 'rm-fact'; x.innerHTML = '<small></small><b></b>'; x.firstChild.textContent = f[0]; x.lastChild.textContent = f[1]; facts.appendChild(x); });
     box.appendChild(facts);
     function note(cls, text){ var n = document.createElement('div'); n.className = 'rm-note ' + cls; n.textContent = text; box.appendChild(n); }
-    if (st === 'cancelled') note('cancelled', 'This race has been cancelled' + (rc.cancelledAt ? ' (' + new Date(rc.cancelledAt).toLocaleDateString() + ')' : '') + '.');
-    if (rc.myStatus === 'removed') note('removed', '✕ You are no longer selected for this race. Your coach took you off the selection' + (rc.myChangedAt ? ' on ' + new Date(rc.myChangedAt).toLocaleDateString() : '') + '.');
+    if (st === 'cancelled') note('cancelled', 'This has been cancelled' + (rc.cancelledAt ? ' (' + new Date(rc.cancelledAt).toLocaleDateString() + ')' : '') + '.');
+    if (rc.myStatus === 'removed') note('removed', '✕ You are no longer selected for this. Your coach took you off the selection' + (rc.myChangedAt ? ' on ' + new Date(rc.myChangedAt).toLocaleDateString() : '') + '.');
     if (rc.notes) note('info', rc.notes);
-    var lh = document.createElement('h3'); lh.className = 'rm-lineup-h'; lh.textContent = 'Selected riders (' + rc.lineup.length + ')'; box.appendChild(lh);
+    if (st === 'selected' && rc.date >= rIso(new Date())){
+      var ask = document.createElement('div'); ask.className = 'rm-ask';
+      var q = document.createElement('b'); q.textContent = rc.myReply === 'yes' ? '✓ You’re going' : rc.myReply === 'no' ? '✗ You’re not going' : 'Will you be there?';
+      ask.appendChild(q); ask.appendChild(replyButtons(rc, false)); box.appendChild(ask);
+    }
+    var going = rc.lineup.filter(function(r){ return r.reply === 'yes'; }).length;
+    var lh = document.createElement('h3'); lh.className = 'rm-lineup-h'; lh.textContent = 'Invited (' + rc.lineup.length + ') · ' + going + ' going'; box.appendChild(lh);
     var lu = document.createElement('div'); lu.className = 'rm-lineup';
-    if (!rc.lineup.length){ var e = document.createElement('p'); e.className = 'tv-status'; e.textContent = 'Nobody selected yet.'; lu.appendChild(e); }
-    rc.lineup.forEach(function(r){
-      var it = document.createElement('div'); it.className = 'lu'; it.style.setProperty('--tc', r.teamColor || '#888');
+    if (!rc.lineup.length){ var e = document.createElement('p'); e.className = 'tv-status'; e.textContent = 'Nobody invited yet.'; lu.appendChild(e); }
+    rc.lineup.slice().sort(function(a, b){ var o = { yes:0, '':1, no:2 }; return o[a.reply || ''] - o[b.reply || '']; }).forEach(function(r){
+      var it = document.createElement('div'); it.className = 'lu' + (r.reply === 'no' ? ' no' : ''); it.style.setProperty('--tc', r.teamColor || '#888');
       var ph = document.createElement('span'); ph.className = 'ph'; if (r.photoUrl) ph.style.backgroundImage = 'url("' + r.photoUrl + '")'; else ph.textContent = initials2(r);
       var tx = document.createElement('div'); var b = document.createElement('b'); b.textContent = r.firstName + ' ' + r.lastName;
       if (r.me){ var y = document.createElement('span'); y.className = 'you'; y.textContent = 'YOU'; b.appendChild(y); }
       var i = document.createElement('i'); i.textContent = [r.nickname ? '“' + r.nickname + '”' : '', r.team].filter(Boolean).join(' · ');
-      tx.appendChild(b); tx.appendChild(i); it.appendChild(ph); it.appendChild(tx); lu.appendChild(it);
+      tx.appendChild(b); tx.appendChild(i); it.appendChild(ph); it.appendChild(tx);
+      var mk = document.createElement('span'); mk.className = 'lr ' + (r.reply || 'open'); mk.textContent = r.reply === 'yes' ? '✓' : r.reply === 'no' ? '✗' : '?';
+      mk.title = r.reply === 'yes' ? 'Going' : r.reply === 'no' ? 'Not going' : 'No reply yet'; it.appendChild(mk);
+      lu.appendChild(it);
     });
     box.appendChild(lu);
     var cl = document.createElement('button'); cl.type = 'button'; cl.className = 'btn ghost rm-close'; cl.textContent = 'Close';
@@ -5465,7 +5568,7 @@
   }
   function hideRace(){ var v = document.getElementById('raceView'); if (v) v.classList.add('hidden'); }
   document.getElementById('raceHomeBtn').addEventListener('click', function(){ goDashboard(); });
-  document.getElementById('rsAll').addEventListener('click', function(){ openedTrackFromDash = true; location.hash = 'race'; });
+  document.getElementById('rsAll').addEventListener('click', function(){ openedTrackFromDash = true; location.hash = 'calendar'; });
   document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'visible') loadRaces(); });
   setTimeout(function(){ loadRaces(); }, 0);
 

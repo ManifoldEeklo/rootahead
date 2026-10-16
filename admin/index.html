@@ -40,7 +40,7 @@
   .lock-card h1{font-size:26px;font-weight:800;margin-bottom:4px;}
   .lock-card p{margin:0 0 18px;}
   .field{display:block;margin:14px 0 6px;font-size:14px;font-weight:600;}
-  input[type=password],input[type=text],input[type=search],input[type=number],textarea,select{
+  input[type=password],input[type=text],input[type=search],input[type=number],input[type=time],textarea,select{
     width:100%;background:var(--char-2);border:1px solid var(--char-3);border-radius:10px;padding:12px 13px;font-size:16px;}
   textarea{resize:vertical;min-height:96px;}
   input:focus,textarea:focus,select:focus{outline:none;border-color:var(--yellow);}
@@ -147,6 +147,23 @@
   .rd-grid label > .linkbtn{display:inline;}
   .maintabs button{font-size:15px;padding:12px 2px;}
   .rcseg{flex:0 1 300px;grid-template-columns:repeat(3,1fr);}
+  :root{--k-race:#fbc120;--k-training:#3fbf6a;--k-event:#a57bf0;}
+  .rc-add{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;max-width:560px;}
+  .rc-add .go{margin:0;padding:12px 6px;font-size:15px;}
+  .go.k-training{background:var(--k-training);color:#0d2414;} .go.k-event{background:var(--k-event);color:#1c0f33;}
+  .rc-filters{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;}
+  .kseg{flex:0 1 420px;grid-template-columns:repeat(4,1fr);}
+  .rc-filters .seg button{font-size:13.5px;padding:9px 4px;}
+  .rc-kind{border-radius:10px;padding:1px 8px;font-size:12px;font-weight:700;}
+  .rc-kind.k-race{background:rgba(251,193,32,.18);color:var(--k-race);} .rc-kind.k-training{background:rgba(63,191,106,.16);color:#7fe39c;} .rc-kind.k-event{background:rgba(165,123,240,.18);color:#c7a9ff;}
+  .rc-kind.big{font-size:14px;padding:4px 12px;}
+  .rc-edhead{display:flex;align-items:center;gap:12px;margin-top:12px;} .rc-edhead .rv-name{margin:0;}
+  .rc-row.kind-training .rc-date{background:var(--k-training);} .rc-row.kind-event .rc-date{background:var(--k-event);}
+  .rc-row.kind-training{border-left:4px solid var(--k-training);} .rc-row.kind-event{border-left:4px solid var(--k-event);} .rc-row.kind-race{border-left:4px solid var(--k-race);}
+  .rc-replies{display:flex;gap:8px;font-size:12.5px;font-weight:700;}
+  .rc-replies .y{color:#7fe08f;} .rc-replies .n{color:#ff8f84;} .rc-replies .o{color:var(--muted);}
+  .rbadge{flex:0 0 auto;margin-left:auto;font-size:12px;font-weight:700;border-radius:10px;padding:2px 9px;}
+  .rbadge.y{background:rgba(62,207,90,.16);color:#7fe08f;} .rbadge.n{background:rgba(229,72,58,.18);color:#ff8f84;} .rbadge.o{background:var(--char-3);color:var(--muted);}
   .rc-month{font-family:'Archivo',sans-serif;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:22px 0 8px;}
   .rc-row{display:flex;gap:14px;align-items:center;width:100%;text-align:left;padding:12px;margin-bottom:8px;border-radius:14px;border:1px solid var(--char-3);
     background:var(--char-2);color:var(--grey);font:inherit;cursor:pointer;}
@@ -412,6 +429,7 @@
   .assign{margin-top:26px;padding-top:16px;border-top:1px solid var(--char-3);}
   .assign h3{font-family:'Archivo',sans-serif;font-size:16px;margin:0 0 10px;}
   .two{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+  input[type=time]{color-scheme:dark;}
   input[type=date]{width:100%;background:var(--char-2);border:1px solid var(--char-3);border-radius:10px;padding:12px 13px;font-size:16px;color-scheme:dark;}
   .inline{display:flex;align-items:center;gap:8px;font-size:14px;}
   .inline select{width:auto;padding:8px 10px;}
@@ -462,7 +480,7 @@
   <nav class="maintabs" role="tablist" aria-label="Sections">
     <button type="button" role="tab" data-tab="riders" aria-selected="true">Riders</button>
     <button type="button" role="tab" data-tab="teams" aria-selected="false">Teams</button>
-    <button type="button" role="tab" data-tab="races" aria-selected="false">Races</button>
+    <button type="button" role="tab" data-tab="races" aria-selected="false">Calendar</button>
     <button type="button" role="tab" data-tab="messages" aria-selected="false">Messages</button>
     <button type="button" role="tab" data-tab="training" aria-selected="false">Training</button>
   </nav>
@@ -572,28 +590,38 @@
   <!-- RACES: calendar + who rides -->
   <div id="paneRaces" hidden>
     <div id="rcListBox">
-      <div class="rdtools"><button class="go" type="button" id="rcAdd">+ Add race</button>
-        <div class="seg rcseg" id="rcSeg" role="group" aria-label="Which races">
+      <div class="rc-add">
+        <button class="go k-race" type="button" id="rcAdd_race">+ Race</button>
+        <button class="go k-training" type="button" id="rcAdd_training">+ Training</button>
+        <button class="go k-event" type="button" id="rcAdd_event">+ Event</button>
+      </div>
+      <div class="rc-filters">
+        <div class="seg kseg" id="rcKindSeg" role="group" aria-label="Which kind">
+          <button type="button" data-v="all" aria-pressed="true">All</button><button type="button" data-v="race" aria-pressed="false">Races</button><button type="button" data-v="training" aria-pressed="false">Trainings</button><button type="button" data-v="event" aria-pressed="false">Events</button>
+        </div>
+        <div class="seg rcseg" id="rcSeg" role="group" aria-label="When">
           <button type="button" data-v="upcoming" aria-pressed="true">Upcoming</button><button type="button" data-v="past" aria-pressed="false">Past</button><button type="button" data-v="all" aria-pressed="false">All</button>
-        </div></div>
+        </div>
+      </div>
       <div class="trstatus" id="rcStatus" role="status"></div>
       <div id="rcList"></div>
     </div>
     <div id="rcEditor" hidden>
-      <button class="ghost" type="button" id="rcBack">‹ All races</button>
-      <h2 class="rv-name" id="rcTitle">New race</h2>
+      <button class="ghost" type="button" id="rcBack">‹ Calendar</button>
+      <div class="rc-edhead"><span class="rc-kind big" id="rcKindTag"></span><h2 class="rv-name" id="rcTitle">New race</h2></div>
       <p class="rc-cancelled-note" id="rcCancelled" hidden></p>
       <div class="rc-layout">
         <div class="rc-form">
           <div class="rd-grid">
-            <label>Race date<input type="date" id="rcDateIn"></label>
+            <label>Date<input type="date" id="rcDateIn"></label>
+            <label>Start time<input type="time" id="rcTimeIn"></label>
+            <label class="span2" id="rcNameLbl">Name<input type="text" id="rcName" maxlength="80"></label>
             <label>Type<select id="rcType"></select></label>
-            <label class="span2">Race name<input type="text" id="rcName" maxlength="80" placeholder="e.g. GP Eeklo"></label>
-            <label>Where<input type="text" id="rcWhere" maxlength="80" placeholder="e.g. Eeklo"></label>
-            <label>Distance (km)<input type="number" id="rcDist" min="1" max="400" step="0.1"></label>
+            <label>Where<input type="text" id="rcWhere" maxlength="80"></label>
+            <label id="rcDistLbl">Distance (km)<input type="number" id="rcDist" min="1" max="400" step="0.1"></label>
           </div>
           <label class="field" for="rcNotes">Notes for the riders (optional)</label>
-          <textarea id="rcNotes" maxlength="300" placeholder="e.g. Start 14:00, number pick-up from 12:30"></textarea>
+          <textarea id="rcNotes" maxlength="300" placeholder="e.g. Club kit, number pick-up from 12:30"></textarea>
         </div>
         <div class="rc-pick">
           <h3 class="members-h">Riders <small id="rcCount"></small></h3>
@@ -602,7 +630,7 @@
           <div class="people members" id="rcRiders"></div>
         </div>
       </div>
-      <button class="go" type="button" id="rcSave">Save race</button>
+      <button class="go" type="button" id="rcSave">Save</button>
       <div class="rc-actions">
         <button class="ghost danger" type="button" id="rcCancel" hidden>Cancel this race</button>
         <button class="ghost" type="button" id="rcRestore" hidden>Race is on again</button>
@@ -2273,75 +2301,101 @@
   $('rdManageTeams').addEventListener('click', function(){ showMainTab('teams'); });
 
 
-  /* ======================= RACES (calendar + selection) ======================= */
-  var RC = { list: [], types: ['Road race','Criterium','Time trial','Gravel','Cyclocross','Mountain bike','Stage race','Kermesse','Other'], view: 'upcoming', edit: null, pick: {} };
+  /* ======================= CALENDAR: races, club trainings, events ======================= */
+  var RC = { list: [], view: 'upcoming', kind: 'all', edit: null, pick: {},
+    kinds: { race:['Road race','Criterium','Time trial','Gravel','Cyclocross','Mountain bike','Stage race','Kermesse','Other'],
+             training:['Group ride','Track session','Gym / strength','Recon ride','Skills','Other'],
+             event:['Sponsor event','Photo shoot','Team presentation','Fair / expo','Social','Other'] } };
+  var KIND = { race:{ one:'race', One:'Race', icon:'🏁' }, training:{ one:'training', One:'Training', icon:'🚴' }, event:{ one:'event', One:'Event', icon:'🤝' } };
   function rcToday(){ var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   function rcDate(iso){ return new Date(iso + 'T12:00:00'); }
+  function kindOf(rc){ return KIND[rc.kind] ? rc.kind : 'race'; }
   function loadRaces(){
     trMsg('rcStatus', 'Loading…');
     return Promise.all([api('/api/races'), loadTeams(), loadRiders()]).then(function(r){
       var res = r[0];
       if (res.status === 401){ try{ localStorage.removeItem(KEY_STORE); }catch(x){} showLock('Unlock again.'); return; }
-      if (!res.ok){ trMsg('rcStatus', (res.data && res.data.error) || 'Could not load races.', true); return; }
-      RC.list = res.data.races || []; if (res.data.types) RC.types = res.data.types;
+      if (!res.ok){ trMsg('rcStatus', (res.data && res.data.error) || 'Could not load the calendar.', true); return; }
+      RC.list = res.data.races || []; if (res.data.kinds) RC.kinds = res.data.kinds;
       trMsg('rcStatus', ''); renderRaces();
     }).catch(function(){ trMsg('rcStatus', 'No connection.', true); });
   }
-  Array.prototype.forEach.call(document.querySelectorAll('#rcSeg button'), function(b){
-    b.addEventListener('click', function(){ RC.view = b.dataset.v; Array.prototype.forEach.call(document.querySelectorAll('#rcSeg button'), function(x){ x.setAttribute('aria-pressed', String(x === b)); }); renderRaces(); });
-  });
+  function bindSeg(id, key){
+    Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' button'), function(b){
+      b.addEventListener('click', function(){ RC[key] = b.dataset.v; Array.prototype.forEach.call(document.querySelectorAll('#' + id + ' button'), function(x){ x.setAttribute('aria-pressed', String(x === b)); }); renderRaces(); });
+    });
+  }
+  bindSeg('rcSeg', 'view'); bindSeg('rcKindSeg', 'kind');
   function selectedIds(rc){ return Object.keys(rc.entries || {}).filter(function(id){ return rc.entries[id].status === 'selected'; }); }
   function riderOf(id){ return RD.list.filter(function(r){ return r.id === id; })[0]; }
+  function replyCounts(rc){
+    var c = { yes:0, no:0, open:0 };
+    selectedIds(rc).forEach(function(id){ var rp = rc.entries[id].reply; if (rp === 'yes') c.yes++; else if (rp === 'no') c.no++; else c.open++; });
+    return c;
+  }
   function renderRaces(){
     var box = $('rcList'); box.innerHTML = '';
     var today = rcToday();
-    var list = RC.list.filter(function(r){ return RC.view === 'all' || (RC.view === 'upcoming' ? r.date >= today : r.date < today); });
+    var list = RC.list.filter(function(r){ return (RC.kind === 'all' || kindOf(r) === RC.kind) && (RC.view === 'all' || (RC.view === 'upcoming' ? r.date >= today : r.date < today)); });
     if (RC.view === 'past') list.reverse();
-    if (!list.length){ box.appendChild(el('p', 'empty-note', RC.view === 'upcoming' ? 'No upcoming races. Add the first race of the season.' : 'Nothing here yet.')); return; }
+    if (!list.length){ box.appendChild(el('p', 'empty-note', RC.view === 'upcoming' ? 'Nothing planned yet. Use + Race, + Training or + Event.' : 'Nothing here yet.')); return; }
     var month = '';
     list.forEach(function(rc){
-      var d = rcDate(rc.date), m = d.toLocaleDateString([], { month:'long', year:'numeric' });
+      var k = kindOf(rc), d = rcDate(rc.date), m = d.toLocaleDateString([], { month:'long', year:'numeric' });
       if (m !== month){ month = m; box.appendChild(el('h3', 'rc-month', m)); }
-      var row = el('button', 'rc-row' + (rc.cancelled ? ' cancelled' : '') + (rc.date < today ? ' past' : '')); row.type = 'button';
+      var row = el('button', 'rc-row kind-' + k + (rc.cancelled ? ' cancelled' : '') + (rc.date < today ? ' past' : '')); row.type = 'button';
       var db = el('span', 'rc-date'); db.appendChild(el('b', null, String(d.getDate()))); db.appendChild(el('small', null, d.toLocaleDateString([], { weekday:'short' })));
       row.appendChild(db);
       var main = el('span', 'rc-main');
-      var nm = el('b', null, rc.name); main.appendChild(nm);
+      main.appendChild(el('b', null, rc.name));
       var meta = el('span', 'rc-meta');
+      meta.appendChild(el('span', 'rc-kind k-' + k, KIND[k].icon + ' ' + KIND[k].One));
       meta.appendChild(el('span', 'rc-type', rc.type));
       if (rc.cancelled) meta.appendChild(el('span', 'rc-cancel', 'Cancelled'));
-      meta.appendChild(document.createTextNode([rc.location, rc.distanceKm ? rc.distanceKm + ' km' : ''].filter(Boolean).join(' · ')));
+      meta.appendChild(document.createTextNode([rc.time, rc.location, rc.distanceKm ? rc.distanceKm + ' km' : ''].filter(Boolean).join(' · ')));
       main.appendChild(meta); row.appendChild(main);
-      var sel = selectedIds(rc), side = el('span', 'rc-side');
+      var sel = selectedIds(rc), c = replyCounts(rc), side = el('span', 'rc-side');
       var faces = el('span', 'rc-faces');
       sel.slice(0, 5).forEach(function(id){ var r = riderOf(id); if (r) faces.appendChild(rdAvatar(r, 30)); });
       side.appendChild(faces);
-      var removed = Object.keys(rc.entries || {}).length - sel.length;
-      side.appendChild(el('small', null, sel.length + ' rider' + (sel.length === 1 ? '' : 's') + (removed ? ' · ' + removed + ' taken off' : '')));
+      var rp = el('span', 'rc-replies');
+      rp.innerHTML = '<span class="y">✓ ' + c.yes + '</span><span class="n">✗ ' + c.no + '</span><span class="o">? ' + c.open + '</span>';
+      rp.title = c.yes + ' coming, ' + c.no + ' not coming, ' + c.open + ' no reply yet';
+      side.appendChild(rp);
       row.appendChild(side);
       row.addEventListener('click', function(){ editRace(rc); });
       box.appendChild(row);
     });
   }
-  function editRace(rc){
-    RC.edit = rc ? JSON.parse(JSON.stringify(rc)) : { date:'', name:'', type:'Road race', location:'', distanceKm:'', notes:'', entries:{} };
+  function editRace(rc, newKind){
+    RC.edit = rc ? JSON.parse(JSON.stringify(rc)) : { kind: newKind || 'race', date:'', time:'', name:'', type:'', location:'', distanceKm:'', notes:'', entries:{} };
+    var k = kindOf(RC.edit);
     RC.pick = {}; selectedIds(RC.edit).forEach(function(id){ RC.pick[id] = true; });
     $('rcListBox').hidden = true; $('rcEditor').hidden = false;
-    $('rcTitle').textContent = rc ? rc.name : 'New race';
-    var ts = $('rcType'); ts.innerHTML = ''; RC.types.forEach(function(t){ var o = el('option', null, t); o.value = t; ts.appendChild(o); });
-    $('rcDateIn').value = RC.edit.date; $('rcName').value = RC.edit.name; ts.value = RC.edit.type || 'Road race';
+    $('rcTitle').textContent = rc ? rc.name : 'New ' + KIND[k].one;
+    $('rcKindTag').className = 'rc-kind big k-' + k; $('rcKindTag').textContent = KIND[k].icon + ' ' + KIND[k].One;
+    $('rcNameLbl').firstChild.textContent = KIND[k].One + ' name';
+    $('rcName').placeholder = { race:'e.g. GP Eeklo', training:'e.g. Tuesday club ride', event:'e.g. Sponsor evening Winsol' }[k];
+    $('rcWhere').placeholder = { race:'e.g. Eeklo', training:'e.g. Clubhouse, Eeklo', event:'e.g. Winsol HQ, Kaprijke' }[k];
+    $('rcDistLbl').hidden = k === 'event';
+    var ts = $('rcType'); ts.innerHTML = ''; (RC.kinds[k] || []).forEach(function(t){ var o = el('option', null, t); o.value = t; ts.appendChild(o); });
+    $('rcDateIn').value = RC.edit.date; $('rcTimeIn').value = RC.edit.time || ''; $('rcName').value = RC.edit.name; ts.value = RC.edit.type || (RC.kinds[k] || [''])[0];
     $('rcWhere').value = RC.edit.location || ''; $('rcDist').value = RC.edit.distanceKm || ''; $('rcNotes').value = RC.edit.notes || '';
     $('rcCancelled').hidden = !RC.edit.cancelled;
     if (RC.edit.cancelled) $('rcCancelled').textContent = 'Cancelled on ' + new Date(RC.edit.cancelledAt).toLocaleDateString() + '. Riders still see it, marked “cancelled”.';
+    $('rcSave').textContent = rc ? 'Save' : 'Save ' + KIND[k].one;
+    $('rcCancel').textContent = 'Cancel this ' + KIND[k].one; $('rcRestore').textContent = KIND[k].One + ' is on again';
     $('rcCancel').hidden = !rc || !!RC.edit.cancelled; $('rcRestore').hidden = !RC.edit.cancelled; $('rcDelete').hidden = !RC.edit.cancelled;
     trMsg('rcResult', '');
     renderRacePick();
     window.scrollTo(0, 0);
+    if (!rc) setTimeout(function(){ $('rcDateIn').focus(); }, 50);
   }
   function renderRacePick(){
     var q = $('rcSearch').value.trim().toLowerCase(), box = $('rcRiders'), chips = $('rcTeams');
     box.innerHTML = ''; chips.innerHTML = '';
     function chip(label, fn, color){ var c = el('button', 'chip', label); c.type = 'button'; if (color) c.style.borderColor = color; c.addEventListener('click', function(){ fn(); renderRacePick(); }); chips.appendChild(c); }
+    chip('+ Everyone', function(){ RD.list.forEach(function(r){ RC.pick[r.id] = true; }); });
     TM.list.forEach(function(t){ chip('+ ' + t.name, function(){ RD.list.forEach(function(r){ if (r.teamId === t.id) RC.pick[r.id] = true; }); }, t.color); });
     chip('Nobody', function(){ RC.pick = {}; });
     var list = RD.list.slice().sort(function(a, b){ return (!!RC.pick[b.id]) - (!!RC.pick[a.id]) || (a.team || '~').localeCompare(b.team || '~') || (a.lastName + a.firstName).localeCompare(b.lastName + b.firstName); })
@@ -2349,7 +2403,7 @@
     if (!RD.list.length) box.appendChild(el('div', 'empty-note', 'No riders yet: add riders under Riders first.'));
     list.forEach(function(r){
       var l = el('label'), c = el('input'); c.type = 'checkbox'; c.checked = !!RC.pick[r.id];
-      c.addEventListener('change', function(){ if (c.checked) RC.pick[r.id] = true; else delete RC.pick[r.id]; raceCount(); });
+      c.addEventListener('change', function(){ if (c.checked) RC.pick[r.id] = true; else delete RC.pick[r.id]; raceCount(); renderRacePick(); });
       l.appendChild(c); l.appendChild(rdAvatar(r, 30));
       var nm = el('span', 'nm', r.firstName + ' ' + r.lastName), e = (RC.edit.entries || {})[r.id];
       var sub = (r.team || 'No team') + (r.nickname ? ' · “' + r.nickname + '”' : '');
@@ -2357,47 +2411,56 @@
       else if (e && e.status === 'selected' && !RC.pick[r.id]) sub += ' · will be taken off (stays visible for the rider)';
       else if (e && e.status === 'removed' && RC.pick[r.id]) sub += ' · selected again';
       nm.appendChild(el('span', 'sub' + (e && !RC.pick[r.id] ? ' off' : ''), sub));
-      l.appendChild(nm); box.appendChild(l);
+      l.appendChild(nm);
+      if (e && e.status === 'selected' && RC.pick[r.id]){
+        var rp = e.reply === 'yes' ? ['y', '✓ Coming'] : e.reply === 'no' ? ['n', '✗ Not coming'] : ['o', '? No reply'];
+        l.appendChild(el('span', 'rbadge ' + rp[0], rp[1]));
+      }
+      box.appendChild(l);
     });
     raceCount();
   }
-  function raceCount(){ var n = Object.keys(RC.pick).length; $('rcCount').textContent = n + ' rider' + (n === 1 ? '' : 's') + ' selected'; }
+  function raceCount(){
+    var n = Object.keys(RC.pick).length, c = RC.edit && RC.edit.id ? replyCounts(RC.edit) : null;
+    $('rcCount').textContent = n + ' invited' + (c && (c.yes || c.no) ? ' · ✓ ' + c.yes + ' coming · ✗ ' + c.no + ' not · ? ' + c.open : '');
+  }
   $('rcSearch').addEventListener('input', renderRacePick);
-  $('rcAdd').addEventListener('click', function(){ editRace(null); });
+  ['race','training','event'].forEach(function(k){ $('rcAdd_' + k).addEventListener('click', function(){ editRace(null, k); }); });
   $('rcBack').addEventListener('click', function(){ $('rcEditor').hidden = true; $('rcListBox').hidden = false; renderRaces(); });
   $('rcSave').addEventListener('click', function(){
-    var race = { id: RC.edit.id, date: $('rcDateIn').value, name: $('rcName').value.trim(), type: $('rcType').value,
-                 location: $('rcWhere').value.trim(), distanceKm: $('rcDist').value, notes: $('rcNotes').value.trim() };
-    if (!race.date || !race.name){ trMsg('rcResult', 'A race needs a date and a name.', true); return; }
+    var k = kindOf(RC.edit);
+    var race = { id: RC.edit.id, kind: k, date: $('rcDateIn').value, time: $('rcTimeIn').value, name: $('rcName').value.trim(), type: $('rcType').value,
+                 location: $('rcWhere').value.trim(), distanceKm: k === 'event' ? '' : $('rcDist').value, notes: $('rcNotes').value.trim() };
+    if (!race.date || !race.name){ trMsg('rcResult', 'Give it a date and a name.', true); return; }
     var btn = this; btn.disabled = true; trMsg('rcResult', 'Saving…');
     api('/api/races', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ race: race, riderIds: Object.keys(RC.pick) }) }).then(function(res){
       btn.disabled = false;
       if (!res.ok){ trMsg('rcResult', (res.data && res.data.error) || 'Could not save.', true); return; }
-      var wasNew = !RC.edit.id; RC.edit = res.data.race; $('rcTitle').textContent = RC.edit.name; $('rcCancel').hidden = !!RC.edit.cancelled;
+      var wasNew = !RC.edit.id; RC.edit = res.data.race; $('rcTitle').textContent = RC.edit.name; $('rcSave').textContent = 'Save'; $('rcCancel').hidden = !!RC.edit.cancelled;
       var n = selectedIds(RC.edit).length;
-      trMsg('rcResult', (wasNew ? 'Race added' : 'Saved') + ': ' + n + ' rider' + (n === 1 ? '' : 's') + ' selected. They see it in their race calendar.');
+      trMsg('rcResult', (wasNew ? KIND[k].One + ' added' : 'Saved') + ': ' + n + ' rider' + (n === 1 ? '' : 's') + ' invited. They see it in their calendar and confirm whether they come.');
       api('/api/races').then(function(r2){ if (r2.ok) RC.list = r2.data.races || []; renderRacePick(); });
     }).catch(function(){ btn.disabled = false; trMsg('rcResult', 'No connection. Not saved.', true); });
   });
   function raceAction(action, okText){
     return api('/api/races', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ id: RC.edit.id, action: action }) }).then(function(res){
-      if (!res.ok){ trMsg('rcResult', (res.data && res.data.error) || 'Could not change the race.', true); return; }
+      if (!res.ok){ trMsg('rcResult', (res.data && res.data.error) || 'Could not change it.', true); return; }
       api('/api/races').then(function(r2){ if (r2.ok) RC.list = r2.data.races || []; editRace(res.data.race); trMsg('rcResult', okText); });
     });
   }
   $('rcCancel').addEventListener('click', async function(){
-    if (!(await uiConfirm('Cancel ' + RC.edit.name + '? It stays in the calendar, marked “cancelled” in red, for you and the riders.'))) return;
-    raceAction('cancel', 'Race cancelled. Riders see it marked “cancelled”.');
+    var k = KIND[kindOf(RC.edit)];
+    if (!(await uiConfirm('It stays in the calendar, marked “cancelled” in red, for you and the riders.', { title:'Cancel ' + RC.edit.name + '?', ok:'Yes, cancel ' + k.one, cancel:'No, keep it', danger:true }))) return;
+    raceAction('cancel', k.One + ' cancelled. Riders see it marked “cancelled”.');
   });
-  $('rcRestore').addEventListener('click', function(){ raceAction('restore', 'Race is on again.'); });
+  $('rcRestore').addEventListener('click', function(){ raceAction('restore', KIND[kindOf(RC.edit)].One + ' is on again.'); });
   $('rcDelete').addEventListener('click', async function(){
-    if (!(await uiConfirm('Delete ' + RC.edit.name + ' for good? It disappears from every calendar. (Only for a race entered by mistake.)'))) return;
+    if (!(await uiConfirm('It disappears from every calendar. Only for something entered by mistake.', { title:'Delete ' + RC.edit.name + ' for good?', ok:'Delete', cancel:'Keep it', danger:true }))) return;
     api('/api/races', { method:'DELETE', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ id: RC.edit.id }) }).then(function(res){
       if (!res.ok){ trMsg('rcResult', (res.data && res.data.error) || 'Could not delete.', true); return; }
       $('rcEditor').hidden = true; $('rcListBox').hidden = false; loadRaces();
     });
   });
-
 
   /* ---------- delete training plans (all, or one rider) ---------- */
   $('dpConfirm').addEventListener('input', function(){ $('dpGo').disabled = this.value.trim() !== 'DELETE'; });

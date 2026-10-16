@@ -321,6 +321,17 @@ Phones keep the one-column, week-by-week layout. It switches on rotate/resize.
   index.html) because generated routes tend to come out a bit short; the fit
   check against the planned time is unchanged.
 
+- **Calendar** (was: Race calendar). Three kinds in one calendar
+  (`rootahead:races`, field `kind`): races, club trainings and (sponsor) events,
+  each with date, start time, type, place, distance (not for events), notes and
+  invited riders. RA Admin → Calendar: + Race / + Training / + Event, filters by
+  kind and time, reply counts per item (✓ coming · ✗ not · ? no reply), and per
+  rider in the editor. Rider app: the Calendar tile (red badge = to confirm),
+  inside four small tiles (All / Races / Training / Events), "To confirm" first
+  with one-tap ✓ I'll be there / ✗ Can't come, "change" to answer again, and
+  the dashboard strip "Your calendar" with ✓/✗ right on each line. Replies:
+  `POST /api/races { reply, id, rider }` (only while selected and not cancelled).
+
 **Test files**: `root-ahead-test.html` and `ra-admin-test.html` share one test
 database when opened in the same browser: make a rider in RA Admin, then sign
 in with the code in the app. Demo codes: ELS2026, JAN2026, LOTTE26.
