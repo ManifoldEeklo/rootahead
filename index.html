@@ -530,6 +530,8 @@
   .tm-head p{margin:3px 0 0;font-size:13px;color:var(--text-muted);}
   .tm-staff{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
   .tm-st{display:flex;align-items:center;gap:10px;padding:7px 12px 7px 7px;border-radius:24px;background:var(--panel);border:1px solid var(--line);}
+  .tm-call{margin-left:4px;width:32px;height:32px;border-radius:50%;background:#3fbf6a;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:15px;}
+  .rcard .call,.rc-big .call{display:inline-block;margin-top:10px;background:#3fbf6a;color:#06210f;border-radius:16px;padding:6px 12px;font-weight:700;font-size:14px;text-decoration:none;pointer-events:auto;}
   .tm-st .ph{width:34px;height:34px;border-radius:50%;background:var(--tc) center/cover no-repeat;display:flex;align-items:center;justify-content:center;
     font-family:'Fjalla One',sans-serif;color:#141414;font-size:13px;flex:0 0 auto;}
   .tm-st b{display:block;font-size:13.5px;line-height:1.2;} .tm-st i{display:block;font-size:12px;color:var(--gold);font-style:normal;}
@@ -2083,7 +2085,7 @@
       return;
     }
     document.getElementById('profChange').hidden = false;
-    var rows = [['Nickname', p.nickname ? '“' + p.nickname + '”' : '—'], ['Home town', p.homeTown || '—'], ['Sex', { F:'Female', M:'Male', X:'Other' }[p.sex] || '—'],
+    var rows = [['Nickname', p.nickname ? '“' + p.nickname + '”' : '—'], ['GSM', p.phone || '—'], ['E-mail', p.email || '—'], ['Home town', p.homeTown || '—'], ['Sex', { F:'Female', M:'Male', X:'Other' }[p.sex] || '—'],
                 ['Date of birth', p.birthDate ? new Date(p.birthDate + 'T12:00:00').toLocaleDateString() + ' (' + ageFrom(p.birthDate) + ')' : '—'],
                 ['Height', p.heightCm ? p.heightCm + ' cm' : '—'], ['Weight', p.weightKg ? p.weightKg + ' kg' : '—'],
                 ['FTP', p.ftp ? p.ftp + ' W' + (p.weightKg ? ' (' + (p.ftp / p.weightKg).toFixed(1) + ' W/kg)' : '') : '—']];
@@ -5641,6 +5643,7 @@
     var b = document.createElement('b'); b.textContent = r.firstName + ' ' + r.lastName; f.appendChild(b);
     if (r.nickname){ var n = document.createElement('span'); n.className = 'nk'; n.textContent = '“' + r.nickname + '”'; f.appendChild(n); }
     if (big && t.name){ var tn = document.createElement('span'); tn.className = 'team'; tn.textContent = t.name; f.appendChild(tn); }
+    if (big && r.phone){ var tl = document.createElement('a'); tl.className = 'call'; tl.href = 'tel:' + r.phone.replace(/[^+\d]/g, ''); tl.textContent = '📞 ' + r.phone; f.appendChild(tl); }
     c.appendChild(f);
     if (!big){
       c.setAttribute('aria-label', r.firstName + ' ' + r.lastName + (r.nickname ? ', ' + r.nickname : '') + (r.age != null ? ', ' + r.age + ' years' : '') + (r.me ? ' (you)' : ''));
@@ -5691,7 +5694,9 @@
           var ph = document.createElement('span'); ph.className = 'ph'; if (x.photoUrl) ph.style.backgroundImage = 'url("' + x.photoUrl + '")'; else ph.textContent = (((x.firstName || '')[0] || '') + ((x.lastName || '')[0] || '')).toUpperCase();
           var tx = document.createElement('span'); var b = document.createElement('b'); b.textContent = x.firstName + ' ' + x.lastName + (x.me ? ' (you)' : '');
           var i = document.createElement('i'); i.textContent = x.role; tx.appendChild(b); tx.appendChild(i);
-          c.appendChild(ph); c.appendChild(tx); sw.appendChild(c);
+          c.appendChild(ph); c.appendChild(tx);
+          if (x.phone && !x.me){ var cl = document.createElement('a'); cl.className = 'tm-call'; cl.href = 'tel:' + x.phone.replace(/[^+\d]/g, ''); cl.textContent = '📞'; cl.title = 'Call ' + x.firstName + ' (' + x.phone + ')'; cl.setAttribute('aria-label', 'Call ' + x.firstName); c.appendChild(cl); }
+          sw.appendChild(c);
         });
         sec.appendChild(sw);
       }

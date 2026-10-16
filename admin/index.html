@@ -197,6 +197,120 @@
   .members .sub.off{color:var(--bad);}
   .rc-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
   .rc-actions .ghost{padding:10px 14px;}
+  /* rider form: compact data entry */
+  .rx-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .rx-title{font-family:'Archivo',sans-serif;font-size:20px;margin:0;}
+  .rx-team{border-radius:10px;padding:2px 10px;font-size:12.5px;font-weight:700;color:#141414;}
+  .rx-teams{display:flex;gap:6px;flex-wrap:wrap;}
+  .rx-form{display:flex;gap:16px;align-items:flex-start;margin-top:12px;padding:14px;border:1px solid var(--char-3);border-radius:14px;background:var(--char-2);}
+  .rx-photo{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px;}
+  .rx-ph{width:72px !important;height:72px !important;font-size:24px !important;border-width:2px !important;}
+  .rx-photo .linkbtn{margin:0;font-size:12px;}
+  .rx-grid{flex:1 1 auto;min-width:0;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:8px 10px;}
+  .rx-grid label{display:block;font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:.02em;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rx-grid label > input,.rx-grid label > select,.rx-grid label > .rx-coderow{display:flex;width:100%;margin-top:3px;}
+  .rx-grid input[type=date]{padding:6px 9px;font-size:14px;border-radius:8px;height:auto;}
+  .rx-grid label .opt{font-size:11px;}
+  .rx-grid input,.rx-grid select{padding:7px 9px;font-size:14px;border-radius:8px;color:var(--grey);min-width:0;height:36px;box-sizing:border-box;}
+  .rx-grid .w2{grid-column:span 2;} .rx-grid .w3{grid-column:span 3;} .rx-grid .w4{grid-column:span 4;} .rx-grid .w5{grid-column:span 5;} .rx-grid .w8{grid-column:span 8;} .rx-grid .w12{grid-column:span 12;}
+  .rx-coderow{display:flex;gap:4px;}
+  .rx-coderow input{flex:1 1 auto;font-family:'IBM Plex Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--yellow);font-weight:600;}
+  .rx-ib{flex:0 0 32px;border:1px solid var(--char-3);background:var(--char);color:var(--grey);border-radius:8px;cursor:pointer;font-size:15px;}
+  .rx-ib:hover{border-color:var(--yellow);}
+  .rx-info{margin:8px 0 0;font-size:13px;}
+  .rx-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  .rx-actions .go{width:auto;margin:0;padding:11px 26px;font-size:15px;}
+  .rx-actions .ghost{padding:10px 14px;}
+  @media (max-width:900px){
+    .rx-grid{grid-template-columns:repeat(6,minmax(0,1fr));}
+    .rx-grid .w2{grid-column:span 2;} .rx-grid .w3{grid-column:span 3;} .rx-grid .w4,.rx-grid .w5,.rx-grid .w8,.rx-grid .w12{grid-column:span 6;}
+  }
+  @media (max-width:520px){
+    .rx-form{flex-direction:column;align-items:stretch;}
+    .rx-photo{flex-direction:row;}
+    .rx-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .rx-grid .w2,.rx-grid .w3{grid-column:span 1;} .rx-grid .w4,.rx-grid .w5,.rx-grid .w8,.rx-grid .w12,.rx-grid .rx-code{grid-column:span 2;}
+  }
+  /* denser rider list: more riders per screen */
+  #rdList .rtable td{padding:6px 10px;font-size:13.5px;}
+  #rdList .rtable th{padding:8px 10px;}
+  #rdList .rtable td.nm .nick{display:inline;margin-left:6px;font-size:12px;}
+  #rdList .codebtn{padding:3px 8px;font-size:13px;}
+  #rdList .rrow{padding:8px 4px;}
+  /* teams page: team chips + matrix */
+  .tchips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+  .tchip{display:flex;align-items:center;gap:10px;padding:7px 12px 7px 7px;border-radius:14px;border:1px solid var(--char-3);border-left:5px solid var(--tc);
+    background:var(--char-2);color:var(--grey);font:inherit;cursor:pointer;text-align:left;}
+  .tchip:hover{border-color:var(--tc);}
+  .tchip .tx b{display:block;font-size:14.5px;} .tchip .tx small{display:block;font-size:12px;color:var(--muted);}
+  .tchip{padding:0;gap:0;cursor:default;}
+  .tchip-open{display:flex;align-items:center;gap:10px;padding:7px 8px 7px 7px;background:none;border:none;color:inherit;font:inherit;text-align:left;cursor:pointer;border-radius:12px;}
+  .tchip-open:hover b{color:var(--tc);}
+  .tchip .ed{align-self:stretch;border:none;border-left:1px solid var(--char-3);background:none;color:var(--muted);font-size:15px;padding:0 12px;cursor:pointer;border-radius:0 12px 12px 0;}
+  .tchip .ed:hover{color:var(--yellow);background:rgba(251,193,32,.08);}
+  .tv-table{margin-top:10px;}
+  .tv-table .rtable{table-layout:fixed;font-size:12.5px;min-width:720px;}
+  .tv-table .rtable th{font-size:11.5px;padding:7px 10px;}
+  .tv-table .rtable td{padding:4px 10px;font-size:12.5px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;}
+  .tv-table td.nm{font-weight:600;}
+  .tv-table .avatar{vertical-align:middle;margin-right:7px;border-width:1px;}
+  .tv-table .odot{width:8px;height:8px;margin-left:6px;}
+  .tv-table .codebtn{font-size:12px;padding:2px 7px;letter-spacing:.1em;}
+  .tv-table td.sf-role{font-size:12.5px;}
+  .tv-table td.muted{color:var(--muted);}
+  .tv-table .ostat{font-size:12px;}
+  .tv-sec td{background:var(--char);color:var(--yellow);font-size:11px !important;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:9px 10px 5px !important;cursor:default;}
+  .tv-empty td{color:var(--muted);font-style:italic;cursor:default;}
+  .tvn{display:inline-block;vertical-align:middle;max-width:calc(100% - 32px);overflow:hidden;text-overflow:ellipsis;}
+  .tvn small{display:inline;margin-left:6px;font-size:11px;color:var(--yellow);font-style:italic;font-weight:400;}
+  .tv-link{color:var(--grey);text-decoration:none;border-bottom:1px dotted var(--muted);}
+  .tv-link:hover{color:var(--yellow);}
+  .rtable tbody tr{cursor:pointer;}
+  .tchip.add{border:1px dashed var(--yellow);color:var(--yellow);font-weight:700;padding:12px 16px;border-left-width:1px;}
+  .mx-tools{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:16px;}
+  .mx-tools input[type=search]{flex:1 1 220px;max-width:340px;padding:9px 12px;font-size:14px;}
+  .mxseg{flex:0 1 420px;grid-template-columns:repeat(4,1fr);} .mxseg button{font-size:13px;padding:8px 4px;}
+  .mx-saved{font-size:13px;font-weight:700;opacity:0;transition:opacity .2s;} .mx-saved.show{opacity:1;}
+  .mx-saved.ok{color:#7fe08f;} .mx-saved.bad{color:var(--bad);}
+  .mx-help{font-size:12.5px;color:var(--muted);margin:8px 0 8px;}
+  .mx-help span{color:var(--grey);margin-left:6px;}
+  .mx-wrap{max-height:calc(100vh - 290px);min-height:240px;overflow:auto;border:1px solid var(--char-3);border-radius:12px;}
+  .mx{border-collapse:separate;border-spacing:0;width:100%;font-size:13.5px;}
+  .mx thead th{position:sticky;top:0;z-index:3;background:var(--char-2);border-bottom:1px solid var(--char-3);padding:6px 6px 7px;}
+  .mx th.mx-name{position:sticky;left:0;z-index:2;background:var(--char);text-align:left;min-width:170px;max-width:220px;padding:4px 10px;border-right:1px solid var(--char-3);}
+  .mx thead th.mx-name{z-index:4;background:var(--char-2);font-size:12px;color:var(--muted);}
+  .mx th.mx-name{display:table-cell;white-space:nowrap;}
+  .mx th.mx-name .tx{white-space:nowrap;}
+  .mx th.mx-name .avatar{vertical-align:middle;margin-right:8px;border-width:1px;}
+  .mx th.mx-name .tx{display:inline-block;vertical-align:middle;max-width:150px;}
+  .mx th.mx-name b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;}
+  .mx th.mx-name small{display:block;font-size:11.5px;color:var(--muted);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .mx th.mx-name small.role{color:var(--yellow);}
+  .mx-team{min-width:74px;text-align:center;}
+  .mx-team .bar{display:block;height:4px;border-radius:2px;background:var(--tc);margin:0 4px 5px;}
+  .mx-team b{display:block;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;margin:0 auto;}
+  .mx-team small{display:block;font-size:11px;color:var(--muted);font-weight:400;}
+  .mx tbody tr:hover th.mx-name,.mx tbody tr:hover td{background:rgba(255,255,255,.035);}
+  .mx td.mx-cell{text-align:center;padding:3px 4px;border-bottom:1px solid rgba(255,255,255,.04);}
+  .mx tbody th.mx-name{border-bottom:1px solid rgba(255,255,255,.04);}
+  .mx-c{width:34px;height:28px;border-radius:14px;border:1.5px solid var(--char-3);background:transparent;color:#141414;font-weight:800;font-size:14px;cursor:pointer;}
+  .mx-c.sq{border-radius:7px;}
+  .mx-c:hover{border-color:var(--tc);background:color-mix(in srgb,var(--tc) 22%,transparent);}
+  .mx-c.on{background:var(--tc);border-color:var(--tc);}
+  .mx-c:focus-visible{outline:2px solid var(--grey);outline-offset:1px;}
+  .mx-sec td{position:sticky;left:0;background:var(--char);font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--yellow);padding:10px 10px 4px;}
+  @media (max-width:640px){
+    .tchips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-left:-4px;padding:0 4px 4px;}
+    .tchips::-webkit-scrollbar{display:none;}
+    .tchip{flex:0 0 auto;padding:5px 10px 5px 5px;} .tchip .tx small{font-size:11px;} .tchip.add{padding:10px 14px;}
+    .mx-help .why{display:none;}
+    .mx-tools{margin-top:10px;} .mxseg button{font-size:12px;padding:7px 2px;}
+    .mx th.mx-name{min-width:128px;max-width:150px;padding:4px 6px;}
+    .mx th.mx-name .tx{max-width:96px;} .mx th.mx-name .avatar{margin-right:5px;}
+    .mx-team{min-width:58px;} .mx-team b{font-size:11.5px;}
+    .mx-c{width:30px;height:26px;}
+    .mx-wrap{max-height:calc(100vh - 230px);}
+  }
   .rdtools{display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap;}
   .rdtools .go{width:auto;margin:0;padding:12px 18px;font-size:15px;}
   .rdtools input{flex:1 1 220px;max-width:420px;}
@@ -527,50 +641,70 @@
       </details>
     </div>
     <div id="rdEditor" hidden>
-      <button class="ghost" type="button" id="rdBack">‹ All riders</button>
-      <div class="rd-layout">
-        <div class="rd-photo-col">
-          <div class="rd-photo" id="rdPhoto">+</div>
-          <label class="ghost photo-pick">Choose photo<input type="file" id="rdPhotoInput" accept="image/*"></label>
-          <button class="ghost" type="button" id="rdPhotoRemove" hidden>Remove photo</button>
+      <div class="rx-head">
+        <button class="ghost" type="button" id="rdBack">‹ All riders</button>
+        <h2 id="rdTitle" class="rx-title">New rider</h2>
+        <span class="rx-team" id="rdTeamShow" hidden></span>
+      </div>
+      <div class="rx-form">
+        <div class="rx-photo">
+          <div class="rd-photo rx-ph" id="rdPhoto">+</div>
+          <label class="linkbtn photo-pick">Photo<input type="file" id="rdPhotoInput" accept="image/*"></label>
+          <button class="linkbtn" type="button" id="rdPhotoRemove" hidden>Remove</button>
         </div>
-        <div class="rd-form">
-          <h2 id="rdTitle" class="rv-name">New rider</h2>
-          <div class="rd-grid">
-            <label>First name<input type="text" id="rdFirst" maxlength="40" autocomplete="off"></label>
-            <label>Last name<input type="text" id="rdLast" maxlength="40" autocomplete="off"></label>
-            <label>Nickname <small class="opt">for fun</small><input type="text" id="rdNick" maxlength="30" autocomplete="off" placeholder="e.g. The Rocket"></label>
-            <label class="teampick">Team <button class="linkbtn" type="button" id="rdManageTeams">manage teams</button><select id="rdTeam"><option value="">No team</option></select></label>
-            <label>Sex<select id="rdSex"><option value="">—</option><option value="F">Female</option><option value="M">Male</option><option value="X">Other</option></select></label>
-            <label class="span2">Home town <small class="opt">start of the rider's routes</small><input type="text" id="rdHome" maxlength="80" autocomplete="off" placeholder="e.g. Lovendegem"></label>
-            <label>Date of birth<input type="date" id="rdBirth"></label>
-            <label>Height (cm)<input type="number" id="rdHeight" min="100" max="230" step="1"></label>
-            <label>Weight (kg)<input type="number" id="rdWeight" min="25" max="200" step="0.1"></label>
-            <label>FTP (watts)<input type="number" id="rdFtp" min="50" max="700" step="1"></label>
-          </div>
-          <label class="field" for="rdNotes">Notes (only you see these)</label>
-          <textarea id="rdNotes" maxlength="300"></textarea>
-          <div class="codebox">
-            <label class="field" for="rdCode">Login code</label>
-            <div class="coderow"><input type="text" id="rdCode" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false">
-              <button class="ghost" type="button" id="rdNewCode">New code</button><button class="ghost" type="button" id="rdCopyCode">Copy</button></div>
-            <button class="ghost wide danger" type="button" id="rdResetCode" hidden>Reset code and sign out on every phone</button>
-            <p class="rv-info" id="rdInfo"></p>
-          </div>
-          <button class="go" type="button" id="rdSave">Save rider</button>
-          <button class="ghost wide danger" type="button" id="rdDelete" hidden>Delete rider</button>
-          <div class="result" id="rdResult" role="status"></div>
+        <div class="rx-grid">
+          <label class="w3">First name<input type="text" id="rdFirst" maxlength="40" autocomplete="off"></label>
+          <label class="w3">Last name<input type="text" id="rdLast" maxlength="40" autocomplete="off"></label>
+          <label class="w3">Nickname<input type="text" id="rdNick" maxlength="30" autocomplete="off" placeholder="for fun"></label>
+          <label class="w3 rx-code">Login code
+            <span class="rx-coderow"><input type="text" id="rdCode" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false">
+              <button type="button" class="rx-ib" id="rdNewCode" title="Make a new code" aria-label="Make a new code">↻</button><button type="button" class="rx-ib" id="rdCopyCode" title="Copy the code" aria-label="Copy the code">⧉</button></span></label>
+          <label class="w2">Sex<select id="rdSex"><option value="">—</option><option value="F">Female</option><option value="M">Male</option><option value="X">Other</option></select></label>
+          <label class="w3">Date of birth<input type="date" id="rdBirth"></label>
+          <label class="w2">Height (cm)<input type="number" id="rdHeight" min="100" max="230" step="1"></label>
+          <label class="w2">Weight (kg)<input type="number" id="rdWeight" min="25" max="200" step="0.1"></label>
+          <label class="w3">FTP (watts)<input type="number" id="rdFtp" min="50" max="700" step="1"></label>
+          <label class="w3">GSM<input type="tel" id="rdPhone" maxlength="30" autocomplete="off" placeholder="0470 12 34 56"></label>
+          <label class="w5 wide-m">E-mail<input type="email" id="rdEmail" maxlength="80" autocomplete="off"></label>
+          <label class="w4">Home town <small class="opt">route start</small><input type="text" id="rdHome" maxlength="80" autocomplete="off" placeholder="e.g. Lovendegem"></label>
+          <label class="w12 wide-m">Notes <small class="opt">only you see these</small><input type="text" id="rdNotes" maxlength="300" autocomplete="off"></label>
         </div>
       </div>
+      <p class="rv-info rx-info" id="rdInfo"></p>
+      <div class="rx-actions">
+        <button class="go" type="button" id="rdSave">Save rider</button>
+        <button class="ghost danger" type="button" id="rdResetCode" hidden>Reset code &amp; sign out</button>
+        <button class="ghost danger" type="button" id="rdDelete" hidden>Delete rider</button>
+      </div>
+      <div class="result" id="rdResult" role="status"></div>
     </div>
   </div>
 
   <!-- TEAMS: riders are linked to a team -->
   <div id="paneTeams" hidden>
     <div id="tmListBox">
-      <div class="rdtools"><button class="go" type="button" id="tmAdd">+ Add team</button></div>
+      <button type="button" id="tmAdd" hidden></button>
+      <div class="tchips" id="tmList"></div>
       <div class="trstatus" id="tmStatus" role="status"></div>
-      <div class="tm-grid" id="tmList"></div>
+      <div class="mx-tools">
+        <input type="search" id="mxSearch" placeholder="Search name, nickname or role" aria-label="Search people">
+        <div class="seg mxseg" id="mxFilter" role="group" aria-label="Show">
+          <button type="button" data-v="all" aria-pressed="true">Everyone</button><button type="button" data-v="riders" aria-pressed="false">Riders</button><button type="button" data-v="staff" aria-pressed="false">Staff</button><button type="button" data-v="none" aria-pressed="false">No team yet</button>
+        </div>
+        <span class="mx-saved" id="mxSaved" role="status" aria-live="polite"></span>
+      </div>
+      <p class="mx-help"><span class="why">Tap a cell to link. <b>Riders</b> are in one team: tapping another team moves them, tapping again unlinks. <b>Staff</b> can work for several teams.</span> <span id="mxCounts"></span></p>
+      <div class="mx-wrap" id="mxWrap"><table class="mx" id="mxTable"></table></div>
+    </div>
+    <div id="tmView" hidden>
+      <div class="rx-head">
+        <button class="ghost" type="button" id="tvBackTeams">‹ All teams</button>
+        <span id="tvBadge"></span>
+        <h2 class="rx-title" id="tvName"></h2>
+        <button class="ghost" type="button" id="tvEdit">✎ Edit team</button>
+      </div>
+      <p class="mx-help" id="tvSummary"></p>
+      <div id="tvTable"></div>
     </div>
     <div id="tmEditor" hidden>
       <button class="ghost" type="button" id="tmBack">‹ All teams</button>
@@ -589,9 +723,7 @@
           <input type="color" id="tmColor" value="#fbc120" aria-label="Custom colour">
           <label class="field" for="tmAbout">Description (optional)</label>
           <textarea id="tmAbout" maxlength="300" placeholder="e.g. Under-23 road team, coach Pieter"></textarea>
-          <h3 class="members-h">Riders in this team <small id="tmCount"></small></h3>
-          <input type="search" id="tmSearch" placeholder="Search riders" aria-label="Search riders">
-          <div class="people members" id="tmMembers"></div>
+          <p class="mx-help">Riders and staff are linked to this team in the matrix on the Teams page.</p>
           <button class="go" type="button" id="tmSave">Save team</button>
           <button class="ghost wide danger" type="button" id="tmDelete" hidden>Delete team</button>
           <div class="result" id="tmResult" role="status"></div>
@@ -609,38 +741,36 @@
       <div id="sfList"></div>
     </div>
     <div id="sfEditor" hidden>
-      <button class="ghost" type="button" id="sfBack">‹ All staff</button>
-      <div class="rd-layout">
-        <div class="rd-photo-col">
-          <div class="rd-photo" id="sfPhoto">+</div>
-          <label class="ghost photo-pick">Choose photo<input type="file" id="sfPhotoInput" accept="image/*"></label>
-          <button class="ghost" type="button" id="sfPhotoRemove" hidden>Remove photo</button>
+      <div class="rx-head">
+        <button class="ghost" type="button" id="sfBack">‹ All staff</button>
+        <h2 id="sfTitle" class="rx-title">New staff member</h2>
+        <span class="rx-teams" id="sfTeamShow"></span>
+      </div>
+      <div class="rx-form">
+        <div class="rx-photo">
+          <div class="rd-photo rx-ph" id="sfPhoto">+</div>
+          <label class="linkbtn photo-pick">Photo<input type="file" id="sfPhotoInput" accept="image/*"></label>
+          <button class="linkbtn" type="button" id="sfPhotoRemove" hidden>Remove</button>
         </div>
-        <div class="rd-form">
-          <h2 id="sfTitle" class="rv-name">New staff member</h2>
-          <div class="rd-grid">
-            <label>First name<input type="text" id="sfFirst" maxlength="40" autocomplete="off"></label>
-            <label>Last name<input type="text" id="sfLast" maxlength="40" autocomplete="off"></label>
-            <label>Role<select id="sfRole"></select></label>
-            <label>Phone<input type="tel" id="sfPhone" maxlength="30" autocomplete="off"></label>
-            <label class="span2">E-mail<input type="email" id="sfEmail" maxlength="80" autocomplete="off"></label>
-          </div>
-          <label class="field">Works for <small class="opt">they see the calendar and riders of these teams</small></label>
-          <div class="teamtogs" id="sfTeamPick"></div>
-          <label class="field" for="sfNotes">Notes (only you see these)</label>
-          <textarea id="sfNotes" maxlength="300"></textarea>
-          <div class="codebox">
-            <label class="field" for="sfCode">Login code</label>
-            <div class="coderow"><input type="text" id="sfCode" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false">
-              <button class="ghost" type="button" id="sfNewCode">New code</button><button class="ghost" type="button" id="sfCopyCode">Copy</button></div>
-            <button class="ghost wide danger" type="button" id="sfResetCode" hidden>Reset code and sign out on every phone</button>
-            <p class="rv-info" id="sfInfo"></p>
-          </div>
-          <button class="go" type="button" id="sfSave">Save</button>
-          <button class="ghost wide danger" type="button" id="sfDelete" hidden>Delete staff member</button>
-          <div class="result" id="sfResult" role="status"></div>
+        <div class="rx-grid">
+          <label class="w3">First name<input type="text" id="sfFirst" maxlength="40" autocomplete="off"></label>
+          <label class="w3">Last name<input type="text" id="sfLast" maxlength="40" autocomplete="off"></label>
+          <label class="w3">Role<select id="sfRole"></select></label>
+          <label class="w3 rx-code">Login code
+            <span class="rx-coderow"><input type="text" id="sfCode" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false">
+              <button type="button" class="rx-ib" id="sfNewCode" title="Make a new code" aria-label="Make a new code">↻</button><button type="button" class="rx-ib" id="sfCopyCode" title="Copy the code" aria-label="Copy the code">⧉</button></span></label>
+          <label class="w3">GSM<input type="tel" id="sfPhone" maxlength="30" autocomplete="off" placeholder="0470 12 34 56"></label>
+          <label class="w5 wide-m">E-mail<input type="email" id="sfEmail" maxlength="80" autocomplete="off"></label>
+          <label class="w4 wide-m">Notes <small class="opt">only you see these</small><input type="text" id="sfNotes" maxlength="300" autocomplete="off"></label>
         </div>
       </div>
+      <p class="rv-info rx-info" id="sfInfo"></p>
+      <div class="rx-actions">
+        <button class="go" type="button" id="sfSave">Save</button>
+        <button class="ghost danger" type="button" id="sfResetCode" hidden>Reset code &amp; sign out</button>
+        <button class="ghost danger" type="button" id="sfDelete" hidden>Delete staff member</button>
+      </div>
+      <div class="result" id="sfResult" role="status"></div>
     </div>
   </div>
 
@@ -1368,7 +1498,7 @@
     if (name === 'riders') loadTeams().then(loadRiders);
     if (name === 'races'){ $('rcEditor').hidden = true; $('rcListBox').hidden = false; loadRaces(); }
     if (name === 'staff'){ $('sfEditor').hidden = true; $('sfListBox').hidden = false; loadStaff(); }
-    if (name === 'teams'){ $('tmEditor').hidden = true; $('tmListBox').hidden = false; Promise.all([loadTeams(), loadRiders()]).then(renderTeamCards); }
+    if (name === 'teams'){ $('tmEditor').hidden = true; $('tmView').hidden = true; $('tmListBox').hidden = false; Promise.all([loadTeams(), loadRiders(), loadStaff()]).then(renderTeamCards); }
   }
   Array.prototype.forEach.call(document.querySelectorAll('.maintabs button'), function(b){ b.addEventListener('click', function(){ showMainTab(b.dataset.tab); }); });
 
@@ -2071,15 +2201,16 @@
     if (!list.length){ if (RD.list.length) box.appendChild(el('p', 'empty-note', 'Nobody matches that search.')); return; }
     if (isWide()){
       var wrap = el('div', 'rtable-wrap'), t = el('table', 'rtable'), h = el('tr');
-      ['', 'Rider', 'Team', 'Home town', 'Sex', 'Age', 'Height', 'Weight', 'FTP', 'Login code', 'Status'].forEach(function(x){ h.appendChild(el('th', null, x)); });
+      ['', 'Rider', 'Team', 'GSM', 'Home town', 'Sex', 'Age', 'Height', 'Weight', 'FTP', 'Login code', 'Status'].forEach(function(x){ h.appendChild(el('th', null, x)); });
       var th = el('thead'); th.appendChild(h); t.appendChild(th);
       var tb = el('tbody');
       list.forEach(function(r){
         var tr = el('tr'); tr.tabIndex = 0;
-        var c0 = el('td'); c0.appendChild(rdAvatar(r, 34)); tr.appendChild(c0);
+        var c0 = el('td'); c0.appendChild(rdAvatar(r, 28)); tr.appendChild(c0);
         var nmc = el('td', 'nm', r.firstName + ' ' + r.lastName); nmc.appendChild(onlineDot(r)); if (r.nickname) nmc.appendChild(el('span', 'nick', '“' + r.nickname + '”')); tr.appendChild(nmc);
-        var tc = el('td'); if (r.teamId && teamById(r.teamId)){ var dot = el('span', 'tdot'); dot.style.background = teamById(r.teamId).color; tc.appendChild(dot); } tc.appendChild(document.createTextNode(r.team || '—')); tr.appendChild(tc);
-        tr.appendChild(el('td', 'refl', r.homeTown || '—'));
+        var tc = el('td'); if (r.teamId && teamById(r.teamId)){ var dot = el('span', 'tdot'); dot.style.background = teamById(r.teamId).color; tc.appendChild(dot); tc.appendChild(document.createTextNode(teamById(r.teamId).name)); } tr.appendChild(tc);
+        tr.appendChild(el('td', 'refl', r.phone || ''));
+        tr.appendChild(el('td', 'refl', r.homeTown || ''));
         tr.appendChild(el('td', null, { F:'F', M:'M', X:'X' }[r.sex] || '—'));
         tr.appendChild(el('td', 'num', r.birthDate ? String(rdAge(r.birthDate)) : '—'));
         tr.appendChild(el('td', 'num', r.heightCm ? r.heightCm + ' cm' : '—'));
@@ -2100,7 +2231,7 @@
       var li = el('li', 'rrow'); li.tabIndex = 0;
       li.appendChild(rdAvatar(r, 44));
       var main = el('div', 'rmain'), nb = el('b', null, r.firstName + ' ' + r.lastName); nb.appendChild(onlineDot(r)); main.appendChild(nb);
-      main.appendChild(el('span', 'rsub', (r.nickname ? '“' + r.nickname + '” · ' : '') + (r.team || 'No team')));
+      main.appendChild(el('span', 'rsub', [r.nickname ? '“' + r.nickname + '”' : '', r.team || ''].filter(Boolean).join(' · ')));
       main.appendChild(el('span', 'ostat ' + (r.phones ? 'on' : 'off'), onlineText(r)));
       li.appendChild(main);
       var cb = el('button', 'codebtn', r.code); cb.type = 'button'; cb.title = 'Copy the login code';
@@ -2121,10 +2252,13 @@
     RD.photo = undefined;
     $('rdListBox').hidden = true; $('rdEditor').hidden = false;
     $('rdTitle').textContent = r ? r.firstName + ' ' + r.lastName : 'New rider';
-    $('rdFirst').value = RD.edit.firstName; $('rdLast').value = RD.edit.lastName; fillTeamSelect(); $('rdTeam').value = RD.edit.teamId || '';
+    $('rdFirst').value = RD.edit.firstName; $('rdLast').value = RD.edit.lastName;
+    var tmShow = $('rdTeamShow'), tmL = r && r.teamId ? teamById(r.teamId) : null;
+    tmShow.hidden = !tmL;
+    if (tmL){ tmShow.textContent = tmL.name; tmShow.style.background = tmL.color; tmShow.title = 'Team ' + tmL.name + ' (change it under Teams)'; }
     $('rdSex').value = RD.edit.sex || ''; $('rdBirth').value = RD.edit.birthDate || '';
     $('rdHeight').value = RD.edit.heightCm || ''; $('rdWeight').value = RD.edit.weightKg || ''; $('rdFtp').value = RD.edit.ftp || '';
-    $('rdNotes').value = RD.edit.notes || ''; $('rdNick').value = RD.edit.nickname || ''; $('rdHome').value = RD.edit.homeTown || '';
+    $('rdNotes').value = RD.edit.notes || ''; $('rdNick').value = RD.edit.nickname || ''; $('rdHome').value = RD.edit.homeTown || ''; $('rdPhone').value = RD.edit.phone || ''; $('rdEmail').value = RD.edit.email || '';
     $('rdCode').value = RD.edit.code || newLocalCode();
     $('rdDelete').hidden = !r; $('rdResetCode').hidden = !r; $('rdInfo').textContent = r ? (r.lastLoginAt ? 'Last signed in ' + new Date(r.lastLoginAt).toLocaleString() + '.' : 'Has not signed in yet.') +
       (r.updatedByRider ? ' Rider changed their details on ' + new Date(r.updatedByRider).toLocaleDateString() + '.' : '') : 'The rider signs in to the app with this code.';
@@ -2172,9 +2306,9 @@
     saveRiderNow(false);
   });
   function saveRiderNow(codeReset){
-    var r = { id: RD.edit.id, firstName: $('rdFirst').value.trim(), lastName: $('rdLast').value.trim(), teamId: $('rdTeam').value,
+    var r = { id: RD.edit.id, firstName: $('rdFirst').value.trim(), lastName: $('rdLast').value.trim(),
               sex: $('rdSex').value, birthDate: $('rdBirth').value, heightCm: $('rdHeight').value, weightKg: $('rdWeight').value, ftp: $('rdFtp').value,
-              notes: $('rdNotes').value.trim(), nickname: $('rdNick').value.trim(), homeTown: $('rdHome').value.trim(), code: $('rdCode').value.trim() };
+              notes: $('rdNotes').value.trim(), nickname: $('rdNick').value.trim(), homeTown: $('rdHome').value.trim(), phone: $('rdPhone').value.trim(), email: $('rdEmail').value.trim(), code: $('rdCode').value.trim() };
     if (!r.firstName || !r.lastName){ trMsg('rdResult', 'First and last name are required.', true); return; }
     var codeChanged = !!(RD.edit.id && RD.edit.code && r.code.toUpperCase() !== RD.edit.code);
     if (r.code.length < 4){ trMsg('rdResult', 'The login code needs at least 4 letters or digits.', true); return; }
@@ -2238,15 +2372,16 @@
   }
   // the team dropdown in the rider form
   function fillTeamSelect(){
-    var sel = $('rdTeam'), cur = sel.value; sel.innerHTML = '';
+    var sel = $('rdTeam'); if (!sel) return;   // teams are linked under Teams, not in the rider form
+    var cur = sel.value; sel.innerHTML = '';
     var o = el('option', null, 'No team'); o.value = ''; sel.appendChild(o);
     TM.list.forEach(function(t){ var x = el('option', null, t.name); x.value = t.id; sel.appendChild(x); });
     var nw = el('option', null, '＋ New team…'); nw.value = '__new'; sel.appendChild(nw);
     sel.value = cur === '__new' ? '' : cur;
     paintTeamPick();
   }
-  function paintTeamPick(){ var t = teamById($('rdTeam').value); $('rdTeam').style.borderLeft = t ? '6px solid ' + t.color : ''; }
-  $('rdTeam').addEventListener('change', async function(){
+  function paintTeamPick(){ if (!$('rdTeam')) return; var t = teamById($('rdTeam').value); $('rdTeam').style.borderLeft = t ? '6px solid ' + t.color : ''; }
+  if ($('rdTeam')) $('rdTeam').addEventListener('change', async function(){
     var sel = this;
     if (sel.value !== '__new'){ paintTeamPick(); return; }
     var name = ((await uiPrompt('Team name', '', { title:'New team', ok:'Make team' })) || '').trim();
@@ -2257,22 +2392,6 @@
       loadTeams().then(function(){ sel.value = res.data.team.id; paintTeamPick(); trMsg('rdResult', 'Team ' + res.data.team.name + ' made. Tap Save rider to put this rider in it.'); });
     });
   });
-  function renderTeamCards(){
-    var box = $('tmList'); box.innerHTML = '';
-    trMsg('tmStatus', TM.list.length ? '' : 'No teams yet. Make a team, then link riders to it here or in the rider form.');
-    TM.list.forEach(function(t){
-      var c = el('button', 'tcard'); c.type = 'button'; c.style.setProperty('--tc', t.color || '#fbc120');
-      c.appendChild(teamBadge(t, 56));
-      var m = el('div', 'tmain'); m.appendChild(el('b', null, t.name));
-      m.appendChild(el('span', 'rsub', t.riders + ' rider' + (t.riders === 1 ? '' : 's')));
-      if (t.about) m.appendChild(el('span', 'tabout', t.about));
-      c.appendChild(m);
-      c.addEventListener('click', function(){ editTeam(t); });
-      box.appendChild(c);
-    });
-    var free = RD.list.filter(function(r){ return !r.teamId; }).length;
-    if (TM.list.length && free) box.appendChild(el('p', 'empty-note', free + ' rider' + (free === 1 ? ' has' : 's have') + ' no team yet.'));
-  }
   function editTeam(t){
     TM.edit = t ? JSON.parse(JSON.stringify(t)) : { name:'', color: TEAM_COLORS[TM.list.length % TEAM_COLORS.length], about:'' };
     TM.logo = undefined;
@@ -2317,6 +2436,7 @@
   });
   $('tmLogoRemove').addEventListener('click', function(){ TM.logo = null; paintTeamLogo(); });
   function renderMembers(){
+    if (!$('tmMembers')) return;   // linking happens in the matrix
     var q = $('tmSearch').value.trim().toLowerCase(), box = $('tmMembers'); box.innerHTML = '';
     var list = RD.list.slice().sort(function(a, b){ return (b.teamId === TM.edit.id) - (a.teamId === TM.edit.id) || (a.lastName + a.firstName).localeCompare(b.lastName + b.firstName); })
       .filter(function(r){ return !q || (r.firstName + ' ' + r.lastName + ' ' + (r.team || '')).toLowerCase().indexOf(q) !== -1; });
@@ -2333,20 +2453,20 @@
     });
     memberCount();
   }
-  function memberCount(){ var n = Object.keys(TM.members).length; $('tmCount').textContent = n + ' rider' + (n === 1 ? '' : 's') + ' in this team'; }
-  $('tmSearch').addEventListener('input', renderMembers);
-  $('tmBack').addEventListener('click', function(){ $('tmEditor').hidden = true; $('tmListBox').hidden = false; renderTeamCards(); });
+  function memberCount(){ if (!$('tmCount')) return; var n = Object.keys(TM.members).length; $('tmCount').textContent = n + ' rider' + (n === 1 ? '' : 's') + ' in this team'; }
+  if ($('tmSearch')) $('tmSearch').addEventListener('input', renderMembers);
+  $('tmBack').addEventListener('click', function(){ $('tmEditor').hidden = true; $('tmListBox').hidden = false; Promise.all([loadTeams(), loadRiders(), loadStaff()]).then(renderTeamCards); });
   $('tmAdd').addEventListener('click', function(){ editTeam(null); });
   $('tmSave').addEventListener('click', function(){
     var t = { id: TM.edit.id, name: $('tmName').value.trim(), color: $('tmColor').value, about: $('tmAbout').value.trim() };
     if (!t.name){ trMsg('tmResult', 'Give the team a name.', true); return; }
-    var body = { team: t, members: Object.keys(TM.members) }; if (TM.logo !== undefined) body.photo = TM.logo;
+    var body = { team: t }; if (TM.logo !== undefined) body.photo = TM.logo;   // members are linked in the matrix
     var btn = this; btn.disabled = true; trMsg('tmResult', 'Saving…');
     api('/api/teams', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) }).then(function(res){
       btn.disabled = false;
       if (!res.ok){ trMsg('tmResult', (res.data && res.data.error) || 'Could not save.', true); return; }
       TM.edit = res.data.team; TM.logo = undefined; $('tmTitle').textContent = TM.edit.name; $('tmDelete').hidden = false;
-      trMsg('tmResult', 'Saved: ' + TM.edit.riders + ' rider' + (TM.edit.riders === 1 ? '' : 's') + ' in ' + TM.edit.name + '.');
+      trMsg('tmResult', 'Saved. Link riders and staff to ' + TM.edit.name + ' in the matrix (‹ All teams).');
       Promise.all([loadTeams(), loadRiders()]).then(function(){ renderMembers(); paintTeamLogo(); });
     }).catch(function(){ btn.disabled = false; trMsg('tmResult', 'No connection. Not saved.', true); });
   });
@@ -2356,10 +2476,10 @@
     api('/api/teams', { method:'DELETE', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ id: TM.edit.id }) }).then(function(res){
       if (!res.ok){ trMsg('tmResult', (res.data && res.data.error) || 'Could not delete.', true); return; }
       $('tmEditor').hidden = true; $('tmListBox').hidden = false;
-      Promise.all([loadTeams(), loadRiders()]).then(renderTeamCards);
+      Promise.all([loadTeams(), loadRiders(), loadStaff()]).then(renderTeamCards);
     });
   });
-  $('rdManageTeams').addEventListener('click', function(){ showMainTab('teams'); });
+  if ($('rdManageTeams')) $('rdManageTeams').addEventListener('click', function(){ showMainTab('teams'); });
 
 
   /* ======================= CALENDAR: races, club trainings, events ======================= */
@@ -2681,12 +2801,14 @@
     $('sfPhone').value = SF.edit.phone || ''; $('sfEmail').value = SF.edit.email || ''; $('sfNotes').value = SF.edit.notes || '';
     $('sfCode').value = SF.edit.code || newLocalCode();
     $('sfDelete').hidden = !x; $('sfResetCode').hidden = !x;
+    var tsh = $('sfTeamShow'); tsh.innerHTML = '';
+    (SF.edit.teamIds || []).forEach(function(id){ var t = teamById(id); if (!t) return; var c = el('span', 'rx-team', t.name); c.style.background = t.color; c.title = 'Linked under Teams'; tsh.appendChild(c); });
     $('sfInfo').textContent = x ? (x.phones ? onlineText(x) + '.' : (x.lastLoginAt ? 'Last signed in ' + new Date(x.lastLoginAt).toLocaleString() + '.' : 'Has not signed in yet.')) : 'They sign in to the ROOT Ahead app with this code.';
-    paintSfPhoto(SF.edit.photoUrl || ''); renderSfTeams(); trMsg('sfResult', '');
+    paintSfPhoto(SF.edit.photoUrl || ''); trMsg('sfResult', '');
     window.scrollTo(0, 0);
   }
   function renderSfTeams(){
-    var box = $('sfTeamPick'); box.innerHTML = '';
+    var box = $('sfTeamPick'); if (!box) return; box.innerHTML = '';
     if (!TM.list.length){ box.appendChild(el('span', 'empty-note', 'No teams yet: make teams under Teams first.')); return; }
     TM.list.forEach(function(t){
       var b = el('button', 'teamtog', t.name); b.type = 'button'; b.style.setProperty('--tc', t.color);
@@ -2720,7 +2842,7 @@
   $('sfBack').addEventListener('click', function(){ $('sfEditor').hidden = true; $('sfListBox').hidden = false; loadStaff(); });
   $('sfSave').addEventListener('click', async function(){
     var st = { id: SF.edit.id, firstName: $('sfFirst').value.trim(), lastName: $('sfLast').value.trim(), role: $('sfRole').value,
-               teamIds: Object.keys(SF.teams), phone: $('sfPhone').value.trim(), email: $('sfEmail').value.trim(), notes: $('sfNotes').value.trim(), code: $('sfCode').value.trim() };
+               phone: $('sfPhone').value.trim(), email: $('sfEmail').value.trim(), notes: $('sfNotes').value.trim(), code: $('sfCode').value.trim() };
     if (!st.firstName || !st.lastName){ trMsg('sfResult', 'First and last name are required.', true); return; }
     if (st.code.length < 4){ trMsg('sfResult', 'The login code needs at least 4 letters or digits.', true); return; }
     var changed = SF.edit.id && SF.edit.code && st.code.toUpperCase() !== SF.edit.code;
@@ -2733,7 +2855,7 @@
       SF.edit = res.data.staff; SF.photo = undefined; $('sfTitle').textContent = SF.edit.firstName + ' ' + SF.edit.lastName; $('sfDelete').hidden = false; $('sfResetCode').hidden = false;
       paintSfPhoto(SF.edit.photoUrl || '');
       trMsg('sfResult', (changed ? 'New login code: ' : 'Saved. Login code: ') + SF.edit.code + '. ' + SF.edit.firstName + ' signs in to the ROOT Ahead app with it and sees the calendar and riders of ' +
-        (SF.edit.teamIds.length ? SF.edit.teamIds.map(function(id){ var t = teamById(id); return t ? t.name : ''; }).filter(Boolean).join(', ') : 'no team yet (pick a team)') + '.');
+        ((SF.edit.teamIds || []).length ? SF.edit.teamIds.map(function(id){ var t = teamById(id); return t ? t.name : ''; }).filter(Boolean).join(', ') : 'no team yet (link teams under Teams)') + '.');
     }).catch(function(){ btn.disabled = false; trMsg('sfResult', 'No connection. Not saved.', true); });
   });
   $('sfResetCode').addEventListener('click', async function(){
@@ -2751,6 +2873,170 @@
       $('sfEditor').hidden = true; $('sfListBox').hidden = false; loadStaff();
     });
   });
+
+
+  /* ======================= TEAMS MATRIX: who is in which team ======================= */
+  // Rows = people (riders first, then staff), columns = teams. One tap links / moves / unlinks.
+  // A rider is in one team at most; staff can work for several teams. Saved at once.
+  var MX = { filter: 'all', saving: 0 };
+  function renderTeamCards(){
+    var box = $('tmList'); box.innerHTML = '';
+    TM.list.forEach(function(t){
+      var n = RD.list.filter(function(r){ return r.teamId === t.id; }).length, ns = SF.list.filter(function(x){ return (x.teamIds || []).indexOf(t.id) !== -1; }).length;
+      var c = el('div', 'tchip'); c.style.setProperty('--tc', t.color || '#fbc120');
+      var open = el('button', 'tchip-open'); open.type = 'button'; open.title = 'Who is in ' + t.name;
+      open.appendChild(teamBadge(t, 30));
+      var tx = el('span', 'tx'); tx.appendChild(el('b', null, t.name)); tx.appendChild(el('small', null, n + ' rider' + (n === 1 ? '' : 's') + (ns ? ' · ' + ns + ' staff' : '')));
+      open.appendChild(tx);
+      open.addEventListener('click', function(){ showTeamOverview(t); });
+      var ed = el('button', 'ed', '✎'); ed.type = 'button'; ed.title = 'Edit team ' + t.name; ed.setAttribute('aria-label', 'Edit team ' + t.name);
+      ed.addEventListener('click', function(){ editTeam(t); });
+      c.appendChild(open); c.appendChild(ed);
+      box.appendChild(c);
+    });
+    var add = el('button', 'tchip add', '+ Add team'); add.type = 'button'; add.addEventListener('click', function(){ editTeam(null); }); box.appendChild(add);
+    trMsg('tmStatus', TM.list.length ? '' : 'Start by adding your teams. Then link riders and staff in the matrix below.');
+    renderMatrix();
+  }
+  function mxSaved(ok, text){
+    var e = $('mxSaved'); e.textContent = text || (ok ? 'Saved ✓' : 'Not saved'); e.className = 'mx-saved show ' + (ok ? 'ok' : 'bad');
+    clearTimeout(e._t); e._t = setTimeout(function(){ e.className = 'mx-saved'; }, ok ? 1400 : 4000);
+  }
+  function renderMatrix(){
+    var tbl = $('mxTable'); tbl.innerHTML = '';
+    if (!TM.list.length){ $('mxWrap').hidden = true; return; }
+    $('mxWrap').hidden = false;
+    var q = $('mxSearch').value.trim().toLowerCase();
+    function match(p){ return !q || (p.firstName + ' ' + p.lastName + ' ' + (p.nickname || '') + ' ' + (p.role || '')).toLowerCase().indexOf(q) !== -1; }
+    var riders = RD.list.filter(match).filter(function(r){ return MX.filter === 'all' || MX.filter === 'riders' || (MX.filter === 'none' && !r.teamId); });
+    var staff = SF.list.filter(match).filter(function(x){ return MX.filter === 'all' || MX.filter === 'staff' || (MX.filter === 'none' && !(x.teamIds || []).length); });
+    if (MX.filter === 'staff') riders = []; if (MX.filter === 'riders') staff = [];
+    var byName = function(a, b){ return (a.lastName + a.firstName).localeCompare(b.lastName + b.firstName); };
+    riders.sort(byName); staff.sort(byName);
+    // header: one column per team, with its count
+    var thead = el('thead'), hr = el('tr');
+    hr.appendChild(el('th', 'mx-name', 'Name'));
+    TM.list.forEach(function(t){
+      var th = el('th', 'mx-team'); th.style.setProperty('--tc', t.color || '#fbc120');
+      th.appendChild(el('span', 'bar'));
+      th.appendChild(el('b', null, t.name));
+      th.appendChild(el('small', null, RD.list.filter(function(r){ return r.teamId === t.id; }).length + ' · ' + SF.list.filter(function(x){ return (x.teamIds || []).indexOf(t.id) !== -1; }).length));
+      th.title = t.name + ': riders · staff';
+      hr.appendChild(th);
+    });
+    thead.appendChild(hr); tbl.appendChild(thead);
+    function section(title, n){ var tr = el('tr', 'mx-sec'); var td = el('td', null, title + ' · ' + n); td.colSpan = TM.list.length + 1; tr.appendChild(td); return tr; }
+    var tb = el('tbody');
+    if (riders.length) tb.appendChild(section('Riders', riders.length));
+    riders.forEach(function(r){
+      var tr = el('tr'), nm = el('th', 'mx-name'); nm.scope = 'row';
+      nm.appendChild(rdAvatar(r, 24)); var tx = el('span', 'tx'); tx.appendChild(el('b', null, r.firstName + ' ' + r.lastName));
+      if (r.nickname) tx.appendChild(el('small', null, '“' + r.nickname + '”')); nm.appendChild(tx); tr.appendChild(nm);
+      TM.list.forEach(function(t){
+        var on = r.teamId === t.id, td = el('td', 'mx-cell'), b = el('button', 'mx-c' + (on ? ' on' : '')); b.type = 'button';
+        b.style.setProperty('--tc', t.color || '#fbc120'); b.setAttribute('aria-pressed', String(on));
+        b.setAttribute('aria-label', r.firstName + ' ' + r.lastName + (on ? ' is in ' + t.name + ': tap to unlink' : ': tap to put in ' + t.name));
+        b.textContent = on ? '✓' : '';
+        b.addEventListener('click', function(){ assignRider(r, on ? null : t); });
+        td.appendChild(b); tr.appendChild(td);
+      });
+      tb.appendChild(tr);
+    });
+    if (staff.length) tb.appendChild(section('Staff', staff.length));
+    staff.forEach(function(x){
+      var tr = el('tr', 'mx-staff'), nm = el('th', 'mx-name'); nm.scope = 'row';
+      nm.appendChild(rdAvatar(x, 24)); var tx = el('span', 'tx'); tx.appendChild(el('b', null, x.firstName + ' ' + x.lastName));
+      tx.appendChild(el('small', 'role', x.role)); nm.appendChild(tx); tr.appendChild(nm);
+      TM.list.forEach(function(t){
+        var on = (x.teamIds || []).indexOf(t.id) !== -1, td = el('td', 'mx-cell'), b = el('button', 'mx-c sq' + (on ? ' on' : '')); b.type = 'button';
+        b.style.setProperty('--tc', t.color || '#fbc120'); b.setAttribute('aria-pressed', String(on));
+        b.setAttribute('aria-label', x.firstName + ' ' + x.lastName + (on ? ' works for ' + t.name + ': tap to remove' : ': tap to add ' + t.name));
+        b.textContent = on ? '✓' : '';
+        b.addEventListener('click', function(){ toggleStaffTeam(x, t, !on); });
+        td.appendChild(b); tr.appendChild(td);
+      });
+      tb.appendChild(tr);
+    });
+    if (!riders.length && !staff.length){ var tr0 = el('tr'), td0 = el('td', 'empty-note', q ? 'Nobody matches that search.' : 'Nobody here.'); td0.colSpan = TM.list.length + 1; tr0.appendChild(td0); tb.appendChild(tr0); }
+    tbl.appendChild(tb);
+    var free = RD.list.filter(function(r){ return !r.teamId; }).length;
+    $('mxCounts').textContent = RD.list.length + ' riders · ' + SF.list.length + ' staff' + (free ? ' · ' + free + ' rider' + (free === 1 ? '' : 's') + ' without a team' : '');
+  }
+  function assignRider(r, t){
+    var before = { id: r.teamId || '', name: r.team || '' };
+    r.teamId = t ? t.id : ''; r.team = t ? t.name : '';
+    renderTeamCards();
+    api('/api/teams', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ action:'assign', riderId: r.id, teamId: t ? t.id : '' }) })
+      .then(function(res){
+        if (!res.ok){ r.teamId = before.id; r.team = before.name; renderTeamCards(); mxSaved(false, (res.data && res.data.error) || 'Not saved'); return; }
+        mxSaved(true, t ? r.firstName + ' → ' + t.name + ' ✓' : r.firstName + ': no team ✓');
+      }).catch(function(){ r.teamId = before.id; r.team = before.name; renderTeamCards(); mxSaved(false, 'No connection: not saved'); });
+  }
+  function toggleStaffTeam(x, t, on){
+    var before = (x.teamIds || []).slice();
+    x.teamIds = before.filter(function(id){ return id !== t.id; }); if (on) x.teamIds.push(t.id);
+    renderTeamCards();
+    api('/api/teams', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ action:'staffTeam', staffId: x.id, teamId: t.id, on: on }) })
+      .then(function(res){
+        if (!res.ok){ x.teamIds = before; renderTeamCards(); mxSaved(false, (res.data && res.data.error) || 'Not saved'); return; }
+        mxSaved(true, x.firstName + (on ? ' + ' : ' − ') + t.name + ' ✓');
+      }).catch(function(){ x.teamIds = before; renderTeamCards(); mxSaved(false, 'No connection: not saved'); });
+  }
+  $('mxSearch').addEventListener('input', renderMatrix);
+  Array.prototype.forEach.call(document.querySelectorAll('#mxFilter button'), function(b){
+    b.addEventListener('click', function(){ MX.filter = b.dataset.v; Array.prototype.forEach.call(document.querySelectorAll('#mxFilter button'), function(x){ x.setAttribute('aria-pressed', String(x === b)); }); renderMatrix(); });
+  });
+
+
+  /* ---------- one team: who is in it (staff first, then riders) ---------- */
+  var TV = { team: null };
+  function showTeamOverview(t){
+    TV.team = t;
+    $('tmListBox').hidden = true; $('tmEditor').hidden = true; $('tmView').hidden = false;
+    $('tvBadge').innerHTML = ''; $('tvBadge').appendChild(teamBadge(t, 34));
+    $('tvName').textContent = t.name;
+    renderTeamOverview();
+    window.scrollTo(0, 0);
+  }
+  function renderTeamOverview(){
+    var t = TV.team; if (!t) return;
+    function rank(x){ var i = SF.roles.indexOf(x.role); return i === -1 ? 99 : i; }   // Sport Director first, then coach, soigneur…
+    var staff = SF.list.filter(function(x){ return (x.teamIds || []).indexOf(t.id) !== -1; }).sort(function(a, b){ return rank(a) - rank(b) || (a.lastName + a.firstName).localeCompare(b.lastName + b.firstName); });
+    var riders = RD.list.filter(function(r){ return r.teamId === t.id; }).sort(function(a, b){ return (a.lastName + a.firstName).localeCompare(b.lastName + b.firstName); });
+    var on = staff.filter(function(x){ return x.phones; }).length + riders.filter(function(r){ return r.phones; }).length;
+    $('tvSummary').textContent = (t.about ? t.about + ' · ' : '') + staff.length + ' staff · ' + riders.length + ' riders · ' + on + ' signed in. Tap someone to open their details. Link people in the matrix (‹ All teams).';
+    // one table, same columns for staff and riders → everything lines up
+    function link(v, kind){ var td = el('td', 'c-' + kind); if (!v) return td; var a = el('a', 'tv-link', v); a.href = (kind === 'tel' ? 'tel:' + v.replace(/[^+\d]/g, '') : 'mailto:' + v); a.addEventListener('click', function(e){ e.stopPropagation(); }); td.appendChild(a); return td; }
+    function row(p, role, roleCls, sub, open){
+      var tr = el('tr'); tr.tabIndex = 0;
+      var td = el('td', 'nm'); td.appendChild(rdAvatar(p, 22)); var sp = el('span', 'tvn'); sp.appendChild(document.createTextNode(p.firstName + ' ' + p.lastName)); sp.appendChild(onlineDot(p));
+      if (sub) sp.appendChild(el('small', null, sub)); td.appendChild(sp); tr.appendChild(td);
+      tr.appendChild(el('td', roleCls, role));
+      tr.appendChild(link(p.phone, 'tel')); tr.appendChild(link(p.email, 'mail'));
+      var cc = el('td');
+      if (p.code){ var cb = el('button', 'codebtn', p.code); cb.type = 'button'; cb.title = 'Copy the login code'; cb.addEventListener('click', function(e){ e.stopPropagation(); copyCode(p.code, cb); }); cc.appendChild(cb); }
+      tr.appendChild(cc);
+      tr.appendChild(el('td', 'ostat ' + (p.phones ? 'on' : 'off'), p.phones ? 'Signed in' : 'Signed out'));
+      tr.addEventListener('click', open); tr.addEventListener('keydown', function(e){ if (e.key === 'Enter') open(); });
+      return tr;
+    }
+    var wrap = el('div', 'rtable-wrap tv-table'), tb = el('table', 'rtable');
+    var cg = el('colgroup'); ['29%', '15%', '14%', '20%', '11%', '11%'].forEach(function(w){ var c = el('col'); c.style.width = w; cg.appendChild(c); }); tb.appendChild(cg);
+    var h = el('tr'); ['Name', 'Role', 'GSM', 'E-mail', 'Login code', 'Status'].forEach(function(x){ h.appendChild(el('th', null, x)); });
+    var thd = el('thead'); thd.appendChild(h); tb.appendChild(thd);
+    var body = el('tbody');
+    function section(title, n){ var tr = el('tr', 'tv-sec'); var td = el('td', null, title + ' · ' + n); td.colSpan = 6; tr.appendChild(td); body.appendChild(tr); }
+    section('Staff', staff.length);
+    if (!staff.length){ var e1 = el('tr', 'tv-empty'), d1 = el('td', null, 'No staff linked to ' + t.name + ' yet.'); d1.colSpan = 6; e1.appendChild(d1); body.appendChild(e1); }
+    staff.forEach(function(x){ body.appendChild(row(x, x.role, 'sf-role', '', function(){ showMainTab('staff'); setTimeout(function(){ editStaff(x); }, 50); })); });
+    section('Riders', riders.length);
+    if (!riders.length){ var e2 = el('tr', 'tv-empty'), d2 = el('td', null, 'No riders in ' + t.name + ' yet.'); d2.colSpan = 6; e2.appendChild(d2); body.appendChild(e2); }
+    riders.forEach(function(r){ body.appendChild(row(r, 'Rider', 'muted', r.nickname ? '“' + r.nickname + '”' : '', function(){ showMainTab('riders'); setTimeout(function(){ editRider(r); }, 50); })); });
+    tb.appendChild(body); wrap.appendChild(tb);
+    $('tvTable').innerHTML = ''; $('tvTable').appendChild(wrap);
+  }
+  $('tvBackTeams').addEventListener('click', function(){ $('tmView').hidden = true; $('tmListBox').hidden = false; renderTeamCards(); });
+  $('tvEdit').addEventListener('click', function(){ if (TV.team){ $('tmView').hidden = true; editTeam(TV.team); } });
 
   function setPermUI(on){
     $('rvPerm').setAttribute('aria-checked', String(on));

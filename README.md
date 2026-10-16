@@ -352,6 +352,28 @@ Phones keep the one-column, week-by-week layout. It switches on rotate/resize.
   Train, Food and Track are hidden. Riders see the staff of their team in Team.
   Keys: `rootahead:staff` (ids start with `s_`). Endpoint `/api/staff`.
 
+- **Rider form** (RA Admin → Riders) is a compact entry form: name, nickname,
+  login code / sex, birth date, height, weight, FTP / home town, notes. No team
+  choice there: riders are linked to teams under **Teams**; a linked team shows
+  as a coloured label next to the name. The rider list uses denser rows.
+
+- **GSM + e-mail** on riders and staff (compact entry forms for both; team
+  labels shown read-only). Staff see their riders' GSM in the app (call button);
+  everybody sees the GSM of their team's staff; riders never see each other's.
+- **Teams = matrix** (RA Admin → Teams): team chips on top (✎ edit, + Add team),
+  then rows = riders (then staff), columns = teams. One tap links; for riders a
+  tap on another team moves them (one team only), a tap on the linked cell
+  unlinks; staff toggle per team (several allowed). Saved at once
+  (`POST /api/teams {action:'assign'|'staffTeam'}`). Sticky header and name
+  column, search, filters Everyone / Riders / Staff / No team yet; built for
+  ~60+ people. The test files contain 54 riders and 10 staff in 4 teams.
+
+- **Team chips** (Teams page): tap the team → one compact table of the team,
+  staff first (in role order: Sport Director, coach, soigneur…), then the
+  riders, with the same aligned columns: Name · Role · GSM · E-mail · Login
+  code · Status; tap a row to open that person's form. ✎ on the chip (or
+  "✎ Edit team") edits name, colour, logo/photo and description.
+
 **Test files**: `root-ahead-test.html` and `ra-admin-test.html` share one test
 database when opened in the same browser: make a rider in RA Admin, then sign
 in with the code in the app. Demo codes: ELS2026, JAN2026, LOTTE26.
