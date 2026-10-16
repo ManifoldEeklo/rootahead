@@ -162,6 +162,9 @@
   .rc-row.kind-training{border-left:4px solid var(--k-training);} .rc-row.kind-event{border-left:4px solid var(--k-event);} .rc-row.kind-race{border-left:4px solid var(--k-race);}
   .rc-replies{display:flex;gap:8px;font-size:12.5px;font-weight:700;}
   .rc-replies .y{color:#7fe08f;} .rc-replies .n{color:#ff8f84;} .rc-replies .o{color:var(--muted);}
+  .live-note{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);margin-top:10px;}
+  .live-note .odot{margin:0;animation:livepulse 2s ease-in-out infinite;}
+  @keyframes livepulse{50%{opacity:.35}}
   .rbadge{flex:0 0 auto;margin-left:auto;font-size:12px;font-weight:700;border-radius:10px;padding:2px 9px;}
   .rbadge.y{background:rgba(62,207,90,.16);color:#7fe08f;} .rbadge.n{background:rgba(229,72,58,.18);color:#ff8f84;} .rbadge.o{background:var(--char-3);color:var(--muted);}
   .rc-month{font-family:'Archivo',sans-serif;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:22px 0 8px;}
@@ -604,6 +607,7 @@
         </div>
       </div>
       <div class="trstatus" id="rcStatus" role="status"></div>
+      <div class="live-note" id="rcLive"><span class="odot on"></span>Replies update automatically</div>
       <div id="rcList"></div>
     </div>
     <div id="rcEditor" hidden>
@@ -630,6 +634,7 @@
           <div class="people members" id="rcRiders"></div>
         </div>
       </div>
+      <label class="check"><input type="checkbox" id="rcNotify" checked> Send a notification to newly invited riders</label>
       <button class="go" type="button" id="rcSave">Save</button>
       <div class="rc-actions">
         <button class="ghost danger" type="button" id="rcCancel" hidden>Cancel this race</button>
@@ -2425,6 +2430,28 @@
     $('rcCount').textContent = n + ' invited' + (c && (c.yes || c.no) ? ' · ✓ ' + c.yes + ' coming · ✗ ' + c.no + ' not · ? ' + c.open : '');
   }
   $('rcSearch').addEventListener('input', renderRacePick);
+  // replies come in by themselves while the Calendar is open (list + an open item), every 15 s
+  function refreshReplies(){
+    if ($('app').hidden || $('paneRaces').hidden || document.visibilityState !== 'visible') return;
+    api('/api/races').then(function(res){
+      if (!res.ok) return;
+      RC.list = res.data.races || [];
+      if (!$('rcListBox').hidden) renderRaces();
+      else if (RC.edit && RC.edit.id){
+        var fresh = RC.list.filter(function(x){ return x.id === RC.edit.id; })[0];
+        if (!fresh) return;
+        // only the answers change; what you are editing stays as it is
+        Object.keys(fresh.entries || {}).forEach(function(id){
+          var e = RC.edit.entries[id] = RC.edit.entries[id] || JSON.parse(JSON.stringify(fresh.entries[id]));
+          e.reply = fresh.entries[id].reply; e.replyAt = fresh.entries[id].replyAt;
+        });
+        var keepScroll = $('rcRiders').scrollTop; renderRacePick(); $('rcRiders').scrollTop = keepScroll;
+      }
+      $('rcLive').title = 'Last update ' + new Date().toLocaleTimeString();
+    }).catch(function(){});
+  }
+  setInterval(refreshReplies, 15000);
+  document.addEventListener('visibilitychange', refreshReplies);
   ['race','training','event'].forEach(function(k){ $('rcAdd_' + k).addEventListener('click', function(){ editRace(null, k); }); });
   $('rcBack').addEventListener('click', function(){ $('rcEditor').hidden = true; $('rcListBox').hidden = false; renderRaces(); });
   $('rcSave').addEventListener('click', function(){
@@ -2433,12 +2460,14 @@
                  location: $('rcWhere').value.trim(), distanceKm: k === 'event' ? '' : $('rcDist').value, notes: $('rcNotes').value.trim() };
     if (!race.date || !race.name){ trMsg('rcResult', 'Give it a date and a name.', true); return; }
     var btn = this; btn.disabled = true; trMsg('rcResult', 'Saving…');
-    api('/api/races', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ race: race, riderIds: Object.keys(RC.pick) }) }).then(function(res){
+    api('/api/races', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ race: race, riderIds: Object.keys(RC.pick), notify: $('rcNotify').checked }) }).then(function(res){
       btn.disabled = false;
       if (!res.ok){ trMsg('rcResult', (res.data && res.data.error) || 'Could not save.', true); return; }
       var wasNew = !RC.edit.id; RC.edit = res.data.race; $('rcTitle').textContent = RC.edit.name; $('rcSave').textContent = 'Save'; $('rcCancel').hidden = !!RC.edit.cancelled;
       var n = selectedIds(RC.edit).length;
-      trMsg('rcResult', (wasNew ? KIND[k].One + ' added' : 'Saved') + ': ' + n + ' rider' + (n === 1 ? '' : 's') + ' invited. They see it in their calendar and confirm whether they come.');
+      var nw = res.data.newlyInvited || 0, sent = res.data.notified || 0;
+      trMsg('rcResult', (wasNew ? KIND[k].One + ' added' : 'Saved') + ': ' + n + ' rider' + (n === 1 ? '' : 's') + ' invited.' +
+        (nw ? ' ' + nw + ' newly invited' + ($('rcNotify').checked ? (res.data.pushReady === false ? ' (notifications are not set up on the server).' : ': ' + sent + ' got a notification' + (sent < nw ? ', the others have notifications off and see it in their calendar.' : '.')) : ' (no notification sent).') : ''));
       api('/api/races').then(function(r2){ if (r2.ok) RC.list = r2.data.races || []; renderRacePick(); });
     }).catch(function(){ btn.disabled = false; trMsg('rcResult', 'No connection. Not saved.', true); });
   });

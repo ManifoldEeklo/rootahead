@@ -332,6 +332,16 @@ Phones keep the one-column, week-by-week layout. It switches on rotate/resize.
   the dashboard strip "Your calendar" with ✓/✗ right on each line. Replies:
   `POST /api/races { reply, id, rider }` (only while selected and not cancelled).
 
+- **Invitations send a push** to riders who are newly invited (or invited
+  again after being taken off) for a race, training or event, if the item is
+  today or later; "Send a notification to newly invited riders" in the form
+  (on by default). Tapping it opens the calendar; an open app refreshes it.
+  Re-inviting clears the old answer, so the rider confirms again.
+- **Rider start screen** shows only items that still need an answer plus what
+  happens in the next 7 days; everything else is under Calendar.
+- **RA Admin → Calendar refreshes the answers every 15 s** (list and an open
+  item, without touching what you are editing).
+
 **Test files**: `root-ahead-test.html` and `ra-admin-test.html` share one test
 database when opened in the same browser: make a rider in RA Admin, then sign
 in with the code in the app. Demo codes: ELS2026, JAN2026, LOTTE26.

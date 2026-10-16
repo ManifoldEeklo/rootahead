@@ -5435,9 +5435,11 @@
     var bd = document.getElementById('raceBadge'); bd.hidden = !ask.length; bd.textContent = ask.length;
     var strip = document.getElementById('raceStrip'), items = document.getElementById('rsItems');
     items.innerHTML = '';
-    strip.hidden = !up.length;
-    var show = ask.concat(up.filter(function(r){ return !needsReply(r); })).slice(0, 4);
+    // the start screen shows only what needs an answer + what happens in the coming 7 days
+    var in7 = rIso(new Date(Date.now() + 7 * 86400000));
+    var show = ask.concat(up.filter(function(r){ return !needsReply(r) && r.date <= in7; }));
     show.sort(function(a, b){ return (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')); });
+    strip.hidden = !show.length;
     show.forEach(function(rc){
       var st = raceStatus(rc), k = calKind(rc), b = document.createElement('div'); b.className = 'rs-item ' + st + ' k-' + k; b.tabIndex = 0; b.setAttribute('role', 'button');
       var d = document.createElement('span'); d.className = 'd'; d.textContent = rDate(rc.date).toLocaleDateString([], { day:'2-digit', month:'2-digit' });
@@ -5449,7 +5451,7 @@
       b.addEventListener('keydown', function(e){ if (e.key === 'Enter') openRace(rc); });
       items.appendChild(b);
     });
-    document.getElementById('rsHeadTxt').textContent = ask.length ? 'Your calendar · ' + ask.length + ' to confirm' : 'Your calendar';
+    document.getElementById('rsHeadTxt').textContent = ask.length ? 'To confirm: ' + ask.length + (show.length > ask.length ? ' · next 7 days' : '') : 'Next 7 days';
     if (!document.getElementById('raceView').classList.contains('hidden')) renderRaceView();
   }
   function raceCard(rc, past){
@@ -6017,6 +6019,7 @@
       var m = e.data || {};
       if (m.type !== 'rootahead-push') return;
       if (m.tag === 'rootahead-plan'){ loadTrain({ force:true }); return; }       // plan changed by the coach
+      if (String(m.tag || '').indexOf('rootahead-cal-') === 0){ loadRaces(); showDashToast(m.title + (m.body ? ': ' + m.body : ''), 6000); return; }   // invited
       if (m.body) showDashToast((m.title && m.title !== 'ROOT Ahead' ? m.title + ': ' : '') + m.body, 6000);  // team message while the app is open
     });
   }
