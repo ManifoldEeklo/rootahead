@@ -40,7 +40,7 @@
   .lock-card h1{font-size:26px;font-weight:800;margin-bottom:4px;}
   .lock-card p{margin:0 0 18px;}
   .field{display:block;margin:14px 0 6px;font-size:14px;font-weight:600;}
-  input[type=password],input[type=text],input[type=search],input[type=number],input[type=time],textarea,select{
+  input[type=password],input[type=text],input[type=search],input[type=number],input[type=time],input[type=tel],input[type=email],textarea,select{
     width:100%;background:var(--char-2);border:1px solid var(--char-3);border-radius:10px;padding:12px 13px;font-size:16px;}
   textarea{resize:vertical;min-height:96px;}
   input:focus,textarea:focus,select:focus{outline:none;border-color:var(--yellow);}
@@ -146,6 +146,7 @@
   .linkbtn{background:none;border:none;color:var(--muted);font:inherit;font-size:12px;font-weight:400;text-decoration:underline;cursor:pointer;padding:0;margin-left:6px;}
   .rd-grid label > .linkbtn{display:inline;}
   .maintabs button{font-size:15px;padding:12px 2px;}
+  @media (max-width:520px){ .maintabs{overflow-x:auto;scrollbar-width:none;} .maintabs::-webkit-scrollbar{display:none;} .maintabs button{flex:0 0 auto;padding:12px 10px;font-size:14px;} }
   .rcseg{flex:0 1 300px;grid-template-columns:repeat(3,1fr);}
   :root{--k-race:#fbc120;--k-training:#3fbf6a;--k-event:#a57bf0;}
   .rc-add{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;max-width:560px;}
@@ -207,6 +208,14 @@
   .ostat{font-size:13px;white-space:nowrap;} .ostat.on{color:#7fe08f;} .ostat.off{color:#ff8f84;}
   .rmain .ostat{display:block;margin-top:2px;}
   .online-sum{margin:12px 0 0;font-size:14px;} .online-sum .odot{margin:0 8px 0 0;} .online-sum small{color:var(--muted);}
+  .sf-role{font-weight:600;color:var(--yellow);}
+  .sf-teams{display:flex;flex-wrap:wrap;gap:5px;margin-top:3px;}
+  .sf-team{border:1px solid;border-radius:10px;padding:0 8px;font-size:12px;font-weight:600;}
+  .sf-team.none{border-color:var(--char-3);color:var(--muted);}
+  .teamtogs{display:flex;flex-wrap:wrap;gap:8px;}
+  .teamtog{border:2px solid var(--char-3);background:var(--char-2);color:var(--grey);border-radius:20px;padding:8px 14px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;}
+  .teamtog[aria-pressed="true"]{border-color:var(--tc);background:var(--tc);color:#141414;}
+  .teamtog[aria-pressed="true"]::before{content:'✓ ';}
   .codebtn{font-family:'IBM Plex Mono',monospace;font-size:14px;letter-spacing:.12em;background:var(--char-2);border:1px dashed var(--yellow);color:var(--yellow);
     border-radius:8px;padding:6px 10px;cursor:pointer;flex:0 0 auto;}
   .rd-layout{display:grid;grid-template-columns:1fr;gap:16px;margin-top:12px;}
@@ -483,6 +492,7 @@
   <nav class="maintabs" role="tablist" aria-label="Sections">
     <button type="button" role="tab" data-tab="riders" aria-selected="true">Riders</button>
     <button type="button" role="tab" data-tab="teams" aria-selected="false">Teams</button>
+    <button type="button" role="tab" data-tab="staff" aria-selected="false">Staff</button>
     <button type="button" role="tab" data-tab="races" aria-selected="false">Calendar</button>
     <button type="button" role="tab" data-tab="messages" aria-selected="false">Messages</button>
     <button type="button" role="tab" data-tab="training" aria-selected="false">Training</button>
@@ -585,6 +595,50 @@
           <button class="go" type="button" id="tmSave">Save team</button>
           <button class="ghost wide danger" type="button" id="tmDelete" hidden>Delete team</button>
           <div class="result" id="tmResult" role="status"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAFF: sport director, coach, soigneur, mechanic… (own login, see their team) -->
+  <div id="paneStaff" hidden>
+    <div id="sfListBox">
+      <div class="rdtools"><button class="go" type="button" id="sfAdd">+ Add staff</button></div>
+      <div class="trstatus" id="sfStatus" role="status"></div>
+      <div class="online-sum" id="sfOnline"></div>
+      <div id="sfList"></div>
+    </div>
+    <div id="sfEditor" hidden>
+      <button class="ghost" type="button" id="sfBack">‹ All staff</button>
+      <div class="rd-layout">
+        <div class="rd-photo-col">
+          <div class="rd-photo" id="sfPhoto">+</div>
+          <label class="ghost photo-pick">Choose photo<input type="file" id="sfPhotoInput" accept="image/*"></label>
+          <button class="ghost" type="button" id="sfPhotoRemove" hidden>Remove photo</button>
+        </div>
+        <div class="rd-form">
+          <h2 id="sfTitle" class="rv-name">New staff member</h2>
+          <div class="rd-grid">
+            <label>First name<input type="text" id="sfFirst" maxlength="40" autocomplete="off"></label>
+            <label>Last name<input type="text" id="sfLast" maxlength="40" autocomplete="off"></label>
+            <label>Role<select id="sfRole"></select></label>
+            <label>Phone<input type="tel" id="sfPhone" maxlength="30" autocomplete="off"></label>
+            <label class="span2">E-mail<input type="email" id="sfEmail" maxlength="80" autocomplete="off"></label>
+          </div>
+          <label class="field">Works for <small class="opt">they see the calendar and riders of these teams</small></label>
+          <div class="teamtogs" id="sfTeamPick"></div>
+          <label class="field" for="sfNotes">Notes (only you see these)</label>
+          <textarea id="sfNotes" maxlength="300"></textarea>
+          <div class="codebox">
+            <label class="field" for="sfCode">Login code</label>
+            <div class="coderow"><input type="text" id="sfCode" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false">
+              <button class="ghost" type="button" id="sfNewCode">New code</button><button class="ghost" type="button" id="sfCopyCode">Copy</button></div>
+            <button class="ghost wide danger" type="button" id="sfResetCode" hidden>Reset code and sign out on every phone</button>
+            <p class="rv-info" id="sfInfo"></p>
+          </div>
+          <button class="go" type="button" id="sfSave">Save</button>
+          <button class="ghost wide danger" type="button" id="sfDelete" hidden>Delete staff member</button>
+          <div class="result" id="sfResult" role="status"></div>
         </div>
       </div>
     </div>
@@ -954,7 +1008,7 @@
 
   /* ---- lock / unlock (password remembered on this phone, like Blendroom) ---- */
   function showApp(){ $('lock').hidden = true; $('app').hidden = false; loadAll();
-    var start = ['#training','#messages','#teams','#races'].indexOf(location.hash) !== -1 ? location.hash.slice(1) : 'riders';
+    var start = ['#training','#messages','#teams','#races','#staff'].indexOf(location.hash) !== -1 ? location.hash.slice(1) : 'riders';
     setTimeout(function(){ showMainTab(start); }, 0); }
   function showLock(msg){ $('app').hidden = true; $('lock').hidden = false; $('lockErr').textContent = msg || ''; $('pw').value = ''; }
   $('lockForm').addEventListener('submit', function(e){
@@ -1308,11 +1362,12 @@
   // ---------- main tabs: Messages | Training ----------
   function showMainTab(name){
     Array.prototype.forEach.call(document.querySelectorAll('.maintabs button'), function(b){ b.setAttribute('aria-selected', String(b.dataset.tab === name)); });
-    $('paneMessages').hidden = name !== 'messages'; $('paneTraining').hidden = name !== 'training'; $('paneRiders').hidden = name !== 'riders'; $('paneTeams').hidden = name !== 'teams'; $('paneRaces').hidden = name !== 'races';
+    $('paneMessages').hidden = name !== 'messages'; $('paneTraining').hidden = name !== 'training'; $('paneRiders').hidden = name !== 'riders'; $('paneTeams').hidden = name !== 'teams'; $('paneRaces').hidden = name !== 'races'; $('paneStaff').hidden = name !== 'staff';
     try{ history.replaceState(null, '', '#' + name); }catch(e){}
     if (name === 'training') loadTraining();
     if (name === 'riders') loadTeams().then(loadRiders);
     if (name === 'races'){ $('rcEditor').hidden = true; $('rcListBox').hidden = false; loadRaces(); }
+    if (name === 'staff'){ $('sfEditor').hidden = true; $('sfListBox').hidden = false; loadStaff(); }
     if (name === 'teams'){ $('tmEditor').hidden = true; $('tmListBox').hidden = false; Promise.all([loadTeams(), loadRiders()]).then(renderTeamCards); }
   }
   Array.prototype.forEach.call(document.querySelectorAll('.maintabs button'), function(b){ b.addEventListener('click', function(){ showMainTab(b.dataset.tab); }); });
@@ -1819,6 +1874,7 @@
     document.body.classList.toggle('wide', isWide());
     // redraw whatever is on screen in the right format
     if ($('paneRiders') && !$('paneRiders').hidden && !$('rdListBox').hidden) renderRiderSetup();
+    if ($('paneStaff') && !$('paneStaff').hidden && !$('sfListBox').hidden && typeof renderStaff === 'function') renderStaff();
     if ($('paneTraining') && !$('paneTraining').hidden){
       if (TR.sub === 'riders'){ if (!$('riderView').hidden && TR.plan) renderRiderWeek(); else if ($('riderView').hidden) renderRiders(); }
       if (TR.sub === 'build' && TR.build && !$('bdEdit').hidden) renderBuildWeek();
@@ -2550,6 +2606,151 @@
     });
     btns.appendChild(cp); btns.appendChild(pr); wrap.appendChild(btns); box.appendChild(wrap);
   }
+
+
+  /* ======================= STAFF (sport director, coach, soigneur, mechanic…) ======================= */
+  var SF = { list: [], roles: ['Sport Director','Team coach','Soigneur','Mechanic','Physio','Team manager','Doctor','Press officer','Other'], edit: null, photo: undefined, teams: {} };
+  function loadStaff(){
+    trMsg('sfStatus', 'Loading…');
+    return Promise.all([api('/api/staff'), loadTeams()]).then(function(r){
+      var res = r[0];
+      if (res.status === 401){ try{ localStorage.removeItem(KEY_STORE); }catch(x){} showLock('Unlock again.'); return; }
+      if (!res.ok){ trMsg('sfStatus', (res.data && res.data.error) || 'Could not load staff.', true); return; }
+      SF.list = res.data.staff || []; if (res.data.roles) SF.roles = res.data.roles;
+      trMsg('sfStatus', SF.list.length ? '' : 'No staff yet. Add a sport director, coach, soigneur, mechanic…: they sign in to the app with their own code and see the calendar and riders of their team.');
+      renderStaff();
+    }).catch(function(){ trMsg('sfStatus', 'No connection.', true); });
+  }
+  function teamChipsFor(ids){
+    var w = el('span', 'sf-teams');
+    (ids || []).forEach(function(id){ var t = teamById(id); if (!t) return; var c = el('span', 'sf-team', t.name); c.style.borderColor = t.color; c.style.color = t.color; w.appendChild(c); });
+    if (!w.children.length) w.appendChild(el('span', 'sf-team none', 'No team'));
+    return w;
+  }
+  function renderStaff(){
+    var box = $('sfList'); box.innerHTML = '';
+    var on = SF.list.filter(function(x){ return x.phones; }).length;
+    $('sfOnline').innerHTML = SF.list.length ? '<span class="odot on"></span>' + on + ' of ' + SF.list.length + ' staff signed in' : '';
+    if (!SF.list.length) return;
+    if (isWide()){
+      var wrap = el('div', 'rtable-wrap'), t = el('table', 'rtable'), h = el('tr');
+      ['', 'Name', 'Role', 'Team(s)', 'Phone', 'Login code', 'Status'].forEach(function(x){ h.appendChild(el('th', null, x)); });
+      var th = el('thead'); th.appendChild(h); t.appendChild(th);
+      var tb = el('tbody');
+      SF.list.forEach(function(x){
+        var tr = el('tr'); tr.tabIndex = 0;
+        var c0 = el('td'); c0.appendChild(rdAvatar(x, 34)); tr.appendChild(c0);
+        var nm = el('td', 'nm', x.firstName + ' ' + x.lastName); nm.appendChild(onlineDot(x)); tr.appendChild(nm);
+        tr.appendChild(el('td', 'sf-role', x.role));
+        var tc = el('td'); tc.appendChild(teamChipsFor(x.teamIds)); tr.appendChild(tc);
+        tr.appendChild(el('td', 'refl', x.phone || '—'));
+        var cc = el('td'), cb = el('button', 'codebtn', x.code); cb.type = 'button'; cb.title = 'Copy the login code';
+        cb.addEventListener('click', function(e){ e.stopPropagation(); copyCode(x.code, cb); }); cc.appendChild(cb); tr.appendChild(cc);
+        tr.appendChild(el('td', 'ostat ' + (x.phones ? 'on' : 'off'), onlineText(x)));
+        tr.addEventListener('click', function(){ editStaff(x); });
+        tr.addEventListener('keydown', function(e){ if (e.key === 'Enter') editStaff(x); });
+        tb.appendChild(tr);
+      });
+      t.appendChild(tb); wrap.appendChild(t); box.appendChild(wrap);
+      return;
+    }
+    var ul = el('ul', 'rlist');
+    SF.list.forEach(function(x){
+      var li = el('li', 'rrow'); li.tabIndex = 0;
+      li.appendChild(rdAvatar(x, 44));
+      var main = el('div', 'rmain'), nb = el('b', null, x.firstName + ' ' + x.lastName); nb.appendChild(onlineDot(x)); main.appendChild(nb);
+      main.appendChild(el('span', 'rsub', x.role));
+      main.appendChild(teamChipsFor(x.teamIds));
+      li.appendChild(main);
+      var cb = el('button', 'codebtn', x.code); cb.type = 'button';
+      cb.addEventListener('click', function(e){ e.stopPropagation(); copyCode(x.code, cb); });
+      li.appendChild(cb);
+      li.addEventListener('click', function(){ editStaff(x); });
+      ul.appendChild(li);
+    });
+    box.appendChild(ul);
+  }
+  function editStaff(x){
+    SF.edit = x ? JSON.parse(JSON.stringify(x)) : { firstName:'', lastName:'', role:'Sport Director', teamIds:[], phone:'', email:'', notes:'', code:'' };
+    SF.photo = undefined;
+    SF.teams = {}; (SF.edit.teamIds || []).forEach(function(id){ SF.teams[id] = true; });
+    $('sfListBox').hidden = true; $('sfEditor').hidden = false;
+    $('sfTitle').textContent = x ? x.firstName + ' ' + x.lastName : 'New staff member';
+    $('sfFirst').value = SF.edit.firstName; $('sfLast').value = SF.edit.lastName;
+    var rs = $('sfRole'); rs.innerHTML = ''; SF.roles.forEach(function(r){ var o = el('option', null, r); o.value = r; rs.appendChild(o); }); rs.value = SF.edit.role || 'Other';
+    $('sfPhone').value = SF.edit.phone || ''; $('sfEmail').value = SF.edit.email || ''; $('sfNotes').value = SF.edit.notes || '';
+    $('sfCode').value = SF.edit.code || newLocalCode();
+    $('sfDelete').hidden = !x; $('sfResetCode').hidden = !x;
+    $('sfInfo').textContent = x ? (x.phones ? onlineText(x) + '.' : (x.lastLoginAt ? 'Last signed in ' + new Date(x.lastLoginAt).toLocaleString() + '.' : 'Has not signed in yet.')) : 'They sign in to the ROOT Ahead app with this code.';
+    paintSfPhoto(SF.edit.photoUrl || ''); renderSfTeams(); trMsg('sfResult', '');
+    window.scrollTo(0, 0);
+  }
+  function renderSfTeams(){
+    var box = $('sfTeamPick'); box.innerHTML = '';
+    if (!TM.list.length){ box.appendChild(el('span', 'empty-note', 'No teams yet: make teams under Teams first.')); return; }
+    TM.list.forEach(function(t){
+      var b = el('button', 'teamtog', t.name); b.type = 'button'; b.style.setProperty('--tc', t.color);
+      b.setAttribute('aria-pressed', String(!!SF.teams[t.id]));
+      b.addEventListener('click', function(){ if (SF.teams[t.id]) delete SF.teams[t.id]; else SF.teams[t.id] = true; renderSfTeams(); });
+      box.appendChild(b);
+    });
+  }
+  function paintSfPhoto(url){
+    var p = $('sfPhoto'); p.style.backgroundImage = url ? 'url("' + url + '")' : '';
+    p.textContent = url ? '' : (((($('sfFirst').value || '')[0] || '') + (($('sfLast').value || '')[0] || '')).toUpperCase() || '+');
+    $('sfPhotoRemove').hidden = !url;
+  }
+  ['sfFirst','sfLast'].forEach(function(id){ $(id).addEventListener('input', function(){ if (!SF.photo && !SF.edit.photoUrl) paintSfPhoto(''); }); });
+  $('sfPhotoInput').addEventListener('change', function(){
+    var f = this.files && this.files[0]; this.value = '';
+    if (!f || !/^image\//.test(f.type)) return;
+    var rd = new FileReader();
+    rd.onload = function(){ var img = new Image(); img.onload = function(){
+      var k = Math.min(1, 640 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      SF.photo = c.toDataURL('image/jpeg', 0.82); paintSfPhoto(SF.photo); trMsg('sfResult', 'Photo ready: tap Save to keep it.');
+    }; img.src = rd.result; };
+    rd.readAsDataURL(f);
+  });
+  $('sfPhotoRemove').addEventListener('click', function(){ SF.photo = null; SF.edit.photoUrl = ''; paintSfPhoto(''); });
+  $('sfNewCode').addEventListener('click', function(){ $('sfCode').value = newLocalCode(); });
+  $('sfCopyCode').addEventListener('click', function(){ copyCode($('sfCode').value.trim().toUpperCase(), this); });
+  $('sfCode').addEventListener('input', function(){ var v = this.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); if (v !== this.value) this.value = v; });
+  $('sfAdd').addEventListener('click', function(){ loadTeams().then(function(){ editStaff(null); }); });
+  $('sfBack').addEventListener('click', function(){ $('sfEditor').hidden = true; $('sfListBox').hidden = false; loadStaff(); });
+  $('sfSave').addEventListener('click', async function(){
+    var st = { id: SF.edit.id, firstName: $('sfFirst').value.trim(), lastName: $('sfLast').value.trim(), role: $('sfRole').value,
+               teamIds: Object.keys(SF.teams), phone: $('sfPhone').value.trim(), email: $('sfEmail').value.trim(), notes: $('sfNotes').value.trim(), code: $('sfCode').value.trim() };
+    if (!st.firstName || !st.lastName){ trMsg('sfResult', 'First and last name are required.', true); return; }
+    if (st.code.length < 4){ trMsg('sfResult', 'The login code needs at least 4 letters or digits.', true); return; }
+    var changed = SF.edit.id && SF.edit.code && st.code.toUpperCase() !== SF.edit.code;
+    if (changed && !(await uiConfirm(st.firstName + ' is signed out on every phone and signs in again with the new code.', { title:'Change the login code?', ok:'Change code', cancel:'Keep old code', danger:true }))){ $('sfCode').value = SF.edit.code; return; }
+    var body = { staff: st }; if (SF.photo !== undefined) body.photo = SF.photo;
+    var btn = this; btn.disabled = true; trMsg('sfResult', 'Saving…');
+    api('/api/staff', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) }).then(function(res){
+      btn.disabled = false;
+      if (!res.ok){ trMsg('sfResult', (res.data && res.data.error) || 'Could not save.', true); return; }
+      SF.edit = res.data.staff; SF.photo = undefined; $('sfTitle').textContent = SF.edit.firstName + ' ' + SF.edit.lastName; $('sfDelete').hidden = false; $('sfResetCode').hidden = false;
+      paintSfPhoto(SF.edit.photoUrl || '');
+      trMsg('sfResult', (changed ? 'New login code: ' : 'Saved. Login code: ') + SF.edit.code + '. ' + SF.edit.firstName + ' signs in to the ROOT Ahead app with it and sees the calendar and riders of ' +
+        (SF.edit.teamIds.length ? SF.edit.teamIds.map(function(id){ var t = teamById(id); return t ? t.name : ''; }).filter(Boolean).join(', ') : 'no team yet (pick a team)') + '.');
+    }).catch(function(){ btn.disabled = false; trMsg('sfResult', 'No connection. Not saved.', true); });
+  });
+  $('sfResetCode').addEventListener('click', async function(){
+    if (!(await uiConfirm(SF.edit.firstName + ' is signed out on every phone and signs in again with the new code.', { title:'Reset ' + SF.edit.firstName + '’s code?', ok:'Reset code', cancel:'Keep code', danger:true }))) return;
+    api('/api/staff', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ action:'resetCode', id: SF.edit.id }) }).then(function(res){
+      if (!res.ok){ trMsg('sfResult', (res.data && res.data.error) || 'Could not reset.', true); return; }
+      SF.edit.code = res.data.staff.code; $('sfCode').value = SF.edit.code;
+      trMsg('sfResult', 'New login code: ' + SF.edit.code + '. ' + SF.edit.firstName + ' is signed out everywhere.');
+    });
+  });
+  $('sfDelete').addEventListener('click', async function(){
+    if (!(await uiConfirm('They can no longer sign in.', { title:'Delete ' + SF.edit.firstName + ' ' + SF.edit.lastName + '?', ok:'Delete', cancel:'Keep', danger:true }))) return;
+    api('/api/staff', { method:'DELETE', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ id: SF.edit.id }) }).then(function(res){
+      if (!res.ok){ trMsg('sfResult', (res.data && res.data.error) || 'Could not delete.', true); return; }
+      $('sfEditor').hidden = true; $('sfListBox').hidden = false; loadStaff();
+    });
+  });
 
   function setPermUI(on){
     $('rvPerm').setAttribute('aria-checked', String(on));

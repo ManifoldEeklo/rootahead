@@ -410,6 +410,8 @@
   .rs-item.removed,.rs-item.cancelled{background:rgba(224,59,44,.12);border-radius:8px;}
   .rs-item.removed .d,.rs-item.cancelled .d{color:#ff7a6b;}
   .pill{flex:0 0 auto;border-radius:11px;padding:2px 9px;font-size:11.5px;font-weight:700;letter-spacing:.03em;white-space:nowrap;}
+  .pill.staffp{background:var(--panel-alt);color:var(--text);border:1px solid var(--line);}
+  .lu.myteam{box-shadow:0 0 0 1px var(--tc) inset;}
   .pill.going{background:rgba(63,191,106,.2);color:#8be3a4;border:1px solid rgba(139,227,164,.5);}
   .pill.notgoing{background:rgba(160,160,160,.16);color:#cfc9bd;border:1px solid #777;}
   .pill.ask{background:rgba(217,181,86,.2);color:var(--gold);border:1px solid var(--gold);}
@@ -490,6 +492,12 @@
   .lu .lr.yes{background:#3fbf6a;color:#06210f;} .lu .lr.no{background:#e03b2c;color:#fff;} .lu .lr.open{background:var(--line);color:var(--text-muted);}
   .rm-close{display:block;margin:0 auto 18px;}
   /* ---------- TEAM (overview of all riders) ---------- */
+  /* staff: only Calendar + Team */
+  body.staff-mode .dash-tile[data-view="train"],body.staff-mode .dash-tile[data-view="food"],body.staff-mode .dash-tile[data-view="track"]{display:none;}
+  body.staff-mode .dash-tile.team-tile{grid-column:auto;aspect-ratio:1/1;flex-direction:column;align-items:flex-start;justify-content:flex-end;}
+  body.staff-mode .dash-tile.team-tile .icon{position:absolute;top:16px;left:16px;width:40px;height:40px;}
+  body.staff-mode .dash-tile.team-tile .s{margin:0;text-align:left;max-width:none;}
+  @media (min-width:760px){ body.staff-mode .dash-grid{grid-template-columns:repeat(2,minmax(0,260px));justify-content:start;} }
   .dash-foot{max-width:960px;width:calc(100% - 44px);margin:2px auto 30px;display:flex;justify-content:center;}
   .dash-logout{background:none;border:1px solid var(--line);color:var(--text-muted);border-radius:22px;padding:10px 22px;font:inherit;font-size:14px;cursor:pointer;}
   .dash-logout:hover{border-color:#e03b2c;color:#ff9c90;}
@@ -520,6 +528,11 @@
   .tm-head h2{margin:0;font-family:'Fjalla One',sans-serif;font-weight:400;font-size:24px;letter-spacing:.04em;line-height:1.1;}
   .tm-head .cnt{font-size:12.5px;color:var(--text-muted);}
   .tm-head p{margin:3px 0 0;font-size:13px;color:var(--text-muted);}
+  .tm-staff{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  .tm-st{display:flex;align-items:center;gap:10px;padding:7px 12px 7px 7px;border-radius:24px;background:var(--panel);border:1px solid var(--line);}
+  .tm-st .ph{width:34px;height:34px;border-radius:50%;background:var(--tc) center/cover no-repeat;display:flex;align-items:center;justify-content:center;
+    font-family:'Fjalla One',sans-serif;color:#141414;font-size:13px;flex:0 0 auto;}
+  .tm-st b{display:block;font-size:13.5px;line-height:1.2;} .tm-st i{display:block;font-size:12px;color:var(--gold);font-style:normal;}
   .tm-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px;}
   @media (min-width:600px){ .tm-cards{grid-template-columns:repeat(3,minmax(0,1fr));} }
   @media (min-width:900px){ .tm-cards{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px;} }
@@ -1999,6 +2012,7 @@
     try{ localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); return true; }
     catch(e){ return false; }
   }
+  function isStaff(){ var p = loadProfile(); return !!(p && p.kind === 'staff'); }
   function initials(p){ return ((p.firstName || '')[0] || '') + ((p.lastName || '')[0] || ''); }
   function paintPhoto(el, p){
     el.textContent = ''; el.style.backgroundImage = '';
@@ -2007,12 +2021,13 @@
   }
   function renderProfile(){
     var p = loadProfile();
+    document.body.classList.toggle('staff-mode', !!(p && p.kind === 'staff'));
     document.getElementById('dashUser').style.visibility = p ? 'visible' : 'hidden';
     document.getElementById('dashUserName').textContent = p ? (p.firstName + ' ' + p.lastName) : '';
-    document.getElementById('dashUserNick').textContent = p && p.nickname ? '“' + p.nickname + '”' : '';
+    document.getElementById('dashUserNick').textContent = p && p.kind === 'staff' ? p.role : p && p.nickname ? '“' + p.nickname + '”' : '';
     var dt = document.getElementById('dashUserTeam'); dt.textContent = p ? (p.team || '') : ''; dt.style.color = p && p.teamColor ? p.teamColor : '';
     paintPhoto(document.getElementById('dashPhoto'), p);
-    document.getElementById('dashGreet').textContent = p ? ('Hi ' + p.firstName + ', what are we doing today?') : '';
+    document.getElementById('dashGreet').textContent = !p ? '' : p.kind === 'staff' ? 'Hi ' + p.firstName + ', here is what’s on for ' + (p.team || 'your team') + '.' : 'Hi ' + p.firstName + ', what are we doing today?';
   }
   // ---- sign in with the login code ----
   function openRegistration(isSwitch){
@@ -2060,6 +2075,14 @@
     document.getElementById('profName').textContent = p.firstName + ' ' + p.lastName;
     var pt = document.getElementById('profTeam'); pt.textContent = p.team || 'No team yet'; pt.style.color = p.teamColor || '';
     var tl = document.getElementById('profTeamLogo'); tl.hidden = !p.teamLogoUrl; if (p.teamLogoUrl) tl.style.backgroundImage = 'url("' + p.teamLogoUrl + '")';
+    if (p.kind === 'staff'){
+      var srows = [['Role', p.role || '—'], ['Team(s)', p.team || '—'], ['Phone', p.phone || '—'], ['E-mail', p.email || '—']];
+      var sdl = document.getElementById('profList'); sdl.innerHTML = '';
+      srows.forEach(function(r){ var dt = document.createElement('dt'), dd = document.createElement('dd'); dt.textContent = r[0]; dd.textContent = r[1]; sdl.appendChild(dt); sdl.appendChild(dd); });
+      document.getElementById('profChange').hidden = true;
+      return;
+    }
+    document.getElementById('profChange').hidden = false;
     var rows = [['Nickname', p.nickname ? '“' + p.nickname + '”' : '—'], ['Home town', p.homeTown || '—'], ['Sex', { F:'Female', M:'Male', X:'Other' }[p.sex] || '—'],
                 ['Date of birth', p.birthDate ? new Date(p.birthDate + 'T12:00:00').toLocaleDateString() + ' (' + ageFrom(p.birthDate) + ')' : '—'],
                 ['Height', p.heightCm ? p.heightCm + ' cm' : '—'], ['Weight', p.weightKg ? p.weightKg + ' kg' : '—'],
@@ -2139,7 +2162,9 @@
     // the map was laid out while covered — let Leaflet re-measure it
     setTimeout(function(){ if (typeof map !== 'undefined' && map) map.invalidateSize(); }, 60);
   }
-  function applyHashView(){ if (location.hash === '#track') showTrack(); else if (location.hash === '#train') showTrain(); else if (location.hash === '#team') showTeam(); else if (location.hash === '#race' || location.hash === '#calendar') showRace(); else showDashboard(); }
+  function applyHashView(){
+    if (isStaff() && (location.hash === '#track' || location.hash === '#train')){ history.replaceState(null, '', location.pathname + location.search); showDashboard(); return; }
+    if (location.hash === '#track') showTrack(); else if (location.hash === '#train') showTrain(); else if (location.hash === '#team') showTeam(); else if (location.hash === '#race' || location.hash === '#calendar') showRace(); else showDashboard(); }
   window.addEventListener('hashchange', applyHashView);
 
   function showDashToast(msg, ms){
@@ -5380,10 +5405,11 @@
   function rIso(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   function rDate(s){ return new Date(s + 'T12:00:00'); }
   function calKind(rc){ return CAL_KIND[rc.kind] ? rc.kind : 'race'; }
-  function raceStatus(rc){ return rc.cancelled ? 'cancelled' : rc.myStatus === 'removed' ? 'removed' : 'selected'; }
+  function raceStatus(rc){ return rc.cancelled ? 'cancelled' : rc.myStatus === 'staff' ? 'staff' : rc.myStatus === 'removed' ? 'removed' : 'selected'; }
+  function teamReplies(rc){ var y = 0, n = 0, o = 0; (rc.lineup || []).forEach(function(r){ if (r.reply === 'yes') y++; else if (r.reply === 'no') n++; else o++; }); return '✓ ' + y + ' · ✗ ' + n + ' · ? ' + o; }
   function needsReply(rc){ return raceStatus(rc) === 'selected' && !rc.myReply && rc.date >= rIso(new Date()); }
-  function statusText(rc){ var st = raceStatus(rc); return st === 'cancelled' ? 'CANCELLED' : st === 'removed' ? '✕ NO LONGER SELECTED' : rc.myReply === 'yes' ? '✓ Going' : rc.myReply === 'no' ? '✗ Not going' : 'Please confirm'; }
-  function pillClass(rc){ var st = raceStatus(rc); return st !== 'selected' ? st : rc.myReply === 'yes' ? 'going' : rc.myReply === 'no' ? 'notgoing' : 'ask'; }
+  function statusText(rc){ var st = raceStatus(rc); if (st === 'staff') return teamReplies(rc); return st === 'cancelled' ? 'CANCELLED' : st === 'removed' ? '✕ NO LONGER SELECTED' : rc.myReply === 'yes' ? '✓ Going' : rc.myReply === 'no' ? '✗ Not going' : 'Please confirm'; }
+  function pillClass(rc){ var st = raceStatus(rc); if (st === 'staff') return 'staffp'; return st !== 'selected' ? st : rc.myReply === 'yes' ? 'going' : rc.myReply === 'no' ? 'notgoing' : 'ask'; }
   function daysTo(s){ return Math.round((rDate(s) - rDate(rIso(new Date()))) / 86400000); }
   function whenText(s){ var n = daysTo(s); return n === 0 ? 'Today' : n === 1 ? 'Tomorrow' : n > 1 ? 'In ' + n + ' days' : n === -1 ? 'Yesterday' : Math.abs(n) + ' days ago'; }
   function loadRaces(cb){
@@ -5431,7 +5457,7 @@
     var list = raceState.list || [], today = rIso(new Date());
     var up = list.filter(function(r){ return r.date >= today; }), ask = up.filter(needsReply);
     var next = up.filter(function(r){ return raceStatus(r) === 'selected' && r.myReply !== 'no'; })[0];
-    document.getElementById('raceTileSub').textContent = ask.length ? ask.length + ' to confirm' : next ? 'Next: ' + rDate(next.date).toLocaleDateString([], { day:'numeric', month:'short' }) + ' · ' + next.name : 'Races, training, events';
+    document.getElementById('raceTileSub').textContent = isStaff() ? (up.length ? up.length + ' coming up for your team' : 'Your team’s calendar') : ask.length ? ask.length + ' to confirm' : next ? 'Next: ' + rDate(next.date).toLocaleDateString([], { day:'numeric', month:'short' }) + ' · ' + next.name : 'Races, training, events';
     var bd = document.getElementById('raceBadge'); bd.hidden = !ask.length; bd.textContent = ask.length;
     var strip = document.getElementById('raceStrip'), items = document.getElementById('rsItems');
     items.innerHTML = '';
@@ -5451,7 +5477,7 @@
       b.addEventListener('keydown', function(e){ if (e.key === 'Enter') openRace(rc); });
       items.appendChild(b);
     });
-    document.getElementById('rsHeadTxt').textContent = ask.length ? 'To confirm: ' + ask.length + (show.length > ask.length ? ' · next 7 days' : '') : 'Next 7 days';
+    document.getElementById('rsHeadTxt').textContent = ask.length ? 'To confirm: ' + ask.length + (show.length > ask.length ? ' · next 7 days' : '') : isStaff() ? 'Your team · next 7 days' : 'Next 7 days';
     if (!document.getElementById('raceView').classList.contains('hidden')) renderRaceView();
   }
   function raceCard(rc, past){
@@ -5535,7 +5561,7 @@
     if (rc.myStatus === 'removed') note('removed', '✕ You are no longer selected for this. Your coach took you off the selection' + (rc.myChangedAt ? ' on ' + new Date(rc.myChangedAt).toLocaleDateString() : '') + '.');
     if (rc.notes) note('info', rc.notes);
     if (st === 'selected' && rc.date >= rIso(new Date())){
-      var ask = document.createElement('div'); ask.className = 'rm-ask';
+      var ask = document.createElement('div'); ask.className = 'rm-ask';  // riders only (staff look)
       var q = document.createElement('b'); q.textContent = rc.myReply === 'yes' ? '✓ You’re going' : rc.myReply === 'no' ? '✗ You’re not going' : 'Will you be there?';
       ask.appendChild(q); ask.appendChild(replyButtons(rc, false)); box.appendChild(ask);
     }
@@ -5544,7 +5570,7 @@
     var lu = document.createElement('div'); lu.className = 'rm-lineup';
     if (!rc.lineup.length){ var e = document.createElement('p'); e.className = 'tv-status'; e.textContent = 'Nobody invited yet.'; lu.appendChild(e); }
     rc.lineup.slice().sort(function(a, b){ var o = { yes:0, '':1, no:2 }; return o[a.reply || ''] - o[b.reply || '']; }).forEach(function(r){
-      var it = document.createElement('div'); it.className = 'lu' + (r.reply === 'no' ? ' no' : ''); it.style.setProperty('--tc', r.teamColor || '#888');
+      var it = document.createElement('div'); it.className = 'lu' + (r.reply === 'no' ? ' no' : '') + (r.myTeam ? ' myteam' : ''); it.style.setProperty('--tc', r.teamColor || '#888');
       var ph = document.createElement('span'); ph.className = 'ph'; if (r.photoUrl) ph.style.backgroundImage = 'url("' + r.photoUrl + '")'; else ph.textContent = initials2(r);
       var tx = document.createElement('div'); var b = document.createElement('b'); b.textContent = r.firstName + ' ' + r.lastName;
       if (r.me){ var y = document.createElement('span'); y.className = 'you'; y.textContent = 'YOU'; b.appendChild(y); }
@@ -5658,6 +5684,17 @@
       var cnt = document.createElement('div'); cnt.className = 'cnt'; cnt.textContent = t.riders.length + ' rider' + (t.riders.length === 1 ? '' : 's'); tx.appendChild(cnt);
       if (t.about){ var ab = document.createElement('p'); ab.textContent = t.about; tx.appendChild(ab); }
       hd.appendChild(tx); sec.appendChild(hd);
+      if (t.staff && t.staff.length){
+        var sw = document.createElement('div'); sw.className = 'tm-staff';
+        t.staff.forEach(function(x){
+          var c = document.createElement('div'); c.className = 'tm-st';
+          var ph = document.createElement('span'); ph.className = 'ph'; if (x.photoUrl) ph.style.backgroundImage = 'url("' + x.photoUrl + '")'; else ph.textContent = (((x.firstName || '')[0] || '') + ((x.lastName || '')[0] || '')).toUpperCase();
+          var tx = document.createElement('span'); var b = document.createElement('b'); b.textContent = x.firstName + ' ' + x.lastName + (x.me ? ' (you)' : '');
+          var i = document.createElement('i'); i.textContent = x.role; tx.appendChild(b); tx.appendChild(i);
+          c.appendChild(ph); c.appendChild(tx); sw.appendChild(c);
+        });
+        sec.appendChild(sw);
+      }
       var grid = document.createElement('div'); grid.className = 'tm-cards';
       t.riders.forEach(function(r){ grid.appendChild(riderCard(r, t, false)); });
       sec.appendChild(grid); body.appendChild(sec);

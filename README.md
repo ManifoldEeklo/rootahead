@@ -342,6 +342,16 @@ Phones keep the one-column, week-by-week layout. It switches on rotate/resize.
 - **RA Admin → Calendar refreshes the answers every 15 s** (list and an open
   item, without touching what you are editing).
 
+- **Staff** (RA Admin → Staff): sport director, team coach, soigneur,
+  mechanic, physio, team manager, doctor, press officer, other. Name, role,
+  team(s) they work for, phone, e-mail, notes, photo and their own login code
+  (same code table as riders, so every code is unique; reset / change signs
+  them out everywhere; green/red signed-in bullet). In the app staff see only
+  **Calendar** (everything their teams' riders are invited to, with the team's
+  answers; they don't confirm) and **Team** (riders + staff of their teams);
+  Train, Food and Track are hidden. Riders see the staff of their team in Team.
+  Keys: `rootahead:staff` (ids start with `s_`). Endpoint `/api/staff`.
+
 **Test files**: `root-ahead-test.html` and `ra-admin-test.html` share one test
 database when opened in the same browser: make a rider in RA Admin, then sign
 in with the code in the app. Demo codes: ELS2026, JAN2026, LOTTE26.
