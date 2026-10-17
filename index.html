@@ -936,6 +936,19 @@
   #iosInstall{position:fixed;inset:0;z-index:4600;display:none;align-items:flex-end;justify-content:center;
     background:rgba(6,10,8,.8);padding:16px;}
   #iosInstall.open{display:flex;}
+  #startSheet{position:fixed;inset:0;z-index:4600;display:none;align-items:flex-end;justify-content:center;
+    background:rgba(6,10,8,.8);padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));}
+  #startSheet.open{display:flex;}
+  .start-sheet .ss-sub{margin:-6px 0 12px;font-size:13.5px;color:var(--text-muted);}
+  .start-sheet .ss-sub b{color:var(--gold);font-weight:600;}
+  .ss-opts{display:flex;flex-direction:column;gap:8px;}
+  .ss-opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;border-radius:10px;
+    border:1px solid var(--line);background:var(--panel-alt);color:var(--text);font:inherit;font-size:15px;cursor:pointer;}
+  .ss-opt:hover, .ss-opt:focus-visible{border-color:var(--gold);outline:none;}
+  .ss-opt .ic{font-size:20px;width:26px;text-align:center;flex:0 0 auto;}
+  .ss-opt small{display:block;color:var(--text-muted);font-size:12.5px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:62vw;}
+  .ss-opt span:last-child{min-width:0;}
+  .start-sheet .ss-cancel{display:block;width:100%;margin-top:12px;}
   .ios-sheet{width:100%;max-width:420px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 18px 14px;}
   .ios-sheet h3{font-family:'Fjalla One',sans-serif;font-weight:400;letter-spacing:.05em;text-transform:uppercase;margin:0 0 12px;font-size:18px;}
   .ios-sheet ol{margin:0 0 14px;padding-left:20px;font-size:14px;line-height:1.6;}
@@ -1035,8 +1048,11 @@
   /* Pick on map: panel hides, a card on the map guides the pick + confirm */
   body.picking:not(.is-mobile) aside.controls{display:none;}
   body.picking #map{cursor:crosshair;}
-  .train-route-banner{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:1650;width:min(520px,calc(100% - 24px));
-    background:var(--panel);border:1px solid var(--gold);border-radius:10px;padding:10px 14px;font-size:13.5px;line-height:1.4;box-shadow:0 6px 20px rgba(0,0,0,.5);}
+  /* sits on the map, BEHIND the slide-out panel (1600) and its backdrop (1550), so it never covers the Start field */
+  .train-route-banner{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:1500;width:min(520px,calc(100% - 24px));
+    background:var(--panel);border:1px solid var(--gold);border-radius:10px;padding:10px 40px 10px 14px;font-size:13.5px;line-height:1.4;box-shadow:0 6px 20px rgba(0,0,0,.5);}
+  .train-route-banner .trb-x{position:absolute;top:6px;right:6px;width:30px;height:30px;border-radius:50%;border:none;background:var(--panel-alt);
+    color:var(--text);font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
   .train-route-banner b{color:var(--gold);}
   .train-route-banner.off{border-color:#e07a5f;}
   .pick-card{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:1700;display:none;
@@ -1348,6 +1364,15 @@
 </div>
 
 <!-- iPhone/iPad: Safari has no install prompt, so explain the two taps -->
+<!-- "Plan a route for this ride": first ask where the ride starts -->
+<div id="startSheet" role="dialog" aria-modal="true" aria-labelledby="startSheetTitle">
+  <div class="ios-sheet start-sheet">
+    <h3 id="startSheetTitle">Where do you start?</h3>
+    <p class="ss-sub" id="startSheetSub"></p>
+    <div class="ss-opts" id="startSheetOpts"></div>
+    <button class="btn ghost ss-cancel" type="button" id="startSheetCancel">Cancel</button>
+  </div>
+</div>
 <div id="iosInstall" role="dialog" aria-modal="true" aria-labelledby="iosInstallTitle">
   <div class="ios-sheet">
     <h3 id="iosInstallTitle">Install on iPhone / iPad</h3>
@@ -6342,24 +6367,67 @@
   function setRouteBanner(html, bad){
     var b = document.getElementById('trainRouteBanner');
     if (!html){ b.hidden = true; return; }
-    b.hidden = false; b.className = 'train-route-banner' + (bad ? ' off' : ''); b.innerHTML = html;
+    b.hidden = false; b.className = 'train-route-banner' + (bad ? ' off' : '');
+    b.innerHTML = html + '<button type="button" class="trb-x" aria-label="Close this message">✕</button>';
   }
+  // the ✕ only hides the message: the route is still linked to the training day
+  document.getElementById('trainRouteBanner').addEventListener('click', function(e){ if (e.target.closest('.trb-x')) setRouteBanner(''); });
   // The route planner tends to come out a little short, so a training route asks for 15% more distance.
   var TRAIN_ROUTE_EXTRA = 0.15;
+  // "Plan a route for this ride": first ask where the ride starts, then open Track with the distance set
   function planRouteFor(day){
     var base = day.min / 60 * dayPace(day), km = Math.round(base * (1 + TRAIN_ROUTE_EXTRA));
+    var p = loadProfile(), home = (p && p.homeTown) || 'Eeklo';
+    var sheet = document.getElementById('startSheet'), opts = document.getElementById('startSheetOpts');
+    document.getElementById('startSheetSub').innerHTML = '<b>' + escapeHtml(dayInfo(day).title) + '</b> · ' + trainHours(day.min) + ' · about ' + km + ' km';
+    opts.innerHTML = '';
+    function opt(ic, label, sub, how){
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'ss-opt';
+      var i = document.createElement('span'); i.className = 'ic'; i.textContent = ic;
+      var t = document.createElement('span'); t.textContent = label;
+      if (sub){ var sm = document.createElement('small'); sm.textContent = sub; t.appendChild(sm); }
+      b.appendChild(i); b.appendChild(t);
+      b.addEventListener('click', function(){ sheet.classList.remove('open'); goPlanRoute(day, km, how); });
+      opts.appendChild(b);
+    }
+    var lastLabel = state.start && !state.start.fromHome ? (document.getElementById('startInput').value || 'the point on the map') : '';
+    if (lastLabel) opt('↺', 'Same start as last time', lastLabel, 'keep');
+    opt('🏠', 'Home', home, 'home');
+    opt('📍', 'Where I am now', 'Uses your phone\'s location', 'here');
+    opt('✛', 'Pick on the map', 'Tap the spot on the map', 'map');
+    opt('⌨', 'Type an address', 'Town, street or place', 'type');
+    sheet.classList.add('open');
+    var first = opts.querySelector('.ss-opt'); if (first) first.focus();
+  }
+  document.getElementById('startSheetCancel').addEventListener('click', function(){ document.getElementById('startSheet').classList.remove('open'); });
+  document.getElementById('startSheet').addEventListener('click', function(e){ if (e.target === this) this.classList.remove('open'); });
+  document.addEventListener('keydown', function(e){ var sh = document.getElementById('startSheet'); if (e.key === 'Escape' && sh.classList.contains('open')) sh.classList.remove('open'); });
+
+  function goPlanRoute(day, km, how){
     trainRouteCtx = { d: day.d, min: day.min, type: day.type, title: dayInfo(day).title, km: km };
-    var p = loadProfile(), home = p && p.homeTown;
-    // start from home, unless the rider already chose another start
-    if (!state.start || state.start.fromHome) useHomeAsStart();
-    setRouteBanner('<b>' + escapeHtml(trainRouteCtx.title) + '</b> · ' + trainHours(day.min) + ' · aim ≈ ' + km + ' km (+15% so the route is long enough). ' +
-      (home && (!state.start || state.start.fromHome) ? 'Start: your home, ' + escapeHtml(home) + '. ' : '') + 'Tap Generate.');
+    var p = loadProfile(), home = (p && p.homeTown) || 'Eeklo';
+    var startTxt = how === 'home' ? 'Start: your home, ' + escapeHtml(home) + '. Tap Generate.'
+      : how === 'here' ? 'Start: where you are now. Tap Generate.'
+      : how === 'map' ? 'Tap the map where you start, then tap Generate.'
+      : how === 'type' ? 'Type your start under Location, then tap Generate.'
+      : 'Same start as last time. Tap Generate.';
+    setRouteBanner('<b>' + escapeHtml(trainRouteCtx.title) + '</b> · ' + trainHours(day.min) + ' · aim ≈ ' + km + ' km (+15% so the route is long enough). ' + startTxt);
     var slider = document.getElementById('distSlider');
     slider.value = String(tClamp(km, +slider.min || 3, +slider.max || 250));
     slider.dispatchEvent(new Event('input'));
     hideTrain();
     location.hash = 'track';
-    showDashToast('Distance set to ' + slider.value + ' km for your ' + (dayInfo(day).title.toLowerCase()) + '.' +
+    // set the start once Track is on screen (the map needs a moment to size itself)
+    setTimeout(function(){
+      if (how === 'home') useHomeAsStart();
+      else if (how === 'here') document.getElementById('startGeoBtn').click();
+      else if (how === 'map') beginMapPick('start');
+      else if (how === 'type'){
+        if (detectMobile()) openSidebar();
+        var inp = document.getElementById('startInput'); inp.focus(); inp.select();
+      }
+    }, 350);
+    if (how !== 'map' && how !== 'type') showDashToast('Distance set to ' + slider.value + ' km for your ' + (dayInfo(day).title.toLowerCase()) + '.' +
       (TRAIN_ROUTE_TIP[day.type] ? ' ' + TRAIN_ROUTE_TIP[day.type] : ''), TRAIN_ROUTE_TIP[day.type] ? 6500 : 3500);
   }
 

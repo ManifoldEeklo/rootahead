@@ -330,6 +330,11 @@ Phones keep the one-column, week-by-week layout. It switches on rotate/resize.
   unless the rider already chose another start. Looked-up once and remembered
   on the phone (`rootahead_home_geo`); a new home town from the coach is used
   on the next check-in.
+- **Plan a route for this ride** first asks **Where do you start?**: Home
+  (home town), Where I am now, Pick on the map, Type an address, or Same start
+  as last time (when there is one). Then Track opens with the distance set.
+  The message on the map has a ✕ and sits behind the slide-out panel, so it
+  never covers the Start field.
 - **Training routes ask for 15% more distance** (`TRAIN_ROUTE_EXTRA` in
   index.html) because generated routes tend to come out a bit short; the fit
   check against the planned time is unchanged.
