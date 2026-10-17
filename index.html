@@ -872,7 +872,7 @@
     box-sizing:border-box;height:var(--nav-h);padding:6px 16px env(safe-area-inset-bottom,0px);background:rgba(13,23,18,.96);border-top:1px solid var(--line);
     -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);}
   .app-nav[hidden]{display:none;}
-  .nav-btn{flex:0 1 100px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 8px;border:none;border-radius:10px;
+  .nav-btn{flex:0 1 84px;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 8px;border:none;border-radius:10px;
     background:none;color:var(--text-muted);font:inherit;font-size:11.5px;letter-spacing:.04em;cursor:pointer;}
   .nav-btn svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
   .nav-btn.on{color:var(--gold);}
@@ -1420,6 +1420,8 @@
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-6h4v6"/></svg><span>Home</span></button>
   <button type="button" class="nav-btn" id="dashRefresh">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg><span>Refresh</span></button>
+  <button type="button" class="nav-btn" id="navFwd" disabled aria-label="Forward to the next screen">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg><span>Forward</span></button>
   <button type="button" class="nav-btn" id="dashMenuBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="dashMenu">
     <span class="nav-ava dash-photo" id="dashPhoto" aria-hidden="true"></span><span>Profile</span></button>
   <div class="dash-menu" id="dashMenu" role="menu" aria-label="Profile" hidden>
@@ -2471,7 +2473,7 @@
     var views = ['homeDash', 'trainView', 'raceView', 'teamView'].map(function(id){ return document.getElementById(id); });
     var wasTrack = null;
     // Back: the screens visited, so Back returns to the previous one (dash / train / race / team / track)
-    var back = document.getElementById('navBack'), stack = [], current = null, goingBack = null;
+    var back = document.getElementById('navBack'), fwdBtn = document.getElementById('navFwd'), stack = [], fwd = [], current = null, goingBack = null;
     function screenNow(){
       if (!homeDash.classList.contains('hidden')) return 'dash';
       var ids = { trainView: 'train', raceView: 'race', teamView: 'team' };
@@ -2486,14 +2488,14 @@
       home.classList.toggle('on', onDash);
       document.body.classList.toggle('nav-track', onTrack);
       if (onTrack !== wasTrack){ wasTrack = onTrack; setTimeout(function(){ if (typeof map !== 'undefined' && map) map.invalidateSize(); }, 80); }
-      if (!signedIn){ stack = []; current = null; goingBack = null; back.disabled = true; return; }
+      if (!signedIn){ stack = []; fwd = []; current = null; goingBack = null; back.disabled = fwdBtn.disabled = true; return; }
       var now = screenNow();
       if (now !== current){
-        if (goingBack){ if (now === goingBack) goingBack = null; }   // arrived where Back was going: nothing to remember
-        else if (current){ stack.push(current); if (stack.length > 30) stack.shift(); }
+        if (goingBack){ if (now === goingBack) goingBack = null; }   // arrived where Back/Forward was going: nothing to remember
+        else { if (current){ stack.push(current); if (stack.length > 30) stack.shift(); } fwd = []; }   // a new step clears Forward
         current = now;
       }
-      back.disabled = !stack.length;
+      back.disabled = !stack.length; fwdBtn.disabled = !fwd.length;
     }
     function openScreen(v){
       if (v === 'dash'){ goDashboard(); return; }
@@ -2503,7 +2505,15 @@
     back.addEventListener('click', function(){
       var v = stack.pop(); if (!v){ back.disabled = true; return; }
       while (v === current && stack.length) v = stack.pop();
-      goingBack = v; back.disabled = !stack.length;
+      if (current) fwd.push(current);
+      goingBack = v; back.disabled = !stack.length; fwdBtn.disabled = !fwd.length;
+      openScreen(v);
+    });
+    // Forward: undo a Back
+    fwdBtn.addEventListener('click', function(){
+      var v = fwd.pop(); if (!v){ fwdBtn.disabled = true; return; }
+      if (current) stack.push(current);
+      goingBack = v; back.disabled = !stack.length; fwdBtn.disabled = !fwd.length;
       openScreen(v);
     });
     var mo = new MutationObserver(update);

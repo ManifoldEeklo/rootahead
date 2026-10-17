@@ -14,6 +14,7 @@
 <link rel="apple-touch-icon" href="/admin/apple-touch-icon.png">
 <link rel="icon" type="image/png" href="/admin/icon-192.png">
 <script src="/splash-fx.js"></script>
+<script src="/xlsx-lite.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Fjalla+One&family=IBM+Plex+Mono:wght@600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -369,7 +370,7 @@
   body.wide .mob{display:none !important;}
   body.wide .wrap{max-width:none;padding:18px 28px 48px;}
   body.wide header.bar{padding-top:6px;}
-  body.wide .maintabs{max-width:520px;}
+  body.wide .maintabs{max-width:620px;}
   body.wide .seg.sub{max-width:640px;}
   body.wide input[type=search]{max-width:420px;}
   /* Messages: compose left, preview + sent right */
@@ -654,6 +655,43 @@
   body.wide #spEditor{display:grid;grid-template-columns:minmax(0,560px) minmax(300px,380px);column-gap:40px;align-items:start;}
   body.wide .sp-side{position:sticky;top:12px;}
   body.wide .sp-savebar{position:static;}
+  /* ---------- Excel master file (RA Admin → Excel) ---------- */
+  #paneExcel{max-width:760px;}
+  .xl-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 4px;}
+  .xl-step{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--char-3);border-radius:12px;font-size:13.5px;line-height:1.3;}
+  .xl-step b{flex:0 0 26px;height:26px;border-radius:50%;background:var(--yellow);color:var(--yellow-ink);display:flex;align-items:center;justify-content:center;font-size:13px;}
+  @media (max-width:560px){ .xl-steps{grid-template-columns:1fr;} }
+  .xl-drop{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:26px 16px;
+    border:2px dashed var(--char-3);border-radius:14px;text-align:center;cursor:pointer;transition:border-color .15s, background .15s;}
+  .xl-drop:hover, .xl-drop.over{border-color:var(--yellow);background:var(--char-2);}
+  .xl-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+  .xl-drop-ic{font-size:26px;color:var(--yellow);}
+  .xl-card{margin-top:14px;border:1px solid var(--char-3);border-radius:14px;overflow:hidden;}
+  .xl-card-h{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 14px;background:var(--char-2);}
+  .xl-card-h h3{font-family:'Archivo',sans-serif;font-size:16px;margin:0 auto 0 0;}
+  .xl-chip{font-size:12.5px;font-weight:600;border-radius:999px;padding:3px 10px;background:var(--char-3);color:var(--grey);}
+  .xl-chip.new{background:#1f4d2a;color:#b9f0b5;} .xl-chip.chg{background:#4d3f12;color:#ffe08a;}
+  .xl-chip.del{background:#5a2018;color:#ffb3a6;} .xl-chip.err{background:#ff8a73;color:#2a0d07;}
+  .xl-card details{border-top:1px solid var(--char-3);}
+  .xl-card summary{padding:10px 14px;cursor:pointer;font-size:14px;font-weight:600;}
+  .xl-list{margin:0;padding:0 14px 12px;list-style:none;font-size:13.5px;display:flex;flex-direction:column;gap:6px;}
+  .xl-list li{padding:7px 10px;border-radius:8px;background:var(--char-2);}
+  .xl-list li small{display:block;color:var(--muted);margin-top:2px;}
+  .xl-list .chg-f{display:block;font-size:12.5px;color:var(--muted);}
+  .xl-list .chg-f s{color:#ff9c8a;text-decoration:line-through;} .xl-list .chg-f ins{color:#b9f0b5;text-decoration:none;}
+  .xl-list li.err{background:#3a1913;}
+  .xl-opts{display:flex;flex-direction:column;gap:8px;margin-top:14px;}
+  .xl-opts .permrow{margin:0;}
+  .xl-opts .permrow.danger b{color:var(--bad);}
+  .xl-progress{margin-top:14px;display:flex;flex-direction:column;gap:6px;font-size:14px;}
+  .xl-bar{height:8px;border-radius:5px;background:var(--char-3);overflow:hidden;}
+  .xl-bar i{display:block;height:100%;width:0;background:var(--yellow);transition:width .2s;}
+  #xlResult{margin-top:14px;}
+  .xl-done{padding:14px;border:1px solid var(--good);border-radius:14px;}
+  .xl-done h3{margin:0 0 6px;font-family:'Archivo',sans-serif;font-size:16px;color:var(--good);}
+  .xl-codes{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px;}
+  .xl-codes td{padding:6px 8px;border-top:1px solid var(--char-3);}
+  .xl-codes td:last-child{font-family:ui-monospace,monospace;letter-spacing:.08em;color:var(--yellow);text-align:right;}
 </style>
 </head>
 <body>
@@ -814,6 +852,7 @@
     <button type="button" role="tab" data-tab="races" aria-selected="false">Calendar</button>
     <button type="button" role="tab" data-tab="messages" aria-selected="false">Messages</button>
     <button type="button" role="tab" data-tab="training" aria-selected="false">Training</button>
+    <button type="button" role="tab" data-tab="excel" aria-selected="false">Excel</button>
     <button type="button" role="tab" data-tab="splash" aria-selected="false">Splash</button>
   </nav>
 
@@ -972,6 +1011,40 @@
         </div>
       </aside>
     </div>
+  </div>
+
+  <!-- EXCEL: one master file for riders, teams and staff; download, change in Excel, upload with a preview -->
+  <div id="paneExcel" hidden>
+    <section class="xl-intro">
+      <h2>Excel master file</h2>
+      <p class="muted">One Excel file with all riders, teams and staff. Change it in Excel, then upload it here: you see exactly what will change before anything is saved.</p>
+      <div class="xl-steps">
+        <div class="xl-step"><b>1</b><span>Download the master file</span></div>
+        <div class="xl-step"><b>2</b><span>Add, change or delete rows in Excel</span></div>
+        <div class="xl-step"><b>3</b><span>Upload it and check the preview</span></div>
+      </div>
+      <button class="go" type="button" id="xlDownload">⬇ Download master file</button>
+      <div class="result" id="xlDlMsg" role="status"></div>
+    </section>
+
+    <section>
+      <h2>Upload</h2>
+      <label class="xl-drop" id="xlDrop" for="xlFile">
+        <input type="file" id="xlFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+        <span class="xl-drop-ic" aria-hidden="true">⬆</span>
+        <b>Choose the Excel file</b>
+        <span class="muted">or drop it here · .xlsx</span>
+      </label>
+      <div class="result" id="xlUpMsg" role="status"></div>
+      <div id="xlPreview" hidden>
+        <div id="xlCards"></div>
+        <div class="xl-opts" id="xlOpts"></div>
+        <button class="go" type="button" id="xlApply">Apply changes</button>
+        <button class="ghost wide" type="button" id="xlCancel">Cancel</button>
+      </div>
+      <div class="xl-progress" id="xlProgress" hidden><div class="xl-bar"><i id="xlBarFill"></i></div><span id="xlProgTxt"></span></div>
+      <div id="xlResult" hidden></div>
+    </section>
   </div>
 
   <!-- RIDERS: set up by the admin; riders sign in with their login code -->
@@ -1500,7 +1573,7 @@
 
   /* ---- lock / unlock (password remembered on this phone, like Blendroom) ---- */
   function showApp(){ $('lock').hidden = true; $('app').hidden = false; loadAll();
-    var start = ['#training','#messages','#teams','#races','#staff','#splash'].indexOf(location.hash) !== -1 ? location.hash.slice(1) : 'riders';
+    var start = ['#training','#messages','#teams','#races','#staff','#splash','#excel'].indexOf(location.hash) !== -1 ? location.hash.slice(1) : 'riders';
     setTimeout(function(){ showMainTab(start); }, 0); }
   function showLock(msg){ $('app').hidden = true; $('lock').hidden = false; $('lockErr').textContent = msg || ''; $('pw').value = ''; }
   $('lockForm').addEventListener('submit', function(e){
@@ -1854,7 +1927,7 @@
   // ---------- main tabs: Messages | Training ----------
   function showMainTab(name){
     Array.prototype.forEach.call(document.querySelectorAll('.maintabs button'), function(b){ b.setAttribute('aria-selected', String(b.dataset.tab === name)); });
-    $('paneMessages').hidden = name !== 'messages'; $('paneTraining').hidden = name !== 'training'; $('paneRiders').hidden = name !== 'riders'; $('paneTeams').hidden = name !== 'teams'; $('paneRaces').hidden = name !== 'races'; $('paneStaff').hidden = name !== 'staff'; $('paneSplash').hidden = name !== 'splash';
+    $('paneMessages').hidden = name !== 'messages'; $('paneTraining').hidden = name !== 'training'; $('paneRiders').hidden = name !== 'riders'; $('paneTeams').hidden = name !== 'teams'; $('paneRaces').hidden = name !== 'races'; $('paneStaff').hidden = name !== 'staff'; $('paneSplash').hidden = name !== 'splash'; $('paneExcel').hidden = name !== 'excel';
     if (name === 'splash') openSplash(); else stopPreview();
     try{ history.replaceState(null, '', '#' + name); }catch(e){}
     if (name === 'training') loadTraining();
@@ -3092,7 +3165,7 @@
 
 
   /* ======================= STAFF (sport director, coach, soigneur, mechanic…) ======================= */
-  var SF = { list: [], roles: ['Sport Director','Team coach','Soigneur','Mechanic','Physio','Team manager','Doctor','Press officer','Other'], edit: null, photo: undefined, teams: {} };
+  var SF = { list: [], roles: ["Manager / Sportdirecteur", "Sportdirecteur", "DS CLUB", "Financieel verantwoordelijke", "Administratie / aanvragen / logistiek", "Social Media - Marketing - Evenementen", "Verzorger / massage", "Verzorger", "Verzorger / logistiek / chauffeur", "Verzorger / massage (stagiair)", "Mechanieker", "Kok", "Service Course & opvolging", "Performance", "Diëtiste", "Andere"], edit: null, photo: undefined, teams: {} };
   function loadStaff(){
     trMsg('sfStatus', 'Loading…');
     return Promise.all([api('/api/staff'), loadTeams()]).then(function(r){
@@ -3160,7 +3233,8 @@
     $('sfListBox').hidden = true; $('sfEditor').hidden = false;
     $('sfTitle').textContent = x ? x.firstName + ' ' + x.lastName : 'New staff member';
     $('sfFirst').value = SF.edit.firstName; $('sfLast').value = SF.edit.lastName;
-    var rs = $('sfRole'); rs.innerHTML = ''; SF.roles.forEach(function(r){ var o = el('option', null, r); o.value = r; rs.appendChild(o); }); rs.value = SF.edit.role || 'Other';
+    var rs = $('sfRole'); rs.innerHTML = ''; var rl = SF.roles.slice(); if (SF.edit.role && rl.indexOf(SF.edit.role) === -1) rl.push(SF.edit.role);   // an older role stays selectable
+    rl.forEach(function(r){ var o = el('option', null, r); o.value = r; rs.appendChild(o); }); rs.value = SF.edit.role || 'Andere';
     $('sfPhone').value = SF.edit.phone || ''; $('sfEmail').value = SF.edit.email || ''; $('sfNotes').value = SF.edit.notes || '';
     $('sfCode').value = SF.edit.code || newLocalCode();
     $('sfDelete').hidden = !x; $('sfResetCode').hidden = !x;
@@ -3363,7 +3437,7 @@
   }
   function renderTeamOverview(){
     var t = TV.team; if (!t) return;
-    function rank(x){ var i = SF.roles.indexOf(x.role); return i === -1 ? 99 : i; }   // Sport Director first, then coach, soigneur…
+    function rank(x){ var i = SF.roles.indexOf(x.role); return i === -1 ? 99 : i; }   // in the order of the staff functions list
     var staff = SF.list.filter(function(x){ return (x.teamIds || []).indexOf(t.id) !== -1; }).sort(function(a, b){ return rank(a) - rank(b) || (a.lastName + a.firstName).localeCompare(b.lastName + b.firstName); });
     var riders = RD.list.filter(function(r){ return r.teamId === t.id; }).sort(function(a, b){ return (a.lastName + a.firstName).localeCompare(b.lastName + b.firstName); });
     var on = staff.filter(function(x){ return x.phones; }).length + riders.filter(function(r){ return r.phones; }).length;
@@ -3927,6 +4001,466 @@
       $('spNotify').setAttribute('aria-checked', 'false'); $('spNotifyText').hidden = true;
       $('spResult').textContent = 'Saved. ' + how + (bad.length ? ' Note: ' + bad.map(function(o){ return o.name; }).join(', ') + ' has no dates yet.' : '');
     });
+  });
+
+  /* ---------- EXCEL: master file for riders, teams and staff ---------- */
+  // The columns are fixed here, so the file always matches the app: headers are matched by name,
+  // Team / Sex / Function come from dropdown lists, the ID column links every row to the right person.
+  var XL_COLS = {
+    Riders: [
+      { key: 'id', head: 'ID', w: 15, style: 'id', prompt: 'Filled in by the app. Leave empty for a new rider. Do not change.' },
+      { key: 'firstName', head: 'First name', req: true, w: 16 },
+      { key: 'lastName', head: 'Last name', req: true, w: 20 },
+      { key: 'nickname', head: 'Nickname', w: 14 },
+      { key: 'team', head: 'Team', w: 20, list: 'TeamList', prompt: 'Pick a team from the list.' },
+      { key: 'sex', head: 'Sex', w: 7, list: '"M,F,X"', prompt: 'M, F or X' },
+      { key: 'birthDate', head: 'Date of birth', w: 14, kind: 'date', prompt: 'YYYY-MM-DD, for example 2004-05-21' },
+      { key: 'heightCm', head: 'Height (cm)', w: 11, num: [100, 230] },
+      { key: 'weightKg', head: 'Weight (kg)', w: 11, num: [25, 200] },
+      { key: 'ftp', head: 'FTP (W)', w: 9, num: [50, 700] },
+      { key: 'homeTown', head: 'Home address', w: 32, prompt: 'Start of the rider’s routes in Track. Empty = Watersportlaan 4, 9000 Gent.' },
+      { key: 'phone', head: 'GSM', w: 15 },
+      { key: 'email', head: 'E-mail', w: 26 },
+      { key: 'code', head: 'Login code', w: 12, prompt: 'Empty = made automatically. A new code signs the rider out on every phone.' },
+      { key: 'notes', head: 'Notes', w: 32 }
+    ],
+    Teams: [
+      { key: 'id', head: 'ID', w: 15, style: 'id', prompt: 'Filled in by the app. Leave empty for a new team. Do not change.' },
+      { key: 'name', head: 'Team name', req: true, w: 22 },
+      { key: 'color', head: 'Colour', w: 11, prompt: 'Like #FBC120. Empty = keep the colour.' },
+      { key: 'about', head: 'Description', w: 50 }
+    ],
+    Staff: [
+      { key: 'id', head: 'ID', w: 15, style: 'id', prompt: 'Filled in by the app. Leave empty for a new staff member. Do not change.' },
+      { key: 'firstName', head: 'First name', req: true, w: 16 },
+      { key: 'lastName', head: 'Last name', req: true, w: 20 },
+      { key: 'role', head: 'Function', req: true, w: 34, list: 'RoleList', prompt: 'Pick a function from the list.' },
+      { key: 'team1', head: 'Team 1', w: 18, list: 'TeamList', prompt: 'A team this person works for.' },
+      { key: 'team2', head: 'Team 2', w: 18, list: 'TeamList', prompt: 'Optional second team.' },
+      { key: 'team3', head: 'Team 3', w: 18, list: 'TeamList', prompt: 'Optional third team.' },
+      { key: 'phone', head: 'GSM', w: 15 },
+      { key: 'email', head: 'E-mail', w: 26 },
+      { key: 'code', head: 'Login code', w: 12, prompt: 'Empty = made automatically. A new code signs them out on every phone.' },
+      { key: 'notes', head: 'Notes', w: 32 }
+    ]
+  };
+  var XL = { plan: null, opts: {} };
+  function xlNorm(s){ return String(s == null ? '' : s).toLowerCase().replace(/\*/g, '').replace(/\s+/g, ' ').trim(); }
+  function xlKey(a, b){ return (String(a || '') + ' ' + String(b || '')).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim(); }
+  function xlStamp(){ var d = new Date(); function p(n){ return (n < 10 ? '0' : '') + n; } return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); }
+  function xlLoadAll(){
+    return Promise.all([api('/api/riders'), api('/api/teams'), api('/api/staff')]).then(function(rs){
+      var bad = rs.filter(function(r){ return !r.ok; })[0];
+      if (bad) throw new Error((bad.data && bad.data.error) || 'Could not load the current riders, teams and staff.');
+      var teams = (rs[1].data.teams || []).slice().sort(function(a, b){ return a.name.localeCompare(b.name); });
+      return { riders: rs[0].data.riders || [], teams: teams, staff: rs[2].data.staff || [], roles: rs[2].data.roles || SF.roles };
+    });
+  }
+
+  /* ---- download ---- */
+  function xlSheet(name, cols, rows, extra){
+    var head = cols.map(function(c){ return { v: c.head + (c.req ? ' *' : ''), s: c.req ? 'headReq' : 'head' }; });
+    var vals = [];
+    cols.forEach(function(c, i){
+      var v = { col: i, from: 2, to: 2000, title: c.head, prompt: c.prompt || '' };
+      if (c.list){ if ((c.list === 'TeamList' && extra.nTeams) || (c.list === 'RoleList' && extra.nRoles) || c.list.charAt(0) === '"'){ v.list = c.list; v.error = 'Pick a value from the list, so it matches the app.'; } }
+      else if (c.num){ v.kind = 'decimal'; v.min = c.num[0]; v.max = c.num[1]; v.error = 'Use a number from ' + c.num[0] + ' to ' + c.num[1] + ', without units.'; v.prompt = v.prompt || ('A number from ' + c.num[0] + ' to ' + c.num[1] + '.'); }
+      if (v.list || v.kind || v.prompt) vals.push(v);
+    });
+    return { name: name, tab: extra.tab, freeze: { rows: 1, cols: name === 'Teams' ? 2 : 3 }, filter: true, rowHeights: { 0: 30 },
+      widths: cols.map(function(c){ return c.w; }), colStyles: cols.map(function(c){ return c.style || (c.num ? 'num' : 'text'); }),
+      rows: [head].concat(rows), validations: vals };
+  }
+  $('xlDownload').addEventListener('click', function(){
+    var btn = this; btn.disabled = true; $('xlDlMsg').className = 'result'; $('xlDlMsg').textContent = 'Preparing the file…';
+    xlLoadAll().then(function(d){
+      var tName = {}; d.teams.forEach(function(t){ tName[t.id] = t.name; });
+      function n(v){ return v === null || v === undefined || v === '' ? '' : Number(v); }
+      var riders = d.riders.slice().sort(function(a, b){ return ((tName[a.teamId] || '~') + a.lastName + a.firstName).localeCompare((tName[b.teamId] || '~') + b.lastName + b.firstName); })
+        .map(function(r){ return [r.id, r.firstName, r.lastName, r.nickname || '', tName[r.teamId] || '', r.sex || '', r.birthDate || '', n(r.heightCm), n(r.weightKg), n(r.ftp), r.homeTown || '', r.phone || '', r.email || '', r.code || '', r.notes || '']; });
+      var teams = d.teams.map(function(t){ return [t.id, t.name, t.color || '', t.about || '']; });
+      var rank = function(x){ var i = d.roles.indexOf(x.role); return i === -1 ? 99 : i; };
+      var staff = d.staff.slice().sort(function(a, b){ return rank(a) - rank(b) || (a.lastName + a.firstName).localeCompare(b.lastName + b.firstName); })
+        .map(function(x){ var tn = (x.teamIds || []).map(function(id){ return tName[id]; }).filter(Boolean);
+          return [x.id, x.firstName, x.lastName, x.role || '', tn[0] || '', tn[1] || '', tn[2] || '', x.phone || '', x.email || '', x.code || '', x.notes || '']; });
+      var extra = { nTeams: d.teams.length, nRoles: d.roles.length };
+      var when = new Date().toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      var R = function(t, s){ return [{ v: t, s: s || 'body' }]; };
+      var readme = [
+        R('ROOT Ahead · people master file', 'title'),
+        R('Made by RA Admin on ' + when + ' · ' + riders.length + ' riders · ' + teams.length + ' teams · ' + staff.length + ' staff', 'note'), [],
+        R('How to use', 'bold'),
+        R('1.  Change details in the Riders, Teams and Staff sheets. Columns with a yellow title (*) must be filled in.'),
+        R('2.  New rider, team or staff member: add a row at the bottom and leave ID empty. An empty login code is made automatically.'),
+        R('3.  Remove someone: delete their row. When you upload, switch on “Remove … not in the file”.'),
+        R('4.  Pick Team, Sex and Function from the dropdown lists, so the names always match the app.'),
+        R('5.  Dates as YYYY-MM-DD (for example 2004-05-21). Numbers without units (for example 72.5).'),
+        R('6.  Save as .xlsx and upload it in RA Admin → Excel. You see every change before anything is saved.'), [],
+        R('Please don’t change', 'bold'),
+        R('•  The ID column, the sheet names and the column titles: they link every row to the right person or team.'),
+        R('•  A new login code signs that person out on every phone; they sign in again with the new code.'), [],
+        R('Good to know', 'bold'),
+        R('•  Photos and team logos are not in this file. They stay as they are in the app.'),
+        R('•  Staff can work for up to three teams (Team 1, Team 2, Team 3). Riders are in one team.'),
+        R('•  Removing a rider also removes their training plan, feedback and routes.'),
+        R('•  New team names used in Riders or Staff can be created during the upload.')
+      ];
+      var lists = [['Teams', 'Functions']];
+      for (var i = 0; i < Math.max(d.teams.length, d.roles.length); i++) lists.push([d.teams[i] ? d.teams[i].name : '', d.roles[i] || '']);
+      var book = { title: 'ROOT Ahead people', active: 0, sheets: [
+        { name: 'Read me', widths: [120], rows: readme, rowHeights: { 0: 30 }, tab: '262628' },
+        xlSheet('Riders', XL_COLS.Riders, riders, { tab: 'FBC120', nTeams: extra.nTeams }),
+        xlSheet('Teams', XL_COLS.Teams, teams, { tab: '3FBF6A' }),
+        xlSheet('Staff', XL_COLS.Staff, staff, { tab: 'A57BF0', nTeams: extra.nTeams, nRoles: extra.nRoles }),
+        { name: 'Lists', hidden: true, widths: [24, 40], rows: lists }
+      ], names: [] };
+      if (d.teams.length) book.names.push({ name: 'TeamList', ref: 'Lists!$A$2:$A$' + (d.teams.length + 1) });
+      if (d.roles.length) book.names.push({ name: 'RoleList', ref: 'Lists!$B$2:$B$' + (d.roles.length + 1) });
+      var blob = XLSXLite.write(book), url = URL.createObjectURL(blob), a = document.createElement('a');
+      a.href = url; a.download = 'ROOT-Ahead-people-' + xlStamp() + '.xlsx';
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+      $('xlDlMsg').className = 'result ok';
+      $('xlDlMsg').textContent = 'Downloaded: ' + riders.length + ' riders, ' + teams.length + ' teams and ' + staff.length + ' staff.';
+    }).catch(function(e){ $('xlDlMsg').className = 'result no'; $('xlDlMsg').textContent = e.message || 'The file could not be made.'; })
+      .then(function(){ btn.disabled = false; });
+  });
+
+  /* ---- upload: read, check, compare ---- */
+  function xlCellText(v){ if (v === null || v === undefined) return ''; if (typeof v === 'number') return String(v); return String(v).trim(); }
+  function xlDate(v){
+    if (v === null || v === undefined || v === '') return { v: '' };
+    if (typeof v === 'number') return { v: XLSXLite.serialToIso(v) };
+    var s = String(v).trim(), m;
+    if ((m = /^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})$/.exec(s))) return xlYmd(+m[1], +m[2], +m[3], s);
+    if ((m = /^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})$/.exec(s))) return xlYmd(+m[3], +m[2], +m[1], s);
+    return { err: 'Date of birth “' + s + '” is not a date. Use YYYY-MM-DD.' };
+  }
+  function xlYmd(y, mo, d, raw){
+    var dt = new Date(Date.UTC(y, mo - 1, d));
+    if (dt.getUTCMonth() !== mo - 1 || y < 1920 || y > new Date().getFullYear()) return { err: 'Date of birth “' + raw + '” is not a valid date.' };
+    return { v: dt.toISOString().slice(0, 10) };
+  }
+  function xlNum(v, range, label){
+    if (v === null || v === undefined || v === '') return { v: null };
+    var x = typeof v === 'number' ? v : parseFloat(String(v).replace(',', '.').replace(/[^\d.\-]/g, ''));
+    if (!isFinite(x) || x < range[0] || x > range[1]) return { err: label + ' “' + v + '” must be a number from ' + range[0] + ' to ' + range[1] + '.' };
+    return { v: Math.round(x * 10) / 10 };
+  }
+  function xlSex(v){
+    var s = xlCellText(v).toUpperCase(); if (!s) return { v: '' };
+    if (/^(M|MAN|MALE)$/.test(s)) return { v: 'M' }; if (/^(F|V|VROUW|FEMALE|W)$/.test(s)) return { v: 'F' }; if (s === 'X') return { v: 'X' };
+    return { err: 'Sex “' + v + '” must be M, F or X.' };
+  }
+  function xlCode(v){ return xlCellText(v).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12); }
+  function xlTable(rows, cols, sheet){
+    var head = rows[0] || [], idx = {}, missing = [];
+    head.forEach(function(h, i){ var k = xlNorm(h); if (k && !(k in idx)) idx[k] = i; });
+    cols.forEach(function(c){ c._i = idx[xlNorm(c.head)]; if (c.req && c._i === undefined) missing.push(c.head); });
+    if (missing.length) return { error: 'The ' + sheet + ' sheet has no column “' + missing.join('”, “') + '”. Download a fresh master file and copy your changes into it.' };
+    var out = [];
+    for (var r = 1; r < rows.length; r++){
+      var row = rows[r] || [], o = { _row: r + 1 }, any = false;
+      cols.forEach(function(c){ var v = c._i === undefined ? undefined : row[c._i]; o[c.key] = v; if (v !== null && v !== undefined && String(v).trim() !== '') any = true; });
+      if (any) out.push(o);
+    }
+    return { rows: out };
+  }
+  function xlFindSheet(wb, name){ var n = wb.names.filter(function(x){ return x.trim().toLowerCase() === name.toLowerCase(); })[0]; return n ? wb.sheets[n] : null; }
+
+  function xlBuildPlan(wb, cur){
+    var plan = { sheets: [], newTeamNames: [], cur: cur };
+    var teamByName = {}, teamById = {};
+    cur.teams.forEach(function(t){ teamByName[t.name.toLowerCase()] = t; teamById[t.id] = t; });
+    var fileTeamNames = {};   // teams that will exist after the Teams sheet is applied
+    cur.teams.forEach(function(t){ fileTeamNames[t.name.toLowerCase()] = t.name; });
+    var unknown = {};
+    function teamRef(name, errs, rowNo){
+      var s = xlCellText(name); if (!s) return '';
+      var k = s.toLowerCase();
+      if (fileTeamNames[k]) return fileTeamNames[k];
+      unknown[k] = s; return s;
+    }
+    function section(name, label){ var sec = { name: name, label: label, creates: [], updates: [], same: [], missing: [], errors: [], present: true }; plan.sheets.push(sec); return sec; }
+
+    // ---- Teams ----
+    var tRows = xlFindSheet(wb, 'Teams');
+    var sT = section('teams', 'Teams');
+    if (!tRows) sT.present = false;
+    else {
+      var tt = xlTable(tRows, XL_COLS.Teams, 'Teams');
+      if (tt.error) sT.errors.push({ row: 1, msg: tt.error });
+      else {
+        var seenT = {}, matchedT = {};
+        tt.rows.forEach(function(o){
+          var name = xlCellText(o.name), id = xlCellText(o.id), color = xlCellText(o.color), about = xlCellText(o.about);
+          if (!name){ sT.errors.push({ row: o._row, msg: 'Team name is empty.' }); return; }
+          if (seenT[name.toLowerCase()]){ sT.errors.push({ row: o._row, msg: 'Team “' + name + '” is in the file twice.' }); return; }
+          seenT[name.toLowerCase()] = true;
+          if (color && !/^#?[0-9a-f]{6}$/i.test(color)){ var exE = (id && teamById[id]) || teamByName[name.toLowerCase()]; if (exE) matchedT[exE.id] = true;
+            sT.errors.push({ row: o._row, label: name, msg: 'Colour “' + color + '” should look like #FBC120.' }); return; }
+          if (color && color.charAt(0) !== '#') color = '#' + color;
+          var ex = (id && teamById[id]) || teamByName[name.toLowerCase()];
+          if (ex && matchedT[ex.id]){ sT.errors.push({ row: o._row, msg: 'Team “' + name + '” matches the same team as another row.' }); return; }
+          var data = { name: name, color: color || (ex && ex.color) || '', about: about };
+          if (ex){
+            matchedT[ex.id] = true; data.id = ex.id;
+            var ch = xlDiff([['Name', ex.name, name], ['Colour', ex.color || '', data.color], ['Description', ex.about || '', about]]);
+            (ch.length ? sT.updates : sT.same).push({ row: o._row, label: name, data: data, changes: ch, ex: ex });
+            if (ex.name.toLowerCase() !== name.toLowerCase()){ delete fileTeamNames[ex.name.toLowerCase()]; }
+            fileTeamNames[name.toLowerCase()] = name;
+          } else { sT.creates.push({ row: o._row, label: name, data: data }); fileTeamNames[name.toLowerCase()] = name; }
+        });
+        cur.teams.forEach(function(t){ if (!matchedT[t.id]) sT.missing.push({ label: t.name, ex: t, sub: (t.riders || 0) + ' riders' }); });
+      }
+    }
+
+    // ---- Riders ----
+    var rRows = xlFindSheet(wb, 'Riders'), sR = section('riders', 'Riders');
+    var codeOwner = {};   // code → id of everyone in the app (codes are shared by riders and staff)
+    cur.riders.forEach(function(r){ if (r.code) codeOwner[r.code] = r.id; });
+    cur.staff.forEach(function(s){ if (s.code) codeOwner[s.code] = s.id; });
+    var fileCodes = {};
+    if (!rRows) sR.present = false;
+    else {
+      var rt = xlTable(rRows, XL_COLS.Riders, 'Riders');
+      if (rt.error) sR.errors.push({ row: 1, msg: rt.error });
+      else {
+        var rById = {}, rByName = {}, matchedR = {};
+        cur.riders.forEach(function(r){ rById[r.id] = r; rByName[xlKey(r.firstName, r.lastName)] = r; });
+        rt.rows.forEach(function(o){
+          var errs = [], f = xlCellText(o.firstName), l = xlCellText(o.lastName), id = xlCellText(o.id);
+          if (!f || !l) errs.push('First and last name are required.');
+          var bd = xlDate(o.birthDate), sx = xlSex(o.sex), h = xlNum(o.heightCm, [100, 230], 'Height'), w = xlNum(o.weightKg, [25, 200], 'Weight'), ftp = xlNum(o.ftp, [50, 700], 'FTP');
+          [bd, sx, h, w, ftp].forEach(function(x){ if (x.err) errs.push(x.err); });
+          var code = xlCode(o.code); if (code && code.length < 4) errs.push('Login code “' + code + '” needs at least 4 letters or digits.');
+          var ex = (id && rById[id]) || rByName[xlKey(f, l)];
+          if (ex && matchedR[ex.id]) errs.push(f + ' ' + l + ' is in the file twice.');
+          if (code){
+            if (fileCodes[code]) errs.push('Login code ' + code + ' is used twice in the file.');
+            else if (codeOwner[code] && (!ex || codeOwner[code] !== ex.id)) errs.push('Login code ' + code + ' already belongs to someone else.');
+          }
+          var teamName = teamRef(o.team);
+          if (errs.length){ if (ex) matchedR[ex.id] = true;   // skipped, but still in the file: never counts as "not in the file"
+            sR.errors.push({ row: o._row, label: (f + ' ' + l).trim() || 'Row ' + o._row, msg: errs.join(' ') }); return; }
+          if (code) fileCodes[code] = true;
+          var data = { firstName: f, lastName: l, nickname: xlCellText(o.nickname), teamName: teamName, sex: sx.v, birthDate: bd.v,
+            heightCm: h.v, weightKg: w.v, ftp: ftp.v, homeTown: xlCellText(o.homeTown), phone: xlCellText(o.phone), email: xlCellText(o.email),
+            code: code, notes: xlCellText(o.notes) };
+          if (ex){
+            matchedR[ex.id] = true; data.id = ex.id; if (!data.code) data.code = ex.code;
+            var exTeam = ex.teamId && teamById[ex.teamId] ? teamById[ex.teamId].name : '';
+            var ch = xlDiff([['First name', ex.firstName, f], ['Last name', ex.lastName, l], ['Nickname', ex.nickname || '', data.nickname],
+              ['Team', exTeam, teamName], ['Sex', ex.sex || '', data.sex], ['Date of birth', ex.birthDate || '', data.birthDate],
+              ['Height', ex.heightCm, data.heightCm], ['Weight', ex.weightKg, data.weightKg], ['FTP', ex.ftp, data.ftp],
+              ['Home address', ex.homeTown || '', data.homeTown], ['GSM', ex.phone || '', data.phone], ['E-mail', ex.email || '', data.email],
+              ['Login code', ex.code || '', data.code], ['Notes', ex.notes || '', data.notes]]);
+            (ch.length ? sR.updates : sR.same).push({ row: o._row, label: f + ' ' + l, data: data, changes: ch, ex: ex });
+          } else sR.creates.push({ row: o._row, label: f + ' ' + l, sub: teamName || 'no team', data: data });
+        });
+        cur.riders.forEach(function(r){ if (!matchedR[r.id]) sR.missing.push({ label: r.firstName + ' ' + r.lastName, ex: r, sub: r.team || 'no team' }); });
+      }
+    }
+
+    // ---- Staff ----
+    var sRows = xlFindSheet(wb, 'Staff'), sS = section('staff', 'Staff');
+    if (!sRows) sS.present = false;
+    else {
+      var st = xlTable(sRows, XL_COLS.Staff, 'Staff');
+      if (st.error) sS.errors.push({ row: 1, msg: st.error });
+      else {
+        var sById = {}, sByName = {}, matchedS = {};
+        cur.staff.forEach(function(s){ sById[s.id] = s; sByName[xlKey(s.firstName, s.lastName)] = s; });
+        st.rows.forEach(function(o){
+          var errs = [], f = xlCellText(o.firstName), l = xlCellText(o.lastName), id = xlCellText(o.id), role = xlCellText(o.role);
+          var ex = (id && sById[id]) || sByName[xlKey(f, l)];
+          if (!f) errs.push('First name is required.');
+          if (!role) errs.push('Function is required.');
+          else {
+            var rm = cur.roles.filter(function(x){ return x.toLowerCase() === role.toLowerCase(); })[0];
+            if (rm) role = rm;
+            else if (!(ex && ex.role && ex.role.toLowerCase() === role.toLowerCase())) errs.push('Function “' + role + '” is not in the list. Pick one from the dropdown.');
+          }
+          var code = xlCode(o.code); if (code && code.length < 4) errs.push('Login code “' + code + '” needs at least 4 letters or digits.');
+          if (ex && matchedS[ex.id]) errs.push((f + ' ' + l).trim() + ' is in the file twice.');
+          if (code){
+            if (fileCodes[code]) errs.push('Login code ' + code + ' is used twice in the file.');
+            else if (codeOwner[code] && (!ex || codeOwner[code] !== ex.id)) errs.push('Login code ' + code + ' already belongs to someone else.');
+          }
+          var tns = [o.team1, o.team2, o.team3].map(function(x){ return teamRef(x); }).filter(Boolean)
+            .filter(function(x, i, a){ return a.map(function(y){ return y.toLowerCase(); }).indexOf(x.toLowerCase()) === i; });
+          if (errs.length){ if (ex) matchedS[ex.id] = true;   // skipped, but still in the file
+            sS.errors.push({ row: o._row, label: (f + ' ' + l).trim() || 'Row ' + o._row, msg: errs.join(' ') }); return; }
+          if (code) fileCodes[code] = true;
+          // the server needs a last name: a one-word name (like “Jonas”) gets a dash
+          var data = { firstName: f, lastName: l || '–', role: role, teamNames: tns, phone: xlCellText(o.phone), email: xlCellText(o.email), code: code, notes: xlCellText(o.notes) };
+          if (ex){
+            matchedS[ex.id] = true; data.id = ex.id; if (!data.code) data.code = ex.code;
+            var exT = (ex.teamIds || []).map(function(i){ return teamById[i] ? teamById[i].name : ''; }).filter(Boolean).join(', ');
+            var ch = xlDiff([['First name', ex.firstName, f], ['Last name', ex.lastName, data.lastName], ['Function', ex.role || '', role],
+              ['Teams', exT, tns.join(', ')], ['GSM', ex.phone || '', data.phone], ['E-mail', ex.email || '', data.email],
+              ['Login code', ex.code || '', data.code], ['Notes', ex.notes || '', data.notes]]);
+            (ch.length ? sS.updates : sS.same).push({ row: o._row, label: f + ' ' + l, data: data, changes: ch, ex: ex });
+          } else sS.creates.push({ row: o._row, label: (f + ' ' + l).trim(), sub: role + (tns.length ? ' · ' + tns.join(', ') : ''), data: data });
+        });
+        cur.staff.forEach(function(s){ if (!matchedS[s.id]) sS.missing.push({ label: s.firstName + ' ' + s.lastName, ex: s, sub: s.role || '' }); });
+      }
+    }
+    plan.newTeamNames = Object.keys(unknown).map(function(k){ return unknown[k]; });
+    plan.sheets = plan.sheets.filter(function(s){ return s.present; });
+    return plan;
+  }
+  function xlDiff(pairs){
+    var out = [];
+    pairs.forEach(function(p){
+      var a = p[1] === null || p[1] === undefined ? '' : String(p[1]), b = p[2] === null || p[2] === undefined ? '' : String(p[2]);
+      if (a.trim() !== b.trim()) out.push({ f: p[0], a: a, b: b });
+    });
+    return out;
+  }
+
+  /* ---- preview ---- */
+  function xlLi(label, sub, cls){ var li = el('li', cls || null); li.appendChild(document.createTextNode(label)); if (sub){ var s = el('small', null, sub); li.appendChild(s); } return li; }
+  function xlDetails(title, items, open){ var d = el('details'); if (open) d.open = true; d.appendChild(el('summary', null, title)); var ul = el('ul', 'xl-list'); items.forEach(function(i){ ul.appendChild(i); }); d.appendChild(ul); return d; }
+  function xlRenderPlan(){
+    var plan = XL.plan, box = $('xlCards'); box.innerHTML = '';
+    plan.sheets.forEach(function(sec){
+      var card = el('div', 'xl-card'), h = el('div', 'xl-card-h');
+      h.appendChild(el('h3', null, sec.label));
+      function chip(n, txt, cls){ if (n) h.appendChild(el('span', 'xl-chip ' + (cls || ''), n + ' ' + txt)); }
+      chip(sec.creates.length, 'new', 'new'); chip(sec.updates.length, 'changed', 'chg'); chip(sec.same.length, 'unchanged');
+      chip(sec.missing.length, 'not in the file', 'del'); chip(sec.errors.length, sec.errors.length === 1 ? 'problem' : 'problems', 'err');
+      if (!sec.creates.length && !sec.updates.length && !sec.missing.length && !sec.errors.length) h.appendChild(el('span', 'xl-chip', 'nothing to change'));
+      card.appendChild(h);
+      if (sec.errors.length) card.appendChild(xlDetails('Problems: these rows are skipped (' + sec.errors.length + ')', sec.errors.map(function(e){ return xlLi((e.label ? e.label + ' · ' : '') + 'row ' + e.row, e.msg, 'err'); }), true));
+      if (sec.creates.length) card.appendChild(xlDetails('New (' + sec.creates.length + ')', sec.creates.map(function(c){ return xlLi(c.label, c.sub || ''); }), sec.creates.length <= 8));
+      if (sec.updates.length) card.appendChild(xlDetails('Changed (' + sec.updates.length + ')', sec.updates.map(function(u){
+        var li = xlLi(u.label);
+        u.changes.forEach(function(c){ var f = el('span', 'chg-f'); f.appendChild(document.createTextNode(c.f + ': ')); var s = el('s', null, c.a || '(empty)'), i = el('ins', null, c.b || '(empty)'); f.appendChild(s); f.appendChild(document.createTextNode(' → ')); f.appendChild(i); li.appendChild(f); });
+        return li; }), sec.updates.length <= 8));
+      if (sec.missing.length) card.appendChild(xlDetails('Not in the file (' + sec.missing.length + ')', sec.missing.map(function(m){ return xlLi(m.label, m.sub || ''); }), false));
+      box.appendChild(card);
+    });
+    // options
+    var opts = $('xlOpts'); opts.innerHTML = '';
+    function toggle(key, title, sub, danger){
+      var row = el('div', 'permrow' + (danger ? ' danger' : '')), t = el('div'); t.appendChild(el('b', null, title)); t.appendChild(el('small', null, sub));
+      var sw = el('button', 'switch'); sw.type = 'button'; sw.setAttribute('role', 'switch'); sw.setAttribute('aria-checked', String(!!XL.opts[key])); sw.setAttribute('aria-label', title);
+      sw.addEventListener('click', function(){ XL.opts[key] = !XL.opts[key]; sw.setAttribute('aria-checked', String(XL.opts[key])); xlApplyLabel(); });
+      row.appendChild(t); row.appendChild(sw); opts.appendChild(row);
+    }
+    if (plan.newTeamNames.length) toggle('createTeams', 'Create ' + plan.newTeamNames.length + ' new team' + (plan.newTeamNames.length === 1 ? '' : 's'),
+      plan.newTeamNames.join(', ') + ': used in the file but not in the app. Off = these team links are left empty.');
+    plan.sheets.forEach(function(sec){
+      if (!sec.missing.length) return;
+      var one = sec.missing.length === 1, what = sec.name === 'riders' ? (one ? 'rider' : 'riders') : sec.name === 'staff' ? (one ? 'staff member' : 'staff members') : (one ? 'team' : 'teams');
+      var sub = sec.name === 'riders' ? 'Also removes their training plan, feedback and routes. They can no longer sign in.'
+        : sec.name === 'staff' ? 'They can no longer sign in.' : 'Their riders stay, without a team.';
+      toggle('remove_' + sec.name, 'Remove the ' + sec.missing.length + ' ' + what + ' not in the file', sub, true);
+    });
+    xlApplyLabel();
+    $('xlPreview').hidden = false;
+  }
+  function xlCount(){
+    var p = XL.plan, n = 0;
+    p.sheets.forEach(function(s){ n += s.creates.length + s.updates.length; if (XL.opts['remove_' + s.name]) n += s.missing.length; });
+    if (XL.opts.createTeams) n += p.newTeamNames.length;
+    return n;
+  }
+  function xlApplyLabel(){ var n = xlCount(); $('xlApply').disabled = !n; $('xlApply').textContent = n ? 'Apply ' + n + ' change' + (n === 1 ? '' : 's') : 'Nothing to apply'; }
+
+  function xlOpenFile(file){
+    if (!file) return;
+    $('xlResult').hidden = true; $('xlPreview').hidden = true;
+    if (!/\.xlsx$/i.test(file.name)){ $('xlUpMsg').className = 'result no'; $('xlUpMsg').textContent = 'Choose an Excel .xlsx file (in Excel: Save as → Excel Workbook).'; return; }
+    $('xlUpMsg').className = 'result'; $('xlUpMsg').textContent = 'Reading ' + file.name + '…';
+    Promise.all([file.arrayBuffer().then(function(b){ return XLSXLite.read(b); }), xlLoadAll()]).then(function(r){
+      var wb = r[0], cur = r[1];
+      if (!xlFindSheet(wb, 'Riders') && !xlFindSheet(wb, 'Teams') && !xlFindSheet(wb, 'Staff'))
+        throw new Error('This file has no Riders, Teams or Staff sheet. Use the master file from “Download master file”.');
+      XL.plan = xlBuildPlan(wb, cur); XL.opts = { createTeams: true };
+      $('xlUpMsg').className = 'result ok'; $('xlUpMsg').textContent = file.name + ': check the changes below, then apply them.';
+      xlRenderPlan();
+    }).catch(function(e){ $('xlUpMsg').className = 'result no'; $('xlUpMsg').textContent = e.message || 'This file could not be read.'; });
+  }
+  $('xlFile').addEventListener('change', function(){ var f = this.files && this.files[0]; this.value = ''; xlOpenFile(f); });
+  ['dragenter', 'dragover'].forEach(function(ev){ $('xlDrop').addEventListener(ev, function(e){ e.preventDefault(); this.classList.add('over'); }); });
+  ['dragleave', 'drop'].forEach(function(ev){ $('xlDrop').addEventListener(ev, function(){ this.classList.remove('over'); }); });
+  $('xlDrop').addEventListener('drop', function(e){ e.preventDefault(); var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; xlOpenFile(f); });
+  $('xlCancel').addEventListener('click', function(){ XL.plan = null; $('xlPreview').hidden = true; $('xlUpMsg').textContent = ''; });
+
+  /* ---- apply ---- */
+  var XL_COLORS = ['#fbc120', '#3fbf6a', '#4fa3d9', '#e0679a', '#a57bf0', '#ff8a3d', '#5ad1c8'];
+  $('xlApply').addEventListener('click', async function(){
+    var plan = XL.plan; if (!plan) return;
+    var tasks = [], teamIdByName = {}, made = [], problems = [];
+    plan.cur.teams.forEach(function(t){ teamIdByName[t.name.toLowerCase()] = t.id; });
+    function sec(n){ return plan.sheets.filter(function(s){ return s.name === n; })[0]; }
+    var T = sec('teams'), Rr = sec('riders'), S = sec('staff');
+    // 1. teams (first, so riders and staff can be linked to them)
+    if (T) T.creates.concat(T.updates).forEach(function(it){
+      tasks.push({ label: 'Team ' + it.label, run: function(){ return api('/api/teams', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ team: it.data }) })
+        .then(function(r){ if (!r.ok) throw new Error(r.data.error); teamIdByName[it.data.name.toLowerCase()] = r.data.team.id; if (it.ex && it.ex.name.toLowerCase() !== it.data.name.toLowerCase()) delete teamIdByName[it.ex.name.toLowerCase()]; }); } });
+    });
+    if (XL.opts.createTeams) plan.newTeamNames.forEach(function(name, i){
+      tasks.push({ label: 'New team ' + name, run: function(){
+        if (teamIdByName[name.toLowerCase()]) return Promise.resolve();
+        return api('/api/teams', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ team: { name: name, color: XL_COLORS[i % XL_COLORS.length], about: '' } }) })
+          .then(function(r){ if (!r.ok) throw new Error(r.data.error); teamIdByName[name.toLowerCase()] = r.data.team.id; made.push({ kind: 'Team', name: name, code: '' }); }); } });
+    });
+    function tid(name){ return name ? (teamIdByName[name.toLowerCase()] || '') : ''; }
+    // 2. riders
+    if (Rr) Rr.creates.concat(Rr.updates).forEach(function(it){
+      tasks.push({ label: it.label, run: function(){
+        var d = it.data, rider = { firstName: d.firstName, lastName: d.lastName, nickname: d.nickname, teamId: tid(d.teamName), sex: d.sex, birthDate: d.birthDate,
+          heightCm: d.heightCm, weightKg: d.weightKg, ftp: d.ftp, homeTown: d.homeTown, phone: d.phone, email: d.email, code: d.code, notes: d.notes };
+        if (d.id) rider.id = d.id;
+        return api('/api/riders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rider: rider }) })
+          .then(function(r){ if (!r.ok) throw new Error(r.data.error); if (!d.id || (it.ex && it.ex.code !== r.data.rider.code)) made.push({ kind: 'Rider', name: it.label, code: r.data.rider.code }); }); } });
+    });
+    // 3. staff
+    if (S) S.creates.concat(S.updates).forEach(function(it){
+      tasks.push({ label: it.label, run: function(){
+        var d = it.data, staff = { firstName: d.firstName, lastName: d.lastName, role: d.role, teamIds: d.teamNames.map(tid).filter(Boolean), phone: d.phone, email: d.email, code: d.code, notes: d.notes };
+        if (d.id) staff.id = d.id;
+        return api('/api/staff', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ staff: staff }) })
+          .then(function(r){ if (!r.ok) throw new Error(r.data.error); if (!d.id || (it.ex && it.ex.code !== r.data.staff.code)) made.push({ kind: 'Staff', name: it.label, code: r.data.staff.code }); }); } });
+    });
+    // 4. removals (only when switched on)
+    [['staff', S, '/api/staff'], ['riders', Rr, '/api/riders'], ['teams', T, '/api/teams']].forEach(function(x){
+      if (!x[1] || !XL.opts['remove_' + x[0]]) return;
+      x[1].missing.forEach(function(m){
+        tasks.push({ label: 'Remove ' + m.label, run: function(){ return api(x[2], { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: m.ex.id }) })
+          .then(function(r){ if (!r.ok) throw new Error(r.data.error); }); } });
+      });
+    });
+    if (!tasks.length) return;
+    var btn = this; btn.disabled = true; $('xlCancel').disabled = true; $('xlProgress').hidden = false;
+    for (var i = 0; i < tasks.length; i++){
+      $('xlProgTxt').textContent = 'Saving ' + (i + 1) + ' of ' + tasks.length + ': ' + tasks[i].label;
+      $('xlBarFill').style.width = Math.round(i / tasks.length * 100) + '%';
+      try{ await tasks[i].run(); } catch(e){ problems.push(tasks[i].label + ': ' + ((e && e.message) || 'failed')); }
+    }
+    $('xlBarFill').style.width = '100%'; $('xlProgTxt').textContent = 'Done.';
+    setTimeout(function(){ $('xlProgress').hidden = true; }, 1200);
+    btn.disabled = false; $('xlCancel').disabled = false; $('xlPreview').hidden = true; XL.plan = null;
+    // result
+    var res = $('xlResult'); res.innerHTML = ''; res.hidden = false;
+    var box = el('div', 'xl-done'); box.appendChild(el('h3', null, (tasks.length - problems.length) + ' of ' + tasks.length + ' changes saved'));
+    if (problems.length){ var ul = el('ul', 'xl-list'); problems.forEach(function(p){ ul.appendChild(xlLi(p, '', 'err')); }); box.appendChild(el('p', null, 'These could not be saved:')); box.appendChild(ul); }
+    var people = made.filter(function(m){ return m.code; });
+    if (people.length){
+      box.appendChild(el('p', null, 'New login codes: give these to the people below.'));
+      var tb = el('table', 'xl-codes');
+      people.forEach(function(m){ var tr = el('tr'); tr.appendChild(el('td', null, m.name)); tr.appendChild(el('td', 'muted', m.kind)); tr.appendChild(el('td', null, m.code)); tb.appendChild(tr); });
+      box.appendChild(tb);
+      var cp = el('button', 'ghost', 'Copy the codes'); cp.type = 'button'; cp.style.marginTop = '10px';
+      cp.addEventListener('click', function(){ var t = people.map(function(m){ return m.name + '\t' + m.code; }).join('\n');
+        (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function(){ cp.textContent = 'Copied ✓'; }, function(){ cp.textContent = 'Select and copy the table'; }); });
+      box.appendChild(cp);
+    }
+    res.appendChild(box);
+    $('xlUpMsg').textContent = '';
+    loadTeams(); loadRiders(); loadStaff();
   });
 
   // start: unlocked if this phone remembers the password

@@ -268,7 +268,7 @@ Phones keep the one-column, week-by-week layout. It switches on rotate/resize.
   never birth dates, codes or notes.
 - **Layout (rider app)**: the dashboard's fixed top bar shows the logo and
   who is signed in (name, nickname, team). A fixed bottom bar on every screen
-  (dashboard, Train, Calendar, Team and Track) has **Back**, **Home**, **Refresh** and
+  (dashboard, Train, Calendar, Team and Track) has **Back**, **Home**, **Refresh**, **Forward** and
   **Profile** (your photo or initials). Profile opens a menu upwards with
   **My profile**, **Notifications** and **Log out**. There are no Home
   buttons at the top any more; on Track the map and its panel end above the
@@ -345,9 +345,10 @@ Phones keep the one-column, week-by-week layout. It switches on rotate/resize.
   download as .gpx again. A plain Track visit (from the dashboard) has .gpx
   straight away, no Use. Keys: `rootahead:planroutes:<id>` (summary per day),
   `rootahead:planroutegpx:<id>` (GPX per day), removed with the plan / rider.
-- **Back** (bottom bar, left of Home) returns to the previous screen, step by
-  step (e.g. Track → Train → dashboard); greyed out when there is nothing to
-  go back to. **Home** always goes to the dashboard.
+- **Back** and **Forward** (bottom bar: Back · Home · Refresh · Forward ·
+  Profile): Back returns to the previous screen step by step (e.g. Track →
+  Train → dashboard), Forward undoes a Back; each is greyed out when there is
+  nothing to go to. **Home** always goes to the dashboard.
 - **Training routes ask for 15% more distance** (`TRAIN_ROUTE_EXTRA` in
   index.html) because generated routes tend to come out a bit short; the fit
   check against the planned time is unchanged.
@@ -449,6 +450,29 @@ Phones keep the one-column, week-by-week layout. It switches on rotate/resize.
     animations), `lib/api/splash.js`, `splash-default.jpg` (the team photo, for
     the admin preview). Keys: `rootahead:splash`, `rootahead:splashimg:bg|logo`.
     A clean sheet never removes the splash setup.
+
+- **Excel master file** (RA Admin → **Excel**): one workbook with the sheets
+  Read me · Riders · Teams · Staff (and a hidden Lists sheet). Fixed columns,
+  defined in the app (`XL_COLS` in admin/index.html), so the file always
+  matches: Team, Sex and Function are dropdown lists, height / weight / FTP
+  are checked numbers, the ID column links each row to the right person.
+  **Upload** shows a preview per sheet (new · changed with old → new ·
+  unchanged · not in the file · problems with the reason) before anything is
+  saved; options: create teams used in the file but not in the app, and
+  remove riders / staff / teams that are not in the file (off by default).
+  Applies teams first, then riders and staff, then removals, with a progress
+  bar; new login codes are listed at the end (copy button). Sheets that are
+  not in the file are left alone. Dates may be YYYY-MM-DD or DD/MM/YYYY; sex
+  M / F (or V) / X. The Excel writer/reader is `xlsx-lite.js` (no outside
+  library).
+- **Staff functions** come from the team's staff list (DPODR_Medewerkers):
+  Manager / Sportdirecteur, Sportdirecteur, DS CLUB, Financieel
+  verantwoordelijke, Administratie / aanvragen / logistiek, Social Media -
+  Marketing - Evenementen, Verzorger / massage, Verzorger, Verzorger /
+  logistiek / chauffeur, Verzorger / massage (stagiair), Mechanieker, Kok,
+  Service Course & opvolging, Performance, Diëtiste, Andere (`STAFF_ROLES` in
+  lib/api/_riders.js). An older role on an existing staff member stays
+  selectable.
 
 **Test files**: `root-ahead-test.html` and `ra-admin-test.html` share one test
 database when opened in the same browser: make a rider in RA Admin, then sign
