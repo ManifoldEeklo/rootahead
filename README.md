@@ -374,6 +374,16 @@ Phones keep the one-column, week-by-week layout. It switches on rotate/resize.
   code · Status; tap a row to open that person's form. ✎ on the chip (or
   "✎ Edit team") edits name, colour, logo/photo and description.
 
+- **No-internet banner** (rider app and RA Admin, every screen): a red bar
+  "No internet connection" appears at start-up, when the app comes back to the
+  screen, and as soon as the connection drops. It doesn't trust the phone's
+  own "online" flag alone (Wi-Fi without internet): it pings
+  `/api/vapid-public-key`, re-checks every 15 s while offline and after any
+  failed request. "Try again" re-checks; ✕ shrinks it to a small "Offline"
+  pill. When the connection returns it shows "Back online" for 2.5 s.
+  RA Admin now registers the service worker too, so it opens offline (last
+  loaded page, network-first) instead of showing the browser's error page.
+
 **Test files**: `root-ahead-test.html` and `ra-admin-test.html` share one test
 database when opened in the same browser: make a rider in RA Admin, then sign
 in with the code in the app. Demo codes: ELS2026, JAN2026, LOTTE26.

@@ -997,6 +997,137 @@
 </style>
 </head>
 <body>
+<!-- ===== Offline banner (shared by the rider app and RA Admin) =====
+     Shows a clear banner whenever there is no internet connection: at start-up,
+     when the app comes back to the screen, and while it is open. It does not
+     trust navigator.onLine alone (a phone on Wi-Fi without internet still says
+     "online"): it pings /api/vapid-public-key, which the service worker never
+     caches. Any failed app request also triggers a re-check. -->
+<style>
+  #raOffline{position:fixed;left:0;right:0;top:0;z-index:2147483000;display:none;
+    padding:calc(10px + env(safe-area-inset-top,0px)) 14px 12px;
+    background:#b3261e;color:#fff;box-shadow:0 4px 18px rgba(0,0,0,.45);
+    font:500 15px/1.35 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    transform:translateY(-100%);transition:transform .25s ease;}
+  #raOffline.show{display:block;}
+  #raOffline.in{transform:translateY(0);}
+  #raOffline .ro-row{display:flex;align-items:flex-start;gap:12px;max-width:760px;margin:0 auto;}
+  #raOffline svg{flex:0 0 28px;width:28px;height:28px;margin-top:2px;}
+  #raOffline .ro-text{flex:1;min-width:0;}
+  #raOffline .ro-title{font-weight:700;font-size:17px;letter-spacing:.01em;}
+  #raOffline .ro-sub{opacity:.92;font-size:14px;margin-top:2px;}
+  #raOffline .ro-btns{display:flex;gap:8px;flex:0 0 auto;align-items:center;}
+  #raOffline button{font:600 14px system-ui,-apple-system,sans-serif;border-radius:999px;cursor:pointer;
+    border:1.5px solid rgba(255,255,255,.85);background:#fff;color:#8c1d16;padding:7px 14px;min-height:36px;}
+  #raOffline button.ro-x{background:transparent;color:#fff;padding:7px 11px;}
+  #raOffline button:disabled{opacity:.6;}
+  #raOffline.back{background:#1f7a3a;}
+  #raOffline.back .ro-btns{display:none;}
+  @media (max-width:520px){
+    #raOffline .ro-row{flex-wrap:wrap;}
+    #raOffline .ro-btns{width:100%;padding-left:40px;}
+  }
+  /* collapsed: a small pill that stays visible while offline */
+  #raOfflinePill{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);
+    z-index:2147483000;display:none;align-items:center;gap:6px;border:0;cursor:pointer;
+    background:#b3261e;color:#fff;border-radius:999px;padding:6px 14px;box-shadow:0 3px 12px rgba(0,0,0,.4);
+    font:700 13px system-ui,-apple-system,sans-serif;}
+  #raOfflinePill.show{display:flex;}
+  #raOfflinePill i{width:8px;height:8px;border-radius:50%;background:#fff;animation:roPulse 1.4s infinite;}
+  @keyframes roPulse{50%{opacity:.3}}
+</style>
+<div id="raOffline" role="alert" aria-live="assertive">
+  <div class="ro-row">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M2 2l20 20"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M5 12.86a10 10 0 0 1 5.17-2.69"/>
+      <path d="M19 12.86a10 10 0 0 0-2.4-1.73"/><path d="M2 8.82a15 15 0 0 1 4.18-2.65"/><path d="M22 8.82a15 15 0 0 0-11.29-3.76"/>
+      <circle cx="12" cy="20" r="1" fill="currentColor"/>
+    </svg>
+    <div class="ro-text">
+      <div class="ro-title">No internet connection</div>
+      <div class="ro-sub">Check Wi-Fi or mobile data. Until you're back online, nothing new can load or be saved.</div>
+    </div>
+    <div class="ro-btns">
+      <button type="button" class="ro-retry">Try again</button>
+      <button type="button" class="ro-x" aria-label="Make smaller">✕</button>
+    </div>
+  </div>
+</div>
+<button type="button" id="raOfflinePill" aria-label="No internet connection – show details"><i></i>Offline</button>
+<script>
+(function(){
+  var bar = document.getElementById('raOffline'), pill = document.getElementById('raOfflinePill');
+  var title = bar.querySelector('.ro-title'), sub = bar.querySelector('.ro-sub'), retry = bar.querySelector('.ro-retry');
+  var TITLE = title.textContent, SUB = sub.textContent;
+  var realFetch = window.fetch ? window.fetch.bind(window) : null;
+  var offline = false, collapsed = false, checking = null, retryTimer = null, hideTimer = null;
+
+  function render(){
+    clearTimeout(hideTimer);
+    if (offline){
+      bar.classList.remove('back'); title.textContent = TITLE; sub.textContent = SUB;
+      if (collapsed){ bar.classList.remove('show','in'); pill.classList.add('show'); }
+      else { pill.classList.remove('show'); bar.classList.add('show'); requestAnimationFrame(function(){ bar.classList.add('in'); }); }
+    }
+  }
+  function goOffline(){
+    if (!offline){ offline = true; collapsed = false; }
+    render();
+    clearInterval(retryTimer); retryTimer = setInterval(check, 15000);
+  }
+  function goOnline(){
+    clearInterval(retryTimer); retryTimer = null;
+    if (!offline) return;
+    offline = false; pill.classList.remove('show');
+    bar.classList.add('back','show','in');
+    title.textContent = 'Back online'; sub.textContent = 'Your connection is back.';
+    hideTimer = setTimeout(function(){
+      bar.classList.remove('in');
+      setTimeout(function(){ if (!offline) bar.classList.remove('show','back'); }, 300);
+    }, 2500);
+  }
+  // Real check: can we reach our own server? (any HTTP answer = online)
+  function check(){
+    if (navigator.onLine === false){ goOffline(); return Promise.resolve(false); }
+    if (!realFetch || location.protocol === 'file:'){ goOnline(); return Promise.resolve(true); }
+    if (checking) return checking;
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var t = setTimeout(function(){ if (ctrl) ctrl.abort(); }, 8000);
+    checking = realFetch('/api/vapid-public-key?ping=' + Date.now(), { cache:'no-store', signal: ctrl ? ctrl.signal : undefined })
+      .then(function(){ goOnline(); return true; }, function(){ goOffline(); return false; })
+      .then(function(r){ clearTimeout(t); checking = null; return r; });
+    return checking;
+  }
+  window.raCheckConnection = check;
+
+  // A failed request anywhere in the app (network error, not an HTTP error) → re-check.
+  if (realFetch){
+    window.fetch = function(){
+      return realFetch.apply(window, arguments).catch(function(err){
+        if (!(err && err.name === 'AbortError')) setTimeout(check, 0);
+        throw err;
+      });
+    };
+  }
+
+  retry.addEventListener('click', function(){
+    retry.disabled = true; retry.textContent = 'Checking…';
+    check().then(function(){ retry.disabled = false; retry.textContent = 'Try again'; });
+  });
+  bar.querySelector('.ro-x').addEventListener('click', function(){ collapsed = true; render(); });
+  pill.addEventListener('click', function(){ collapsed = false; render(); check(); });
+
+  window.addEventListener('offline', goOffline);
+  window.addEventListener('online', check);
+  window.addEventListener('pageshow', check);
+  document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'visible') check(); });
+
+  // At start-up: show at once when the device says it's offline, otherwise verify.
+  if (navigator.onLine === false) goOffline(); else check();
+})();
+</script>
+<!-- ===== /Offline banner ===== -->
+
 
 <div id="drawOverlay">
   <div class="draw-panel">

@@ -5,10 +5,12 @@
 //    the cached copy is only used when the network fails.
 //    Never cached: /api/* (live data), map tiles and routing services
 //    (other origins) — those simply need a connection.
+//    RA Admin (/admin) is network-first too, with its last page as offline
+//    fallback so the offline banner can show.
 // 2. Push notifications (unchanged from before): shows them and focuses or
 //    opens the app when one is tapped.
 
-var CACHE = 'rootahead-shell-v7'; // bump when the list below changes
+var CACHE = 'rootahead-shell-v8'; // bump when the list below changes
 var SHELL = ['/', '/manifest.json', '/logo-rootahead.png', '/icon-192-v2.png', '/icon-512-v2.png', '/apple-touch-icon-v2.png'];
 
 self.addEventListener('install', function(event){
@@ -36,7 +38,21 @@ self.addEventListener('fetch', function(event){
   if (url.origin !== self.location.origin) return;      // tiles, routing, fonts: straight to network
   if (url.pathname.indexOf('/api/') === 0) return;      // live data: never cached
   if (url.pathname.indexOf('/_vercel/') === 0) return;  // analytics
-  if (url.pathname.indexOf('/admin') === 0) return;     // the RA Messages app: always live, never cached
+  if (url.pathname.indexOf('/admin') === 0){
+    // RA Admin: always live when online. Only the page itself is kept as an
+    // offline fallback, so the app opens and shows "No internet connection"
+    // instead of the browser's error page. Its icons/manifest are not cached.
+    if (req.mode !== 'navigate') return;
+    event.respondWith(
+      fetch(req).then(function(res){
+        if (res && res.ok){ var copy = res.clone(); caches.open(CACHE).then(function(c){ c.put('/admin/', copy); }); }
+        return res;
+      }).catch(function(){
+        return caches.match('/admin/').then(function(hit){ return hit || Response.error(); });
+      })
+    );
+    return;
+  }
 
   if (req.mode === 'navigate'){
     // network-first for the page itself, cached shell as offline fallback
