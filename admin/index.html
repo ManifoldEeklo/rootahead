@@ -642,6 +642,14 @@
   .sp-pv-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#c1611d,#e8c26a);}
   .sp-pv-credit{position:absolute;bottom:3.5%;left:0;right:0;text-align:center;font-size:7.5px;color:#9fb0a5;z-index:1;letter-spacing:.05em;}
   .sp-savebar{position:sticky;bottom:0;background:var(--char);padding:6px 0 12px;}
+  .sp-savebar .permrow{margin-top:0;background:var(--char);}
+  #spNotifyText{margin-top:4px;}
+  #spLogoCentre{margin-top:10px;}
+  .sp-color1{width:100%;height:46px;border:1px solid var(--char-3);border-radius:10px;background:var(--char-2);padding:4px;cursor:pointer;}
+  .sp-pv-logo{transform:translate(var(--logo-x,0px), var(--logo-y,0px));}
+  .sp-pv-text{font-family:'Fjalla One',sans-serif;font-size:calc(14px * var(--text-scale,1));letter-spacing:.05em;text-align:center;margin:0 10px 10px;
+    text-shadow:0 2px 10px rgba(0,0,0,.75),0 0 2px rgba(0,0,0,.9);overflow-wrap:anywhere;max-width:92%;}
+  .sp-pv-text.top{position:absolute;z-index:1;left:0;right:0;margin:0 auto;top:9%;}
   @media (prefers-reduced-motion:reduce){ .sp-pv-occ{animation:none;} }
   body.wide #spEditor{display:grid;grid-template-columns:minmax(0,560px) minmax(300px,380px);column-gap:40px;align-items:start;}
   body.wide .sp-side{position:sticky;top:12px;}
@@ -856,6 +864,24 @@
           <input type="range" id="spLogoTr" min="0" max="90" step="5" value="0">
           <label class="field" for="spLogoSize">Size <output id="spLogoSizeOut" class="sp-val">100%</output></label>
           <input type="range" id="spLogoSize" min="50" max="150" step="5" value="100">
+          <label class="field" for="spLogoX">Left ↔ right <output id="spLogoXOut" class="sp-val">centre</output></label>
+          <input type="range" id="spLogoX" min="-45" max="45" step="1" value="0">
+          <label class="field" for="spLogoY">Up ↕ down <output id="spLogoYOut" class="sp-val">normal</output></label>
+          <input type="range" id="spLogoY" min="-45" max="45" step="1" value="0">
+          <button class="ghost" type="button" id="spLogoCentre">Put the logo back in its place</button>
+        </section>
+
+        <section>
+          <h2>Extra text line</h2>
+          <label class="field" for="spTextVal">Text <small class="muted">(empty = no extra line)</small></label>
+          <input type="text" id="spTextVal" maxlength="60" placeholder="e.g. Season 2027 starts 1 March">
+          <div class="two">
+            <div><label class="field" for="spTextColor">Colour</label><input type="color" id="spTextColor" value="#ffffff" class="sp-color1"></div>
+            <div><label class="field" for="spTextPlace">Where</label>
+              <select id="spTextPlace"><option value="above">Above the logo</option><option value="below">Under the logo</option><option value="top">Top of the screen</option></select></div>
+          </div>
+          <label class="field" for="spTextSize">Size <output id="spTextSizeOut" class="sp-val">100%</output></label>
+          <input type="range" id="spTextSize" min="60" max="220" step="10" value="100">
         </section>
 
         <section>
@@ -930,6 +956,7 @@
             <div class="sp-pv-occ" id="spPvOcc" hidden></div>
             <img class="sp-pv-logo" id="spPvLogo" src="/logo-rootahead.png" alt="">
             <div class="sp-pv-tag" id="spPvTag">Manage-Plot-Train</div>
+            <div class="sp-pv-text" id="spPvText" hidden></div>
             <div class="sp-pv-stats" id="spPvStats"><span><b>128</b><i>#Users</i></span><span><b>412</b><i>#Tracks made</i></span></div>
             <div class="sp-pv-bar" id="spPvBar"><i id="spPvBarFill"></i></div>
           </div>
@@ -937,6 +964,9 @@
         </div>
         <button class="ghost wide" type="button" id="spReplay">▶ Play again</button>
         <div class="sp-savebar">
+          <div class="permrow"><div><b>Notify every phone</b><small>Sends a notification; open apps show the new splash at once. Without it, phones show it the next time the app is opened.</small></div>
+            <button class="switch" type="button" role="switch" id="spNotify" aria-checked="false" aria-label="Notify every phone when saving"></button></div>
+          <input type="text" id="spNotifyText" maxlength="120" placeholder="The app has a new look. Open it to see." aria-label="Notification text" hidden>
           <button class="go" type="button" id="spSave">Save splash screen</button>
           <div class="result" id="spResult" role="status"></div>
         </div>
@@ -3653,6 +3683,14 @@
   slider('spBgTr', function(v){ SP.cfg.bg.opacity = Math.round(100 - v) / 100; });
   slider('spLogoTr', function(v){ SP.cfg.logo.opacity = Math.round(100 - v) / 100; });
   slider('spLogoSize', function(v){ SP.cfg.logo.size = v; });
+  slider('spLogoX', function(v){ SP.cfg.logo.x = v; });
+  slider('spLogoY', function(v){ SP.cfg.logo.y = v; });
+  slider('spTextSize', function(v){ SP.cfg.text.size = v; });
+  $('spLogoCentre').addEventListener('click', function(){ SP.cfg.logo.x = 0; SP.cfg.logo.y = 0; touch(); renderSplash(true); });
+  $('spTextVal').addEventListener('input', function(){ SP.cfg.text.value = this.value; touch(); renderSplash(true); });
+  $('spTextColor').addEventListener('input', function(){ SP.cfg.text.color = this.value; touch(); renderSplash(true); });
+  $('spTextPlace').addEventListener('change', function(){ SP.cfg.text.place = this.value; touch(); renderSplash(true); });
+  $('spNotify').addEventListener('click', function(){ var on = this.getAttribute('aria-checked') !== 'true'; this.setAttribute('aria-checked', String(on)); $('spNotifyText').hidden = !on; });
   [['spStats', 'showStats'], ['spTag', 'showTagline'], ['spBar', 'showBar'], ['spCredit', 'showCredit']].forEach(function(p){
     $(p[0]).addEventListener('click', function(){ SP.cfg[p[1]] = !SP.cfg[p[1]]; touch(); renderSplash(); });
   });
@@ -3815,6 +3853,16 @@
     var logo = $('spPvLogo'); if (logo.getAttribute('src') !== logoSrc()) logo.src = logoSrc();
     logo.style.opacity = String(c.logo.opacity);
     $('spPhone').style.setProperty('--logo-scale', String((c.logo.size || 100) / 100));
+    var ph = $('spPhone'), pw = ph.clientWidth || 286, phh = ph.clientHeight || 572;   // logo shift is % of the screen, like on the phone
+    ph.style.setProperty('--logo-x', Math.round((c.logo.x || 0) / 100 * pw) + 'px');
+    ph.style.setProperty('--logo-y', Math.round((c.logo.y || 0) / 100 * phh) + 'px');
+    var tx = $('spPvText'), pin = ph.querySelector('.sp-pv-inner');
+    tx.hidden = !c.text.value; tx.textContent = c.text.value || ''; tx.style.color = c.text.color || '#ffffff';
+    tx.style.setProperty('--text-scale', String((c.text.size || 100) / 100));
+    tx.classList.toggle('top', c.text.place === 'top');
+    if (c.text.place === 'top'){ if (tx.parentNode !== ph) ph.appendChild(tx); }
+    else if (c.text.place === 'above') pin.insertBefore(tx, $('spPvLogo'));
+    else pin.insertBefore(tx, $('spPvTag').nextSibling);
     $('spPvTag').textContent = c.tagline || 'Manage-Plot-Train';
     $('spPvTag').hidden = !c.showTagline; $('spPvStats').hidden = !c.showStats; $('spPvBar').hidden = !c.showBar; $('spPvCredit').hidden = !c.showCredit;
     var m = $('spPvOcc');
@@ -3838,6 +3886,12 @@
     $('spBgTr').value = bt; $('spBgTrOut').textContent = bt + '%';
     $('spLogoTr').value = lt; $('spLogoTrOut').textContent = lt + '%';
     $('spLogoSize').value = c.logo.size; $('spLogoSizeOut').textContent = c.logo.size + '%';
+    $('spLogoX').value = c.logo.x || 0; $('spLogoXOut').textContent = !c.logo.x ? 'centre' : Math.abs(c.logo.x) + '% ' + (c.logo.x < 0 ? 'left' : 'right');
+    $('spLogoY').value = c.logo.y || 0; $('spLogoYOut').textContent = !c.logo.y ? 'normal' : Math.abs(c.logo.y) + '% ' + (c.logo.y < 0 ? 'up' : 'down');
+    $('spLogoCentre').hidden = !c.logo.x && !c.logo.y;
+    if (document.activeElement !== $('spTextVal')) $('spTextVal').value = c.text.value || '';
+    $('spTextColor').value = c.text.color || '#ffffff'; $('spTextPlace').value = c.text.place || 'below';
+    $('spTextSize').value = c.text.size || 100; $('spTextSizeOut').textContent = (c.text.size || 100) + '%';
     $('spBgThumb').style.backgroundImage = 'url("' + bgSrc() + '")';
     $('spLogoThumb').style.backgroundImage = 'url("' + logoSrc() + '")';
     $('spBgReset').hidden = !bgIsCustom(); $('spLogoReset').hidden = !logoIsCustom();
@@ -3854,7 +3908,8 @@
   $('spSave').addEventListener('click', function(){
     if (!SP.cfg) return;
     var bad = SP.cfg.occasions.filter(function(o){ return o.on && !FX.occurrence(o, new Date()); });
-    var body = { splash: SP.cfg };
+    var notify = $('spNotify').getAttribute('aria-checked') === 'true';
+    var body = { splash: SP.cfg, notify: notify, notifyText: $('spNotifyText').value.trim() };
     if (SP.bg !== undefined) body.bg = SP.bg;
     if (SP.logo !== undefined) body.logo = SP.logo;
     var btn = this; btn.disabled = true; $('spResult').className = 'result'; $('spResult').textContent = 'Saving…';
@@ -3866,7 +3921,11 @@
       SP.cfg = FX.normalize(r.data.splash); SP.bg = undefined; SP.logo = undefined; SP.dirty = false; SP.editing = occ(keepEdit) ? keepEdit : null;
       renderSplash();
       $('spResult').className = 'result ok';
-      $('spResult').textContent = 'Saved. Phones show it from their next start.' + (bad.length ? ' Note: ' + bad.map(function(o){ return o.name; }).join(', ') + ' has no dates yet.' : '');
+      var pu = r.data.push, how = 'Phones show the new splash when the app is opened.';
+      if (pu && !pu.ready) how = 'No notification sent: notifications are not set up (VAPID keys in Vercel). Phones show the new splash when the app is opened.';
+      else if (pu) how = 'Notification sent to ' + pu.sent + (pu.sent === 1 ? ' phone' : ' phones') + (pu.failed ? ' (' + pu.failed + ' failed)' : '') + '. Other phones show it when the app is opened.';
+      $('spNotify').setAttribute('aria-checked', 'false'); $('spNotifyText').hidden = true;
+      $('spResult').textContent = 'Saved. ' + how + (bad.length ? ' Note: ' + bad.map(function(o){ return o.name; }).join(', ') + ' has no dates yet.' : '');
     });
   });
 

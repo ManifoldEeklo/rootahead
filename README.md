@@ -400,9 +400,20 @@ Phones keep the one-column, week-by-week layout. It switches on rotate/resize.
     confetti, fireworks), symbols (emoji), colours, amount, and dates (every
     year / only these dates / around Easter). The highest active one in the
     list is shown. Live phone preview in the admin.
-  - Phones keep the last settings (`rootahead_splash`) so the splash looks
-    right from the first frame and offline; new settings are fetched in the
-    background: the new look shows at once, a new time from the next start.
+  - Logo position: Left ↔ right and Up ↕ down sliders (shift in % of the
+    screen), next to size and transparency.
+  - **Extra text line**: text, colour, size, and where (above / under the
+    logo, or at the top of the screen).
+  - **New splash reaches everybody**: phones keep the last settings
+    (`rootahead_splash`) so the splash looks right from the first frame and
+    offline, and check for changes at every start and whenever the app comes
+    back to the screen. When the admin changed something, the app plays the
+    new splash right away (full time, from the start). **Notify every phone**
+    (next to Save) also sends a notification; apps that are open show the new
+    splash at once (push tag `rootahead-splash`).
+- **Refresh** button on the dashboard (next to Log out): fetches everything
+  fresh (newest splash, plan, team, calendar, app update) and starts the app
+  again from the splash screen. The rider stays signed in.
   - Files: `splash-fx.js` (shared by both apps: presets, Easter dates,
     animations), `lib/api/splash.js`, `splash-default.jpg` (the team photo, for
     the admin preview). Keys: `rootahead:splash`, `rootahead:splashimg:bg|logo`.

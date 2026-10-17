@@ -73,6 +73,10 @@
   #splashScreen.custom-bg::before{background:var(--splash-bg-url) center/cover no-repeat !important;}
   @media (min-aspect-ratio: 1/1){ #splashScreen.custom-bg::before{inset:0 !important;width:auto !important;transform:none !important;-webkit-mask-image:none !important;mask-image:none !important;} }
   .splash-fx{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+  .splash-brand{transform:translate(calc(var(--splash-logo-x,0) * 1vw), calc(var(--splash-logo-y,0) * 1vh));}
+  .splash-text{font-family:'Fjalla One',sans-serif;font-size:calc(clamp(16px,4.6vw,22px) * var(--splash-text-scale,1));letter-spacing:.05em;
+    text-align:center;margin:0 18px 14px;max-width:90vw;text-shadow:0 2px 12px rgba(0,0,0,.75),0 0 2px rgba(0,0,0,.9);overflow-wrap:anywhere;}
+  .splash-text.top{position:absolute;z-index:1;left:0;right:0;margin:0 auto;top:calc(env(safe-area-inset-top,0px) + 9vh);}
   #splashScreen.no-stats .splash-stats{display:none !important;}
   .splash-occasion{font-family:'Fjalla One',sans-serif;font-size:clamp(22px,6.5vw,34px);letter-spacing:.04em;text-transform:uppercase;text-align:center;
     color:var(--occ-color,#fbc120);text-shadow:0 2px 14px rgba(0,0,0,.75),0 0 2px rgba(0,0,0,.9);margin:0 16px 14px;max-width:90vw;
@@ -510,7 +514,8 @@
   body.staff-mode .dash-tile.team-tile .icon{position:absolute;top:16px;left:16px;width:40px;height:40px;}
   body.staff-mode .dash-tile.team-tile .s{margin:0;text-align:left;max-width:none;}
   @media (min-width:760px){ body.staff-mode .dash-grid{grid-template-columns:repeat(2,minmax(0,260px));justify-content:start;} }
-  .dash-foot{max-width:960px;width:calc(100% - 44px);margin:2px auto 30px;display:flex;justify-content:center;}
+  .dash-foot{max-width:960px;width:calc(100% - 44px);margin:2px auto 30px;display:flex;justify-content:center;flex-wrap:wrap;gap:10px;}
+  .dash-refresh:hover{border-color:var(--gold);color:var(--gold);}
   .dash-logout{background:none;border:1px solid var(--line);color:var(--text-muted);border-radius:22px;padding:10px 22px;font:inherit;font-size:14px;cursor:pointer;}
   .dash-logout:hover{border-color:#e03b2c;color:#ff9c90;}
   .dash-nick{font-size:12px;font-style:italic;color:var(--text-muted);margin-top:1px;}
@@ -1160,6 +1165,7 @@
     <div class="splash-occasion" id="splashOccasion" hidden></div>
     <img class="brand-logo splash-brand" id="splashLogo" src="/logo-rootahead.png" alt="ROOT Ahead">
     <div class="splash-tagline" id="splashTagline">Manage-Plot-Train</div>
+    <div class="splash-text" id="splashText" hidden></div>
     <div class="splash-stats" id="splashStats">
       <div class="splash-stat"><span class="n" id="splashStatUsers">—</span><span class="l">#Users</span></div>
       <div class="splash-stat"><span class="n" id="splashStatTracks">—</span><span class="l">#Tracks made</span></div>
@@ -1171,12 +1177,14 @@
 <script>
 /* Splash screen look, set by the admin in RA Admin → Splash (see splash-fx.js).
    The last settings are kept on the phone, so they apply before the first paint
-   (and offline); fresh settings are fetched in the background for the next start. */
+   (and offline). Fresh settings are checked at every start and whenever the app
+   comes back to the screen: when the admin changed something, the new splash is
+   played (the main script sets RASplash.onChange to do that). */
 (function(){
-  var KEY = 'rootahead_splash', FX = window.RASplashFX, stopFx = null, el = document.getElementById('splashScreen');
+  var KEY = 'rootahead_splash', FX = window.RASplashFX, stopFx = null, el = document.getElementById('splashScreen'), cur = null;
   function cached(){ try{ return JSON.parse(localStorage.getItem(KEY) || 'null'); }catch(e){ return null; } }
   function apply(raw){
-    if (!FX) return;
+    if (!FX) return null;
     var c = FX.normalize(raw), $ = function(id){ return document.getElementById(id); };
     el.style.setProperty('--splash-bg-op', String(c.bg.opacity));
     if (c.bgUrl){ el.classList.add('custom-bg'); el.style.setProperty('--splash-bg-url', 'url("' + c.bgUrl + '")'); }
@@ -1186,32 +1194,57 @@
     if (!c.logoUrl && /\/api\/splash/.test(logo.getAttribute('src') || '')) logo.src = '/logo-rootahead.png';
     logo.style.opacity = String(c.logo.opacity);
     el.style.setProperty('--splash-logo-scale', String((c.logo.size || 100) / 100));
+    el.style.setProperty('--splash-logo-x', String(c.logo.x || 0));
+    el.style.setProperty('--splash-logo-y', String(c.logo.y || 0));
     $('splashTagline').textContent = c.tagline || 'Manage-Plot-Train';
     $('splashTagline').hidden = !c.showTagline;
     $('splashBar').hidden = !c.showBar;
     $('splashCredit').hidden = !c.showCredit;
     el.classList.toggle('no-stats', !c.showStats);
+    // extra text line: above / under the logo, or at the top of the screen
+    var t = $('splashText'), inner = el.querySelector('.splash-inner');
+    t.hidden = !c.text.value; t.textContent = c.text.value || '';
+    t.style.color = c.text.color || '#ffffff'; t.style.setProperty('--splash-text-scale', String((c.text.size || 100) / 100));
+    t.classList.toggle('top', c.text.place === 'top');
+    if (c.text.place === 'top'){ if (t.parentNode !== el) el.appendChild(t); }
+    else if (c.text.place === 'above') inner.insertBefore(t, logo);
+    else inner.insertBefore(t, $('splashTagline').nextSibling);
     var occ = FX.activeOccasion(c), msg = $('splashOccasion');
     msg.hidden = !(occ && occ.message);
-    if (occ && occ.message){ msg.textContent = occ.message; msg.style.setProperty('--occ-color', (occ.colors && occ.colors[0]) || '#fbc120'); }
+    if (occ && occ.message){ msg.textContent = occ.message; msg.style.setProperty('--occ-color', (occ.colors && occ.colors[0]) || '#fbc120');
+      msg.style.animation = 'none'; void msg.offsetWidth; msg.style.animation = ''; }
     if (stopFx){ stopFx(); stopFx = null; }
     if (occ && !el.classList.contains('hide')) stopFx = FX.run($('splashFx'), occ);
+    cur = c;
     return c;
   }
-  var cfg = apply(cached());
+  var cfg = apply(cached()), lastCheck = 0;
+  function durationMs(){ return Math.round(((cur && cur.durationS) || 5) * 1000); }
   window.RASplash = {
-    durationMs: Math.round(((cfg && cfg.durationS) || 5) * 1000),
+    durationMs: durationMs(),
+    duration: durationMs,
     showStats: !cfg || cfg.showStats !== false,
     stop: function(){ if (stopFx){ stopFx(); stopFx = null; } },
+    reapply: function(){ apply(cached()); },
+    onChange: null,     // set by the main script: plays the splash again with the new look
+    // fetch the settings; resolves true when they changed since this phone last saw them
     refresh: function(){
+      lastCheck = Date.now();
       return fetch('/api/splash', { cache: 'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(d){
-        if (!d) return;
+        if (!d) return false;
         var before = localStorage.getItem(KEY), now = JSON.stringify(d.splash || null);
+        if (before === now || (!before && now === 'null')) return false;
         try{ if (d.splash) localStorage.setItem(KEY, now); else localStorage.removeItem(KEY); }catch(e){}
-        if (before !== now && !el.classList.contains('hide')) apply(d.splash);   // new look shows at once; the new time from the next start
-      }).catch(function(){});
+        apply(d.splash);
+        if (window.RASplash.onChange) window.RASplash.onChange();
+        return true;
+      }).catch(function(){ return false; });
     }
   };
+  // back on the screen after a while: check whether the admin changed the splash
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState === 'visible' && Date.now() - lastCheck > 20000) window.RASplash.refresh();
+  });
 })();
 </script>
 
@@ -1266,7 +1299,7 @@
     <button class="btn primary" type="button" id="installBtn">Install</button>
     <button class="x" type="button" id="installDismiss" aria-label="Not now">✕</button>
   </div>
-  <div class="dash-foot"><button type="button" class="dash-logout" id="dashLogout">⎋ Log out</button></div>
+  <div class="dash-foot"><button type="button" class="dash-logout dash-refresh" id="dashRefresh">⟳ Refresh</button><button type="button" class="dash-logout" id="dashLogout">⎋ Log out</button></div>
   <div class="dash-toast" id="dashToast"></div>
 </div>
 
@@ -1925,22 +1958,33 @@
   // Always shown for the full time (5 s unless the admin set another time in
   // RA Admin → Splash), no matter how fast the app underneath loads.
   var SPLASH_MS = (window.RASplash && window.RASplash.durationMs) || 5000;   // set by the admin (RA Admin → Splash)
-  if (window.RASplash) window.RASplash.refresh();
   var splashEl = document.getElementById('splashScreen');
   var splashBar = document.getElementById('splashBarFill');
-  var splashHidden = false;
-
-  splashBar.style.transition = 'width ' + SPLASH_MS + 'ms linear';
-  requestAnimationFrame(function(){ splashBar.style.width = '100%'; });
+  var splashHidden = false, splashTimer = null;
 
   function hideSplash(){
     if (splashHidden) return;
     splashHidden = true;
     splashEl.classList.add('hide');
-    setTimeout(function(){ splashEl.style.display = 'none'; if (window.RASplash) window.RASplash.stop(); }, 500);
+    setTimeout(function(){ if (!splashHidden) return; splashEl.style.display = 'none'; if (window.RASplash) window.RASplash.stop(); }, 500);
+  }
+  // (re)start the splash for `ms`: at start-up, and again when the admin changed it
+  function playSplash(ms){
+    clearTimeout(splashTimer);
+    splashHidden = false;
+    splashEl.style.display = ''; splashEl.classList.remove('hide');
+    splashBar.style.transition = 'none'; splashBar.style.width = '0%'; void splashBar.offsetWidth;
+    splashBar.style.transition = 'width ' + ms + 'ms linear';
+    requestAnimationFrame(function(){ splashBar.style.width = '100%'; });
+    splashTimer = setTimeout(hideSplash, ms);   // the only thing that closes the splash
   }
   function markSplashReady(key){ /* kept as a no-op hook — splash timing no longer depends on app readiness */ }
-  setTimeout(hideSplash, SPLASH_MS); // the only thing that closes the splash
+  playSplash(SPLASH_MS);
+  if (window.RASplash){
+    // the admin changed the splash: play the new one, from the start, with its own time
+    window.RASplash.onChange = function(){ playSplash(window.RASplash.duration()); window.RASplash.reapply(); };
+    window.RASplash.refresh();
+  }
 
   // Show real usage numbers on the splash, if reachable — quietly does
   // nothing if this HTML is opened standalone without the Vercel/Redis
@@ -2304,6 +2348,19 @@
     forgetRider(); location.reload();
   }
   document.getElementById('dashLogout').addEventListener('click', logOut);
+  // Refresh: fetch everything fresh and start the app again from the splash screen (stays signed in)
+  document.getElementById('dashRefresh').addEventListener('click', function(){
+    if (navigator.onLine === false){ if (window.raCheckConnection) window.raCheckConnection(); return; }
+    var btn = this; btn.disabled = true; btn.textContent = '⟳ Refreshing…';
+    ['rootahead_plan_cache', 'rootahead_roster_cache', 'rootahead_races_cache'].forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
+    var waits = [];
+    if (window.RASplash){ window.RASplash.onChange = null; waits.push(window.RASplash.refresh()); }   // newest splash look first
+    if ('serviceWorker' in navigator && navigator.serviceWorker.getRegistration){
+      waits.push(navigator.serviceWorker.getRegistration().then(function(r){ return r && r.update(); }).catch(function(){}));
+    }
+    var timeout = new Promise(function(r){ setTimeout(r, 4000); });
+    Promise.race([Promise.all(waits), timeout]).then(function(){ location.reload(); }, function(){ location.reload(); });
+  });
   document.getElementById('profSwitch').addEventListener('click', logOut);
   document.getElementById('profChange').addEventListener('click', function(){
     var p = loadProfile() || {};
@@ -6253,6 +6310,7 @@
       var m = e.data || {};
       if (m.type !== 'rootahead-push') return;
       if (m.tag === 'rootahead-plan'){ loadTrain({ force:true }); return; }       // plan changed by the coach
+      if (m.tag === 'rootahead-splash'){ if (window.RASplash) window.RASplash.refresh().then(function(changed){ if (!changed && window.RASplash.onChange) window.RASplash.onChange(); }); return; }   // new splash from the admin
       if (String(m.tag || '').indexOf('rootahead-cal-') === 0){ loadRaces(); showDashToast(m.title + (m.body ? ': ' + m.body : ''), 6000); return; }   // invited
       if (m.body) showDashToast((m.title && m.title !== 'ROOT Ahead' ? m.title + ': ' : '') + m.body, 6000);  // team message while the app is open
     });

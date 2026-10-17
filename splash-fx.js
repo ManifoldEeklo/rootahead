@@ -5,7 +5,8 @@
    Settings (stored in Redis as rootahead:splash, edited in RA Admin → Splash):
      durationS            seconds the splash stays (1–15)
      bg   {custom, v, opacity}     background photo (default: the team photo)
-     logo {custom, v, opacity, size}  logo overlay (default: the ROOT Ahead logo)
+     logo {custom, v, opacity, size, x, y}  logo overlay (default: the ROOT Ahead logo), x/y = shift in % of the screen
+     text {value, color, size, place}       extra text line (place: above / below the logo, or top of the screen)
      showStats, showTagline, showBar, showCredit, tagline
      occasions [ {id, preset, name, on, message, motion, emojis, colors[], amount 1–3,
                   when:'yearly'|'once'|'easter', from, to} ]
@@ -18,7 +19,8 @@
   var DEFAULTS = {
     durationS: 5,
     bg: { custom: false, v: 0, opacity: 0.6 },
-    logo: { custom: false, v: 0, opacity: 1, size: 100 },
+    logo: { custom: false, v: 0, opacity: 1, size: 100, x: 0, y: 0 },   // x/y: shift in % of the screen width/height
+    text: { value: '', color: '#ffffff', size: 100, place: 'below' },  // extra text line: place = above | below (the logo) | top (of the screen)
     showStats: true, showTagline: true, showBar: true, showCredit: true,
     tagline: 'Manage-Plot-Train',
     occasions: []
@@ -96,7 +98,7 @@
     if (!cfg || typeof cfg !== 'object') return c;
     Object.keys(DEFAULTS).forEach(function(k){
       if (!(k in cfg)) return;
-      if (k === 'bg' || k === 'logo') c[k] = Object.assign(c[k], cfg[k] || {});
+      if (k === 'bg' || k === 'logo' || k === 'text') c[k] = Object.assign(c[k], cfg[k] || {});
       else c[k] = cfg[k];
     });
     ['bgUrl', 'logoUrl', 'updatedAt'].forEach(function(k){ if (cfg[k]) c[k] = cfg[k]; });
