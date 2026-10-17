@@ -268,7 +268,7 @@ Phones keep the one-column, week-by-week layout. It switches on rotate/resize.
   never birth dates, codes or notes.
 - **Layout (rider app)**: the dashboard's fixed top bar shows the logo and
   who is signed in (name, nickname, team). A fixed bottom bar on every screen
-  (dashboard, Train, Calendar, Team and Track) has **Home**, **Refresh** and
+  (dashboard, Train, Calendar, Team and Track) has **Back**, **Home**, **Refresh** and
   **Profile** (your photo or initials). Profile opens a menu upwards with
   **My profile**, **Notifications** and **Log out**. There are no Home
   buttons at the top any more; on Track the map and its panel end above the
@@ -345,7 +345,9 @@ Phones keep the one-column, week-by-week layout. It switches on rotate/resize.
   download as .gpx again. A plain Track visit (from the dashboard) has .gpx
   straight away, no Use. Keys: `rootahead:planroutes:<id>` (summary per day),
   `rootahead:planroutegpx:<id>` (GPX per day), removed with the plan / rider.
-- **Home** (bottom bar) always goes to the dashboard.
+- **Back** (bottom bar, left of Home) returns to the previous screen, step by
+  step (e.g. Track → Train → dashboard); greyed out when there is nothing to
+  go back to. **Home** always goes to the dashboard.
 - **Training routes ask for 15% more distance** (`TRAIN_ROUTE_EXTRA` in
   index.html) because generated routes tend to come out a bit short; the fit
   check against the planned time is unchanged.
