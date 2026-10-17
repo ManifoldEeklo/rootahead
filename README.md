@@ -337,6 +337,15 @@ Phones keep the one-column, week-by-week layout. It switches on rotate/resize.
   as last time (when there is one). Then Track opens with the distance set.
   The message on the map has a ✕ and sits behind the slide-out panel, so it
   never covers the Start field.
+- **Use a training route**: a route made from Train shows how it fits the
+  plan, with **↻ New route** and **✓ Use**. **Use** saves it for that training
+  day (km, climbing, riding time, start, and the route itself as GPX); then
+  the **.gpx** button appears. In Train the day shows **Your route** with
+  **🗺 Show route**: it opens Track with the saved route on the map, ready to
+  download as .gpx again. A plain Track visit (from the dashboard) has .gpx
+  straight away, no Use. Keys: `rootahead:planroutes:<id>` (summary per day),
+  `rootahead:planroutegpx:<id>` (GPX per day), removed with the plan / rider.
+- **Home** (bottom bar) always goes to the dashboard.
 - **Training routes ask for 15% more distance** (`TRAIN_ROUTE_EXTRA` in
   index.html) because generated routes tend to come out a bit short; the fit
   check against the planned time is unchanged.

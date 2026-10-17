@@ -1033,6 +1033,14 @@
   .route-actions #generateBtnMap:disabled, .route-actions #downloadBtn:disabled{opacity:.4;cursor:not-allowed;}
   body.is-mobile .route-actions{flex:1 1 100%;flex-direction:row;margin:8px;}
   body.is-mobile .route-actions #generateBtnMap, body.is-mobile .route-actions #downloadBtn{flex:1 1 0;width:auto;}
+  /* a route made for a training day: "Use" first, then ".gpx" */
+  #useRouteBtn{display:none;}
+  body.route-to-use .route-actions #useRouteBtn{display:block;flex:none;width:100%;margin:0;padding:8px 16px;min-height:38px;background:var(--easy);border-color:var(--easy);color:#0c1a10;font-weight:700;}
+  body.is-mobile.route-to-use .route-actions #useRouteBtn{flex:1 1 0;width:auto;}
+  body.route-to-use .route-actions #downloadBtn{display:none !important;}
+  .tv-route .tv-route-acts{display:flex;gap:8px;margin-top:8px;}
+  .tv-route .tv-route-acts .btn{margin:0;padding:7px 12px;font-size:13px;}
+  .tv-route .used{display:block;color:var(--text-muted);font-size:12px;margin-top:2px;}
 
   /* One Generate button: the one in the sidebar, kept in view at the bottom
      of the panel while scrolling (PC and phone). The stat-bar copy stays in
@@ -2026,6 +2034,7 @@
         <button class="btn" id="clearRouteBtn" disabled>✕ Clear</button>
         <div class="route-actions">
           <button class="btn primary" id="generateBtnMap" disabled title="Same settings, a different route">↻ New route</button>
+          <button class="btn primary" id="useRouteBtn" type="button">✓ Use</button>
           <button class="btn primary" id="downloadBtn" disabled>⬇ .gpx</button>
         </div>
       </div>
@@ -2522,7 +2531,7 @@
   }
 
   function showDashboard(){ homeDash.classList.remove('hidden'); hideTrain(); hideTeam(); hideRace(); endTrainRoute(); }
-  function endTrainRoute(){ if (typeof trainRouteCtx !== 'undefined' && trainRouteCtx){ trainRouteCtx = null; var b = document.getElementById('trainRouteBanner'); if (b) b.hidden = true; } }
+  function endTrainRoute(){ document.body.classList.remove('route-to-use'); if (typeof trainRouteCtx !== 'undefined' && trainRouteCtx){ trainRouteCtx = null; var b = document.getElementById('trainRouteBanner'); if (b) b.hidden = true; } }
   function showTrack(){
     homeDash.classList.add('hidden'); hideTeam(); hideRace();
     hideTrain();
@@ -2569,10 +2578,10 @@
     });
   });
   function goDashboard(){
-    // Going "back" keeps the history tidy; if the page was opened directly on
-    // #track there is nothing to go back to, so just clear the hash instead.
-    if (openedTrackFromDash){ openedTrackFromDash = false; history.back(); }
-    else { location.hash = ''; showDashboard(); }
+    // Home always lands on the dashboard (a "back" step could land on Train after a training route)
+    openedTrackFromDash = false;
+    if (location.hash){ try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){ location.hash = ''; } }
+    showDashboard();
   }
   document.getElementById('homeBtn').addEventListener('click', goDashboard);
   document.getElementById('sidebarHomeBtn').addEventListener('click', goDashboard);
@@ -5751,20 +5760,86 @@
   function stepsMinutes(steps){ return Math.round((steps || []).reduce(function(t, s){ return t + (Number(s.min) || 0); }, 0)); }
 
   function escapeHtml(t){ return String(t).replace(/[&<>"']/g, function(c){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); }
-  // after a route is generated: compare it with the training day and remember it on that day
+  // A route made for a training day: after Generate the rider sees how it fits the plan and taps
+  // "✓ Use" to keep it for that day (km, climbing, riding time + the route itself as GPX).
+  // Only then the ".gpx" button appears. "Show route" on the day card brings it back on the map.
+  var pendingTrainRoute = null;   // { ctx, link } of a generated route that is not used yet
+  function setRouteToUse(on){ document.body.classList.toggle('route-to-use', !!on); }
   function linkRouteToTrainDay(){
+    pendingTrainRoute = null; setRouteToUse(false);
     if (!trainRouteCtx || !state.route) return null;
     var c = trainRouteCtx, km = Math.round(state.route.distanceKm * 10) / 10, gain = 0;
     try{ if (state.route.elevations) gain = Math.round(computeGain(state.route.elevations).gain); }catch(e){}
     var est = routeMinutes(km, gain, c);
     var link = { km: km, gainM: gain, estMin: est, planMin: c.min };
-    (trainState.routes = trainState.routes || {})[c.d] = link;
-    cachePlan();
     var off = Math.abs(est - c.min) > Math.max(10, c.min * 0.15);
+    pendingTrainRoute = { ctx: c, link: link };
+    setRouteToUse(true);
     setRouteBanner('<b>' + escapeHtml(c.title) + '</b>: route ' + km + ' km, ' + gain + ' m climbing, about ' + trainHours(est) + ' riding (plan ' + trainHours(c.min) + ').' +
-      (off ? ' ' + (est > c.min ? 'A bit long: try “New route” or lower the distance.' : 'A bit short: try “New route” or raise the distance.') : ' Fits your plan ✓'), off);
-    fetch('/api/plan', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ deviceId: deviceId, routeLink: Object.assign({ d: c.d }, link) }) }).catch(function(){});
+      (off ? ' ' + (est > c.min ? 'A bit long: try “New route” or lower the distance.' : 'A bit short: try “New route” or raise the distance.') : ' Fits your plan ✓') +
+      ' Tap <b>✓ Use</b> to keep it for this ride.', off);
     return c;
+  }
+  function trainDayLabel(d){ var dt = tParse(d); return TRAIN_DAYS[(dt.getDay() + 6) % 7] + ' ' + dt.getDate() + '/' + (dt.getMonth() + 1); }
+  document.getElementById('useRouteBtn').addEventListener('click', function(){
+    var pr = pendingTrainRoute; if (!pr || !state.route) return;
+    var btn = this, c = pr.ctx, link = Object.assign({}, pr.link, { start: document.getElementById('startInput').value || '', hasGpx: true, at: new Date().toISOString() });
+    var gpx = '';
+    try{ gpx = buildGPX(); }catch(e){}
+    btn.disabled = true;
+    fetch('/api/plan', { method:'POST', headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ deviceId: deviceId, routeLink: Object.assign({ d: c.d, gpx: gpx }, link) }) })
+      .then(function(r){ return r.json().then(function(d){ return { ok: r.ok, data: d }; }); })
+      .then(function(res){
+        if (!res.ok){ showDashToast((res.data && res.data.error) || 'The route could not be saved. Try again.', 4500); return; }
+        (trainState.routes = trainState.routes || {})[c.d] = Object.assign(link, res.data.link || {});
+        cachePlan();
+        pendingTrainRoute = null; setRouteToUse(false);
+        setRouteBanner('<b>' + escapeHtml(c.title) + '</b>: this route is saved for ' + trainDayLabel(c.d) + '. Tap <b>.gpx</b> to download it. You find it again in Train.');
+        showDashToast('Route saved for your ' + c.title.toLowerCase() + ' on ' + trainDayLabel(c.d) + '.', 3500);
+      })
+      .catch(function(){ showDashToast('No connection: the route could not be saved. Try again.', 4500); })
+      .finally(function(){ btn.disabled = false; });
+  });
+
+  // "Show route" on a training day: load the saved route and show it on the map, ready for .gpx
+  function parseGpxRoute(text){
+    var doc = new DOMParser().parseFromString(text, 'application/xml'), pts = doc.getElementsByTagName('trkpt');
+    var coords = [], ele = [], allEle = true;
+    for (var i = 0; i < pts.length; i++){
+      var la = parseFloat(pts[i].getAttribute('lat')), lo = parseFloat(pts[i].getAttribute('lon'));
+      if (!isFinite(la) || !isFinite(lo)) continue;
+      coords.push([la, lo]);
+      var e = pts[i].getElementsByTagName('ele')[0];
+      if (e && isFinite(parseFloat(e.textContent))) ele.push(parseFloat(e.textContent)); else allEle = false;
+    }
+    if (coords.length < 2) return null;
+    var km = 0; for (var j = 1; j < coords.length; j++) km += haversineKm(coords[j - 1], coords[j]);
+    return { coords: coords, distanceKm: km, elevations: allEle && ele.length === coords.length ? ele : null, engineUsed: 'saved route' };
+  }
+  function showSavedRoute(day){
+    var link = (trainState.routes || {})[day.d];
+    showDashToast('Loading your route…', 2000);
+    fetch('/api/plan?deviceId=' + encodeURIComponent(deviceId) + '&routeGpx=' + day.d, { cache: 'no-store' })
+      .then(function(r){ return r.json().then(function(d){ return { ok: r.ok, data: d }; }); })
+      .then(function(res){
+        var result = res.ok && res.data.gpx ? parseGpxRoute(res.data.gpx) : null;
+        if (!result){ showDashToast('This route could not be loaded. Make a new route for this ride.', 4500); return; }
+        trainRouteCtx = { d: day.d, min: day.min, type: day.type, title: dayInfo(day).title, km: link ? link.km : Math.round(result.distanceKm) };
+        pendingTrainRoute = null; setRouteToUse(false);
+        hideTrain(); location.hash = 'track'; showTrack();
+        setTimeout(function(){
+          if (typeof map !== 'undefined' && map) map.invalidateSize();
+          clearRoute();
+          var s0 = result.coords[0];
+          setStartMarker(s0[0], s0[1], (link && link.start) || 'Start');
+          state.start.fromHome = false;
+          if (link && link.start) document.getElementById('startInput').value = link.start;
+          applyRouteResult(result, null, false);
+          setRouteBanner('<b>' + escapeHtml(trainRouteCtx.title) + '</b> · ' + trainDayLabel(day.d) + ': your saved route, ' + (link ? link.km : result.distanceKm.toFixed(1)) + ' km. Tap <b>.gpx</b> to download it again.');
+        }, 150);
+      })
+      .catch(function(){ showDashToast('No connection: the route could not be loaded.', 4500); });
   }
 
   /* ================= CALENDAR: races, club trainings, events (confirm with one tap) ================= */
@@ -6292,10 +6367,15 @@
       if (link){
         var made = link.planMin === day.min, off = Math.abs(link.estMin - day.min) > Math.max(10, day.min * 0.15), fits = made && !off;
         var rb = el2('div', 'tv-route' + (fits ? '' : ' off'));
-        rb.innerHTML = '<b>Route</b> ';
+        rb.innerHTML = '<b>Your route</b> ';
         rb.appendChild(document.createTextNode(link.km + ' km · ' + link.gainM + ' m climbing · about ' + trainHours(link.estMin) + ' riding'));
+        if (link.at){ var ud = new Date(link.at); rb.appendChild(el2('span', 'used', 'Used on ' + ud.getDate() + '/' + (ud.getMonth() + 1) + (link.start ? ' · start: ' + link.start.split(',')[0] : ''))); }
         if (!made) rb.appendChild(el2('small', null, 'The plan changed to ' + trainHours(day.min) + ' after this route was made. Make a new route.'));
         else if (off) rb.appendChild(el2('small', null, 'This route takes about ' + trainHours(link.estMin) + ', the plan says ' + trainHours(day.min) + '. Try “New route” in Track.'));
+        if (link.hasGpx){
+          var ra = el2('div', 'tv-route-acts'), sb = el2('button', 'btn', '🗺 Show route');
+          sb.type = 'button'; sb.addEventListener('click', function(){ showSavedRoute(day); }); ra.appendChild(sb); rb.appendChild(ra);
+        }
         card.appendChild(rb);
       }
       if (trainState.reflecting === day.d){ card.appendChild(reflectionForm(day)); return card; }
@@ -6305,7 +6385,7 @@
       } else {
         btn('Undo', '', function(){ logTrainDay(day.d, 'clear'); });
       }
-      if (day.type !== 'event') btn('Plan a route for this ride', 'ghost', function(){ planRouteFor(day); });
+      if (day.type !== 'event') btn(link && link.hasGpx ? 'Make a new route' : 'Plan a route for this ride', 'ghost', function(){ planRouteFor(day); });
       card.appendChild(acts);
     }
     return card;
@@ -7535,7 +7615,7 @@
 
       await applyRouteResult(result, note);
       if (detectMobile()) closeSidebar(); // reveal the map full-screen to show the result
-      var forDay = linkRouteToTrainDay();   // a route made for a training day: compare + remember
+      var forDay = linkRouteToTrainDay();   // a route made for a training day: show the fit, then "✓ Use"
       trackRoute(forDay);
     } catch(err){
       setStatus('Could not build that route: ' + err.message, true);
