@@ -266,6 +266,12 @@ Phones keep the one-column, week-by-week layout. It switches on rotate/resize.
   own team first, filter chips per team, tap a card to see it large.
   `/api/team-roster?id=<rider id>` only answers signed-in riders and sends ages,
   never birth dates, codes or notes.
+- **Dashboard layout (rider app)**: fixed top bar like Calendar (small logo,
+  your photo, and a chainring button). The chainring opens a menu with your
+  name, nickname and team, **My profile**, **Notifications** and **Log out**.
+  Fixed bottom bar with **Home** and **Refresh** on the dashboard, Train,
+  Calendar and Team (Track keeps its own bar on the map; hidden before
+  signing in). Home on the dashboard scrolls back to the top.
 - **Team page (rider app)** opens on your own team (staff: their first team);
   the chips at the top switch to the other teams (your own is marked YOURS,
   there is no "All teams" any more). Every time Team is opened it starts on

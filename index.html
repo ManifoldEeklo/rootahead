@@ -514,10 +514,6 @@
   body.staff-mode .dash-tile.team-tile .icon{position:absolute;top:16px;left:16px;width:40px;height:40px;}
   body.staff-mode .dash-tile.team-tile .s{margin:0;text-align:left;max-width:none;}
   @media (min-width:760px){ body.staff-mode .dash-grid{grid-template-columns:repeat(2,minmax(0,260px));justify-content:start;} }
-  .dash-foot{max-width:960px;width:calc(100% - 44px);margin:2px auto 30px;display:flex;justify-content:center;flex-wrap:wrap;gap:10px;}
-  .dash-refresh:hover{border-color:var(--gold);color:var(--gold);}
-  .dash-logout{background:none;border:1px solid var(--line);color:var(--text-muted);border-radius:22px;padding:10px 22px;font:inherit;font-size:14px;cursor:pointer;}
-  .dash-logout:hover{border-color:#e03b2c;color:#ff9c90;}
   .dash-nick{font-size:12px;font-style:italic;color:var(--text-muted);margin-top:1px;}
   .dash-nick:empty{display:none;}
   .pe-grid label.wide{grid-column:1 / -1;}
@@ -844,19 +840,53 @@
     position:fixed;inset:0;z-index:4000;overflow-y:auto;
     background:radial-gradient(circle at 50% 25%, #182620 0%, #0d1712 100%);
     display:flex;flex-direction:column;
-    padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);
+    padding:0 0 calc(76px + env(safe-area-inset-bottom,0px));   /* room for the bottom bar */
   }
   #homeDash.hidden{display:none;}
-  .dash-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
-    padding:22px 22px 6px;max-width:960px;width:100%;margin:0 auto;}
-  .dash-head .tagline{margin-top:2px;}
+  /* fixed top bar, same height and look as the Calendar / Team / Train headers */
+  .dash-head{position:sticky;top:0;z-index:5;flex:0 0 auto;width:100%;
+    padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#132018,#101a14 90%);}
+  .dash-head-in{position:relative;display:flex;align-items:center;gap:10px;max-width:960px;margin:0 auto;}
+  .dash-head .dash-photo{width:34px;height:34px;font-size:13px;margin:0 0 0 auto;}
+  .dash-menu-btn{flex:0 0 auto;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--panel-alt);
+    color:var(--gold);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
+  .dash-menu-btn svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;transition:transform .35s ease;}
+  .dash-menu-btn svg .teeth{stroke-width:2.6;stroke-dasharray:1.6 1.3;}
+  .dash-menu-btn[aria-expanded="true"]{border-color:var(--gold);}
+  .dash-menu-btn[aria-expanded="true"] svg{transform:rotate(72deg);}
+  .dash-menu{position:absolute;right:0;top:calc(100% + 10px);z-index:6;width:min(270px,calc(100vw - 32px));padding:6px;
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 40px rgba(0,0,0,.55);}
+  .dm-who{padding:10px 12px 10px;border-bottom:1px solid var(--line);margin-bottom:4px;display:flex;flex-direction:column;gap:2px;min-width:0;}
+  .dm-who .name{font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .dm-who .dash-nick{font-size:12.5px;font-style:italic;color:var(--text-muted);}
+  .dm-who .dash-nick:empty{display:none;}
+  .dm-who .team{font-size:11px;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;}
+  .dm-item, .dash-menu .notify-btn{display:block;width:100%;margin:0;text-align:left;background:none;border:none;border-radius:9px;
+    padding:11px 12px;font:inherit;font-size:14.5px;color:var(--text);cursor:pointer;}
+  .dm-item:hover, .dm-item:focus-visible{background:var(--panel-alt);outline:none;}
+  .dash-menu .notify-btn[aria-pressed="true"]{color:var(--easy);}
+  .dash-menu .notify-btn.blocked{color:var(--text-muted);}
+  .dm-out{color:#ff9c90;}
+  /* fixed bottom bar */
+  .app-nav{position:fixed;left:0;right:0;bottom:0;z-index:4400;display:flex;justify-content:center;gap:6px;
+    padding:6px 16px calc(6px + env(safe-area-inset-bottom,0px));background:rgba(13,23,18,.96);border-top:1px solid var(--line);
+    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);}
+  .app-nav[hidden]{display:none;}
+  .nav-btn{flex:0 1 130px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 8px;border:none;border-radius:10px;
+    background:none;color:var(--text-muted);font:inherit;font-size:11.5px;letter-spacing:.04em;cursor:pointer;}
+  .nav-btn svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+  .nav-btn.on{color:var(--gold);}
+  .nav-btn:disabled{opacity:.6;}
+  .nav-btn.spin svg{animation:splashSpin .9s linear infinite;}
+  #raceView, #teamView, #trainView{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px)) !important;}
   .dash-user{text-align:right;min-width:0;}
   .dash-user .name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw;}
   .dash-user .team{font-size:11px;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;margin-top:2px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw;}
   .dash-user .edit{background:none;border:none;color:var(--text-muted);font:inherit;font-size:11px;
     text-decoration:underline;cursor:pointer;padding:4px 0 0;}
-  .dash-greet{max-width:960px;width:100%;margin:10px auto 18px;padding:0 22px;color:var(--text-muted);font-size:14px;}
+  .dash-greet{max-width:960px;width:100%;margin:16px auto 16px;padding:0 22px;color:var(--text-muted);font-size:14px;}
   .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:0 22px 28px;
     max-width:960px;width:100%;margin:0 auto;align-content:start;}
   @media (min-width:760px){ .dash-grid{grid-template-columns:repeat(5,1fr);} }
@@ -886,7 +916,7 @@
   .dash-tile .s{font-size:12px;color:var(--text-muted);margin-top:3px;}
   .dash-tile .soon{position:absolute;top:14px;right:14px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
     color:var(--text-muted);border:1px solid var(--line);border-radius:10px;padding:2px 8px;}
-  .dash-toast{max-width:calc(100% - 32px);text-align:center;line-height:1.4;position:fixed;left:50%;bottom:calc(36px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);
+  .dash-toast{max-width:calc(100% - 32px);text-align:center;line-height:1.4;position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);
     background:var(--panel-alt);border:1px solid var(--line);color:var(--text);font-size:13px;
     padding:8px 14px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;z-index:4100;}
   .install-card{max-width:960px;width:calc(100% - 44px);margin:0 auto 28px;display:none;align-items:center;gap:12px;
@@ -971,7 +1001,7 @@
   .brand-logo{display:block;height:auto;max-width:100%;object-fit:contain;
     -webkit-user-select:none;user-select:none;-webkit-user-drag:none;pointer-events:none;}
   .splash-brand{width:calc(min(300px,72vw) * var(--splash-logo-scale,1));margin:0 auto 14px;filter:drop-shadow(0 6px 18px rgba(0,0,0,.55));}
-  .dash-brand{width:150px;margin-bottom:4px;}
+  .dash-brand{height:36px;width:auto;max-width:150px;margin:0;filter:none;}   /* same size as in Calendar */
   .header-brand{height:40px;width:auto;align-self:center;}
   body.is-mobile .header-brand{height:34px;}
   .reg-brand{width:140px;margin:0 auto 14px;}
@@ -1262,20 +1292,27 @@
 
 <!-- Home dashboard: shown after the splash; Track opens the route planner below -->
 <div id="homeDash">
-  <div class="dash-head">
-    <div>
+  <!-- fixed top bar: small logo, your photo, and the chainring menu (profile, notifications, log out) -->
+  <header class="dash-head" id="dashHead">
+    <div class="dash-head-in">
       <img class="brand-logo dash-brand" src="/logo-rootahead.png" alt="ROOT Ahead">
-      <div class="tagline">Manage-Plot-Train</div>
-    </div>
-    <div class="dash-user" id="dashUser">
       <div class="dash-photo" id="dashPhoto" aria-hidden="true"></div>
-      <div class="name" id="dashUserName"></div>
-      <div class="dash-nick" id="dashUserNick"></div>
-      <div class="team" id="dashUserTeam"></div>
-      <button class="notify-btn" id="notifyBtn" type="button" hidden>🔔 Notifications</button>
-      <button class="edit" id="dashEditProfile" type="button">My profile</button>
+      <button class="dash-menu-btn" id="dashMenuBtn" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="dashMenu" aria-label="Menu: my profile, notifications, log out">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle class="teeth" cx="12" cy="12" r="9.2"/><circle cx="12" cy="12" r="6.4"/><circle cx="12" cy="12" r="2.2"/>
+          <path d="M12 9.8V5.6M14.1 12.7l4 1.3M9.9 12.7l-4 1.3M13.3 13.8l2.4 3.4M10.7 13.8l-2.4 3.4"/></svg>
+      </button>
+      <div class="dash-menu" id="dashMenu" role="menu" aria-label="Menu" hidden>
+        <div class="dm-who">
+          <b class="name" id="dashUserName"></b>
+          <span class="dash-nick" id="dashUserNick"></span>
+          <span class="team" id="dashUserTeam"></span>
+        </div>
+        <button type="button" role="menuitem" class="dm-item" id="dashEditProfile">👤 My profile</button>
+        <button type="button" role="menuitem" class="dm-item notify-btn" id="notifyBtn" hidden>🔔 Notifications</button>
+        <button type="button" role="menuitem" class="dm-item dm-out" id="dashLogout">⎋ Log out</button>
+      </div>
     </div>
-  </div>
+  </header>
   <div class="dash-greet" id="dashGreet"></div>
   <div class="race-strip" id="raceStrip" hidden>
     <div class="rs-head"><b id="rsHeadTxt">Your calendar</b><button type="button" class="rs-all" id="rsAll">See all ›</button></div>
@@ -1311,7 +1348,7 @@
     <button class="btn primary" type="button" id="installBtn">Install</button>
     <button class="x" type="button" id="installDismiss" aria-label="Not now">✕</button>
   </div>
-  <div class="dash-foot"><button type="button" class="dash-logout dash-refresh" id="dashRefresh">⟳ Refresh</button><button type="button" class="dash-logout" id="dashLogout">⎋ Log out</button></div>
+
   <div class="dash-toast" id="dashToast"></div>
 </div>
 
@@ -1347,6 +1384,13 @@
 </div>
 
 <!-- Team: every rider per team (photo, name, nickname, age) -->
+<!-- fixed bottom bar on the dashboard, Train, Calendar and Team (Track has its own bar on the map) -->
+<nav class="app-nav" id="appNav" aria-label="Navigation" hidden>
+  <button type="button" class="nav-btn" id="navHome">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-6h4v6"/></svg><span>Home</span></button>
+  <button type="button" class="nav-btn" id="dashRefresh">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg><span>Refresh</span></button>
+</nav>
 <div id="teamView" class="hidden">
   <header class="tv-head">
     <button class="home-btn" id="teamHomeBtn" type="button">‹ Home</button>
@@ -2272,11 +2316,12 @@
   function renderProfile(){
     var p = loadProfile();
     document.body.classList.toggle('staff-mode', !!(p && p.kind === 'staff'));
-    document.getElementById('dashUser').style.visibility = p ? 'visible' : 'hidden';
+    ['dashPhoto', 'dashMenuBtn'].forEach(function(id){ document.getElementById(id).style.visibility = p ? 'visible' : 'hidden'; });   // only when signed in
     document.getElementById('dashUserName').textContent = p ? (p.firstName + ' ' + p.lastName) : '';
     document.getElementById('dashUserNick').textContent = p && p.kind === 'staff' ? p.role : p && p.nickname ? '“' + p.nickname + '”' : '';
     var dt = document.getElementById('dashUserTeam'); dt.textContent = p ? (p.team || '') : ''; dt.style.color = p && p.teamColor ? p.teamColor : '';
     paintPhoto(document.getElementById('dashPhoto'), p);
+    if (window.raUpdateNav) window.raUpdateNav();   // bottom bar only when signed in
     document.getElementById('dashGreet').textContent = !p ? '' : p.kind === 'staff' ? 'Hi ' + p.firstName + ', here is what’s on for ' + (p.team || 'your team') + '.' : 'Hi ' + p.firstName + ', what are we doing today?';
   }
   // ---- sign in with the login code ----
@@ -2363,7 +2408,7 @@
   // Refresh: fetch everything fresh and start the app again from the splash screen (stays signed in)
   document.getElementById('dashRefresh').addEventListener('click', function(){
     if (navigator.onLine === false){ if (window.raCheckConnection) window.raCheckConnection(); return; }
-    var btn = this; btn.disabled = true; btn.textContent = '⟳ Refreshing…';
+    var btn = this; btn.disabled = true; btn.classList.add('spin'); btn.querySelector('span').textContent = 'Refreshing…';
     ['rootahead_plan_cache', 'rootahead_roster_cache', 'rootahead_races_cache'].forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
     var waits = [];
     if (window.RASplash){ window.RASplash.onChange = null; waits.push(window.RASplash.refresh()); }   // newest splash look first
@@ -2373,6 +2418,35 @@
     var timeout = new Promise(function(r){ setTimeout(r, 4000); });
     Promise.race([Promise.all(waits), timeout]).then(function(){ location.reload(); }, function(){ location.reload(); });
   });
+  // chainring menu in the top bar
+  (function(){
+    var btn = document.getElementById('dashMenuBtn'), menu = document.getElementById('dashMenu');
+    function setOpen(on){ menu.hidden = !on; btn.setAttribute('aria-expanded', String(on)); if (on){ var f = menu.querySelector('.dm-item:not([hidden])'); if (f) f.focus(); } }
+    btn.addEventListener('click', function(e){ e.stopPropagation(); setOpen(menu.hidden); });
+    menu.addEventListener('click', function(e){ if (e.target.closest('.dm-item')) setOpen(false); });   // the item's own action still runs
+    document.addEventListener('click', function(e){ if (!menu.hidden && !menu.contains(e.target) && e.target !== btn) setOpen(false); });
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !menu.hidden){ setOpen(false); btn.focus(); } });
+    homeDash.addEventListener('scroll', function(){ if (!menu.hidden) setOpen(false); }, { passive: true });
+  })();
+  // bottom bar: shown on the dashboard, Train, Calendar and Team (not on Track, not before signing in)
+  (function(){
+    var nav = document.getElementById('appNav'), home = document.getElementById('navHome');
+    var views = ['homeDash', 'trainView', 'raceView', 'teamView'].map(function(id){ return document.getElementById(id); });
+    function update(){
+      var onDash = !homeDash.classList.contains('hidden');
+      var any = views.some(function(v){ return v && !v.classList.contains('hidden'); });
+      nav.hidden = !(any && loadProfile());
+      home.classList.toggle('on', onDash);
+    }
+    var mo = new MutationObserver(update);
+    views.forEach(function(v){ if (v) mo.observe(v, { attributes: true, attributeFilter: ['class'] }); });
+    home.addEventListener('click', function(){
+      if (!homeDash.classList.contains('hidden')) homeDash.scrollTo({ top: 0, behavior: 'smooth' });
+      else goDashboard();
+    });
+    window.raUpdateNav = update;
+    update();
+  })();
   document.getElementById('profSwitch').addEventListener('click', logOut);
   document.getElementById('profChange').addEventListener('click', function(){
     var p = loadProfile() || {};
@@ -5323,7 +5397,7 @@
     }
     b.hidden = false;
     var st = Notification.permission;
-    b.textContent = st === 'granted' ? '🔔 On' : st === 'denied' ? '🔕 Blocked' : '🔔 Notifications';
+    b.textContent = st === 'granted' ? '🔔 Notifications: on' : st === 'denied' ? '🔕 Notifications: blocked' : '🔔 Turn on notifications';
     b.setAttribute('aria-pressed', String(st === 'granted'));
     b.classList.toggle('blocked', st === 'denied');
   }
