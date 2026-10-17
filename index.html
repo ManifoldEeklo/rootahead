@@ -2404,7 +2404,7 @@
       return;
     }
     document.getElementById('profChange').hidden = false;
-    var rows = [['Nickname', p.nickname ? '“' + p.nickname + '”' : '—'], ['GSM', p.phone || '—'], ['E-mail', p.email || '—'], ['Home town', p.homeTown || '—'], ['Sex', { F:'Female', M:'Male', X:'Other' }[p.sex] || '—'],
+    var rows = [['Nickname', p.nickname ? '“' + p.nickname + '”' : '—'], ['GSM', p.phone || '—'], ['E-mail', p.email || '—'], ['Home address', p.homeTown || '—'], ['Sex', { F:'Female', M:'Male', X:'Other' }[p.sex] || '—'],
                 ['Date of birth', p.birthDate ? new Date(p.birthDate + 'T12:00:00').toLocaleDateString() + ' (' + ageFrom(p.birthDate) + ')' : '—'],
                 ['Height', p.heightCm ? p.heightCm + ' cm' : '—'], ['Weight', p.weightKg ? p.weightKg + ' kg' : '—'],
                 ['FTP', p.ftp ? p.ftp + ' W' + (p.weightKg ? ' (' + (p.ftp / p.weightKg).toFixed(1) + ' W/kg)' : '') : '—']];
@@ -2560,6 +2560,8 @@
       }
       if (view === 'track'){
         openedTrackFromDash = true;
+        endTrainRoute();     // a plain Track visit, not for a training day
+        useHomeAsStart();    // always start at the rider's home address
         if (location.hash === '#track') showTrack(); else location.hash = 'track';
       } else {
         showDashToast(tile.querySelector('.t').textContent + ' is coming soon.');
@@ -6374,10 +6376,12 @@
   document.getElementById('trainRouteBanner').addEventListener('click', function(e){ if (e.target.closest('.trb-x')) setRouteBanner(''); });
   // The route planner tends to come out a little short, so a training route asks for 15% more distance.
   var TRAIN_ROUTE_EXTRA = 0.15;
+  // the rider's home address (set by the coach), or the club address when there is none
+  function homeLabel(){ var p = loadProfile(), t = p && p.homeTown ? String(p.homeTown).trim() : ''; return t || 'Watersportlaan 4, 9000 Gent'; }
   // "Plan a route for this ride": first ask where the ride starts, then open Track with the distance set
   function planRouteFor(day){
     var base = day.min / 60 * dayPace(day), km = Math.round(base * (1 + TRAIN_ROUTE_EXTRA));
-    var p = loadProfile(), home = (p && p.homeTown) || 'Eeklo';
+    var home = homeLabel();
     var sheet = document.getElementById('startSheet'), opts = document.getElementById('startSheetOpts');
     document.getElementById('startSheetSub').innerHTML = '<b>' + escapeHtml(dayInfo(day).title) + '</b> · ' + trainHours(day.min) + ' · about ' + km + ' km';
     opts.innerHTML = '';
@@ -6405,7 +6409,7 @@
 
   function goPlanRoute(day, km, how){
     trainRouteCtx = { d: day.d, min: day.min, type: day.type, title: dayInfo(day).title, km: km };
-    var p = loadProfile(), home = (p && p.homeTown) || 'Eeklo';
+    var home = homeLabel();
     var startTxt = how === 'home' ? 'Start: your home, ' + escapeHtml(home) + '. Tap Generate.'
       : how === 'here' ? 'Start: where you are now. Tap Generate.'
       : how === 'map' ? 'Tap the map where you start, then tap Generate.'
@@ -7610,15 +7614,15 @@
     setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
   });
 
-  /* ---------------- DEFAULT START: the rider's home town ---------------- */
-  // Start is pre-filled with the home town the coach set for this rider (Eeklo when
-  // there is none). "Use my location", picking on the map or typing an address still
-  // override it; a start the rider chose stays until they leave it.
+  /* ---------------- DEFAULT START: the rider's home address ---------------- */
+  // Every time a rider opens Track from the dashboard, Start is set to the home address the
+  // coach entered for this rider (RA Admin → Riders → Home address), or to
+  // Watersportlaan 4, 9000 Gent when there is none. "Use my location", picking on the map or
+  // typing an address still override it while the rider is in Track.
   var HOME_GEO = 'rootahead_home_geo';
   function homeQuery(){
-    var p = loadProfile(), t = p && p.homeTown ? String(p.homeTown).trim() : '';
-    if (!t) return 'Eeklo, Belgium';
-    return /,/.test(t) ? t : t + ', Belgium';
+    var t = homeLabel();
+    return /belg|nederland|netherlands|france|frankrijk|deutschland|germany|luxemb/i.test(t) ? t : t + ', Belgium';
   }
   function lookupHome(){
     var q = homeQuery();

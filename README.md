@@ -324,12 +324,14 @@ Phones keep the one-column, week-by-week layout. It switches on rotate/resize.
   phone, logging out removes it, a code reset removes all of them. Phones that
   were signed in before this update turn green when their app next checks in.
 
-- **Home town** (rider form in RA Admin): the start of the rider's routes. The
-  app pre-fills Start in Track with it (", Belgium" is added when no country
-  is given; Eeklo when empty) and uses it for "Plan a route for this ride",
-  unless the rider already chose another start. Looked-up once and remembered
-  on the phone (`rootahead_home_geo`); a new home town from the coach is used
-  on the next check-in.
+- **Home address** (rider form in RA Admin, stored as `homeTown`): the start of
+  the rider's routes. **Every time a rider opens Track from the dashboard,
+  Start is set to the home address**; when the coach left it empty, the start
+  is **Watersportlaan 4, 9000 Gent**. ", Belgium" is added when no country is
+  given. The rider can still change the start while in Track (my location,
+  pick on the map, type an address). Looked-up once and remembered on the phone
+  (`rootahead_home_geo`); a new address from the coach is used on the next
+  check-in.
 - **Plan a route for this ride** first asks **Where do you start?**: Home
   (home town), Where I am now, Pick on the map, Type an address, or Same start
   as last time (when there is one). Then Track opens with the distance set.

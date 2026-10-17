@@ -1028,7 +1028,7 @@
           <label class="w3">FTP (watts)<input type="number" id="rdFtp" min="50" max="700" step="1"></label>
           <label class="w3">GSM<input type="tel" id="rdPhone" maxlength="30" autocomplete="off" placeholder="0470 12 34 56"></label>
           <label class="w5 wide-m">E-mail<input type="email" id="rdEmail" maxlength="80" autocomplete="off"></label>
-          <label class="w4">Home town <small class="opt">route start</small><input type="text" id="rdHome" maxlength="80" autocomplete="off" placeholder="e.g. Lovendegem"></label>
+          <label class="w4">Home address <small class="opt">route start · empty = Watersportlaan 4, 9000 Gent</small><input type="text" id="rdHome" maxlength="80" autocomplete="off" placeholder="e.g. Kerkstraat 12, 9900 Eeklo"></label>
           <label class="w12 wide-m">Notes <small class="opt">only you see these</small><input type="text" id="rdNotes" maxlength="300" autocomplete="off"></label>
         </div>
       </div>
@@ -2564,7 +2564,7 @@
     if (!list.length){ if (RD.list.length) box.appendChild(el('p', 'empty-note', 'Nobody matches that search.')); return; }
     if (isWide()){
       var wrap = el('div', 'rtable-wrap'), t = el('table', 'rtable'), h = el('tr');
-      ['', 'Rider', 'Team', 'GSM', 'Home town', 'Sex', 'Age', 'Height', 'Weight', 'FTP', 'Login code', 'Status'].forEach(function(x){ h.appendChild(el('th', null, x)); });
+      ['', 'Rider', 'Team', 'GSM', 'Home address', 'Sex', 'Age', 'Height', 'Weight', 'FTP', 'Login code', 'Status'].forEach(function(x){ h.appendChild(el('th', null, x)); });
       var th = el('thead'); th.appendChild(h); t.appendChild(th);
       var tb = el('tbody');
       list.forEach(function(r){
