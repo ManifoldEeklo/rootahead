@@ -6417,15 +6417,19 @@
     slider.dispatchEvent(new Event('input'));
     hideTrain();
     location.hash = 'track';
+    if (how === 'type'){
+      // iPhone only opens the keyboard when the field is focused during the tap itself,
+      // so Track, the panel and the Start field are opened right now (not after a delay)
+      showTrack();
+      if (detectMobile()) openSidebar();
+      var inp = document.getElementById('startInput');
+      inp.focus(); inp.select();
+    }
     // set the start once Track is on screen (the map needs a moment to size itself)
     setTimeout(function(){
       if (how === 'home') useHomeAsStart();
       else if (how === 'here') document.getElementById('startGeoBtn').click();
       else if (how === 'map') beginMapPick('start');
-      else if (how === 'type'){
-        if (detectMobile()) openSidebar();
-        var inp = document.getElementById('startInput'); inp.focus(); inp.select();
-      }
     }, 350);
     if (how !== 'map' && how !== 'type') showDashToast('Distance set to ' + slider.value + ' km for your ' + (dayInfo(day).title.toLowerCase()) + '.' +
       (TRAIN_ROUTE_TIP[day.type] ? ' ' + TRAIN_ROUTE_TIP[day.type] : ''), TRAIN_ROUTE_TIP[day.type] ? 6500 : 3500);
