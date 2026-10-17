@@ -28,6 +28,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fjalla+One&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="/splash-fx.js"></script>
 <!-- Vercel Web Analytics — plain-HTML/static-site install (no @vercel/analytics
      package, no bundler needed here). Only activates once Web Analytics is
      turned ON for this project in the Vercel dashboard (Project → Analytics
@@ -67,6 +68,17 @@
     transition:opacity .45s ease;
   }
   #splashScreen.hide{opacity:0;pointer-events:none;}
+  /* admin-set splash (RA Admin → Splash): photo transparency, own photo, animation layer, occasion message */
+  #splashScreen::before{opacity:var(--splash-bg-op,.6) !important;}
+  #splashScreen.custom-bg::before{background:var(--splash-bg-url) center/cover no-repeat !important;}
+  @media (min-aspect-ratio: 1/1){ #splashScreen.custom-bg::before{inset:0 !important;width:auto !important;transform:none !important;-webkit-mask-image:none !important;mask-image:none !important;} }
+  .splash-fx{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+  #splashScreen.no-stats .splash-stats{display:none !important;}
+  .splash-occasion{font-family:'Fjalla One',sans-serif;font-size:clamp(22px,6.5vw,34px);letter-spacing:.04em;text-transform:uppercase;text-align:center;
+    color:var(--occ-color,#fbc120);text-shadow:0 2px 14px rgba(0,0,0,.75),0 0 2px rgba(0,0,0,.9);margin:0 16px 14px;max-width:90vw;
+    animation:occIn .9s cubic-bezier(.2,.9,.3,1.3) both;}
+  @keyframes occIn{from{opacity:0;transform:translateY(14px) scale(.9);}to{opacity:1;transform:none;}}
+  @media (prefers-reduced-motion:reduce){ .splash-occasion{animation:none;} }
   .splash-inner{display:flex;flex-direction:column;align-items:center;position:relative;z-index:1;}
 
   /* ROOT-Ahead: team photo behind the splash, lightly see-through.
@@ -941,7 +953,7 @@
      re-typed — only its size changes per screen, never its proportions. */
   .brand-logo{display:block;height:auto;max-width:100%;object-fit:contain;
     -webkit-user-select:none;user-select:none;-webkit-user-drag:none;pointer-events:none;}
-  .splash-brand{width:min(300px,72vw);margin:0 auto 14px;filter:drop-shadow(0 6px 18px rgba(0,0,0,.55));}
+  .splash-brand{width:calc(min(300px,72vw) * var(--splash-logo-scale,1));margin:0 auto 14px;filter:drop-shadow(0 6px 18px rgba(0,0,0,.55));}
   .dash-brand{width:150px;margin-bottom:4px;}
   .header-brand{height:40px;width:auto;align-self:center;}
   body.is-mobile .header-brand{height:34px;}
@@ -1143,17 +1155,65 @@
 </div>
 
 <div id="splashScreen">
+  <canvas class="splash-fx" id="splashFx" aria-hidden="true"></canvas>
   <div class="splash-inner">
-    <img class="brand-logo splash-brand" src="/logo-rootahead.png" alt="ROOT Ahead">
-    <div class="splash-tagline">Manage-Plot-Train</div>
+    <div class="splash-occasion" id="splashOccasion" hidden></div>
+    <img class="brand-logo splash-brand" id="splashLogo" src="/logo-rootahead.png" alt="ROOT Ahead">
+    <div class="splash-tagline" id="splashTagline">Manage-Plot-Train</div>
     <div class="splash-stats" id="splashStats">
       <div class="splash-stat"><span class="n" id="splashStatUsers">—</span><span class="l">#Users</span></div>
       <div class="splash-stat"><span class="n" id="splashStatTracks">—</span><span class="l">#Tracks made</span></div>
     </div>
-    <div class="splash-bar"><div class="splash-bar-fill" id="splashBarFill"></div></div>
+    <div class="splash-bar" id="splashBar"><div class="splash-bar-fill" id="splashBarFill"></div></div>
   </div>
-  <div class="splash-credit">cc: designed by Manifold</div>
+  <div class="splash-credit" id="splashCredit">cc: designed by Manifold</div>
 </div>
+<script>
+/* Splash screen look, set by the admin in RA Admin → Splash (see splash-fx.js).
+   The last settings are kept on the phone, so they apply before the first paint
+   (and offline); fresh settings are fetched in the background for the next start. */
+(function(){
+  var KEY = 'rootahead_splash', FX = window.RASplashFX, stopFx = null, el = document.getElementById('splashScreen');
+  function cached(){ try{ return JSON.parse(localStorage.getItem(KEY) || 'null'); }catch(e){ return null; } }
+  function apply(raw){
+    if (!FX) return;
+    var c = FX.normalize(raw), $ = function(id){ return document.getElementById(id); };
+    el.style.setProperty('--splash-bg-op', String(c.bg.opacity));
+    if (c.bgUrl){ el.classList.add('custom-bg'); el.style.setProperty('--splash-bg-url', 'url("' + c.bgUrl + '")'); }
+    else { el.classList.remove('custom-bg'); el.style.removeProperty('--splash-bg-url'); }
+    var logo = $('splashLogo');
+    if (c.logoUrl && logo.getAttribute('src') !== c.logoUrl) logo.src = c.logoUrl;
+    if (!c.logoUrl && /\/api\/splash/.test(logo.getAttribute('src') || '')) logo.src = '/logo-rootahead.png';
+    logo.style.opacity = String(c.logo.opacity);
+    el.style.setProperty('--splash-logo-scale', String((c.logo.size || 100) / 100));
+    $('splashTagline').textContent = c.tagline || 'Manage-Plot-Train';
+    $('splashTagline').hidden = !c.showTagline;
+    $('splashBar').hidden = !c.showBar;
+    $('splashCredit').hidden = !c.showCredit;
+    el.classList.toggle('no-stats', !c.showStats);
+    var occ = FX.activeOccasion(c), msg = $('splashOccasion');
+    msg.hidden = !(occ && occ.message);
+    if (occ && occ.message){ msg.textContent = occ.message; msg.style.setProperty('--occ-color', (occ.colors && occ.colors[0]) || '#fbc120'); }
+    if (stopFx){ stopFx(); stopFx = null; }
+    if (occ && !el.classList.contains('hide')) stopFx = FX.run($('splashFx'), occ);
+    return c;
+  }
+  var cfg = apply(cached());
+  window.RASplash = {
+    durationMs: Math.round(((cfg && cfg.durationS) || 5) * 1000),
+    showStats: !cfg || cfg.showStats !== false,
+    stop: function(){ if (stopFx){ stopFx(); stopFx = null; } },
+    refresh: function(){
+      return fetch('/api/splash', { cache: 'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(d){
+        if (!d) return;
+        var before = localStorage.getItem(KEY), now = JSON.stringify(d.splash || null);
+        try{ if (d.splash) localStorage.setItem(KEY, now); else localStorage.removeItem(KEY); }catch(e){}
+        if (before !== now && !el.classList.contains('hide')) apply(d.splash);   // new look shows at once; the new time from the next start
+      }).catch(function(){});
+    }
+  };
+})();
+</script>
 
 <!-- Home dashboard: shown after the splash; Track opens the route planner below -->
 <div id="homeDash">
@@ -1862,9 +1922,10 @@
   "use strict";
 
   /* ---------------- SPLASH SCREEN ---------------- */
-  // Always shown for exactly 5 seconds, no matter how fast (or slow) the
-  // app underneath actually loads — no early dismissal.
-  var SPLASH_MS = 5000;
+  // Always shown for the full time (5 s unless the admin set another time in
+  // RA Admin → Splash), no matter how fast the app underneath loads.
+  var SPLASH_MS = (window.RASplash && window.RASplash.durationMs) || 5000;   // set by the admin (RA Admin → Splash)
+  if (window.RASplash) window.RASplash.refresh();
   var splashEl = document.getElementById('splashScreen');
   var splashBar = document.getElementById('splashBarFill');
   var splashHidden = false;
@@ -1876,7 +1937,7 @@
     if (splashHidden) return;
     splashHidden = true;
     splashEl.classList.add('hide');
-    setTimeout(function(){ splashEl.style.display = 'none'; }, 500);
+    setTimeout(function(){ splashEl.style.display = 'none'; if (window.RASplash) window.RASplash.stop(); }, 500);
   }
   function markSplashReady(key){ /* kept as a no-op hook — splash timing no longer depends on app readiness */ }
   setTimeout(hideSplash, SPLASH_MS); // the only thing that closes the splash

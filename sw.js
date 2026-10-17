@@ -3,15 +3,15 @@
 //    app shell (page, manifest, icons) is cached. Pages are fetched
 //    network-first, so a new deploy is picked up on the next online start;
 //    the cached copy is only used when the network fails.
-//    Never cached: /api/* (live data), map tiles and routing services
+//    Never cached: /api/* (live data; except the splash images, see below), map tiles and routing services
 //    (other origins) — those simply need a connection.
 //    RA Admin (/admin) is network-first too, with its last page as offline
 //    fallback so the offline banner can show.
 // 2. Push notifications (unchanged from before): shows them and focuses or
 //    opens the app when one is tapped.
 
-var CACHE = 'rootahead-shell-v8'; // bump when the list below changes
-var SHELL = ['/', '/manifest.json', '/logo-rootahead.png', '/icon-192-v2.png', '/icon-512-v2.png', '/apple-touch-icon-v2.png'];
+var CACHE = 'rootahead-shell-v9'; // bump when the list below changes
+var SHELL = ['/', '/splash-fx.js', '/manifest.json', '/logo-rootahead.png', '/icon-192-v2.png', '/icon-512-v2.png', '/apple-touch-icon-v2.png'];
 
 self.addEventListener('install', function(event){
   event.waitUntil(
@@ -36,6 +36,16 @@ self.addEventListener('fetch', function(event){
   if (req.method !== 'GET') return;
   var url = new URL(req.url);
   if (url.origin !== self.location.origin) return;      // tiles, routing, fonts: straight to network
+  if (url.pathname === '/api/splash' && url.searchParams.get('img')){
+    // splash photo / logo set in RA Admin: the address changes (v=) with every new image,
+    // so a cached copy is always right, and the splash keeps its look offline
+    event.respondWith(caches.open(CACHE).then(function(c){
+      return c.match(req).then(function(hit){
+        return hit || fetch(req).then(function(res){ if (res && res.ok) c.put(req, res.clone()); return res; });
+      });
+    }));
+    return;
+  }
   if (url.pathname.indexOf('/api/') === 0) return;      // live data: never cached
   if (url.pathname.indexOf('/_vercel/') === 0) return;  // analytics
   if (url.pathname.indexOf('/admin') === 0){

@@ -16,6 +16,7 @@ var HANDLERS = {
   'rider-login':      function(){ return require('../lib/api/rider-login.js'); },
   'rider-photo':      function(){ return require('../lib/api/rider-photo.js'); },
   'riders':           function(){ return require('../lib/api/riders.js'); },
+  'splash':           function(){ return require('../lib/api/splash.js'); },
   'staff':            function(){ return require('../lib/api/staff.js'); },
   'stats':            function(){ return require('../lib/api/stats.js'); },
   'subscribe':        function(){ return require('../lib/api/subscribe.js'); },

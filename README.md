@@ -384,6 +384,30 @@ Phones keep the one-column, week-by-week layout. It switches on rotate/resize.
   RA Admin now registers the service worker too, so it opens offline (last
   loaded page, network-first) instead of showing the browser's error page.
 
+- **Splash screen setup** (RA Admin → **Splash**). Locked with a separate
+  splash code on top of the admin password: `SPLASH_PASSWORD` in Vercel, or
+  **Admin321** when that variable is not set (set it to change the code; the
+  code is asked once per browser session, **Lock** forgets it).
+  - Timing (1–15 s), background photo + transparency (default: the team
+    photo), logo + transparency + size (default: the ROOT Ahead logo; a PNG
+    with transparent background works best), and on/off for usage numbers,
+    tagline (text editable), loading bar and credit line.
+  - **Special occasions**: animation + message on the splash. Ready-made:
+    Halloween, Sinterklaas, Christmas, New Year (fireworks), Valentine,
+    Carnival and Easter (both move with Easter every year), Spring classics,
+    Tour de France, Olympic Games, World Cup, Celebration, own occasion. Each
+    has name, message, animation (falling, snow, floating up, flying across,
+    confetti, fireworks), symbols (emoji), colours, amount, and dates (every
+    year / only these dates / around Easter). The highest active one in the
+    list is shown. Live phone preview in the admin.
+  - Phones keep the last settings (`rootahead_splash`) so the splash looks
+    right from the first frame and offline; new settings are fetched in the
+    background: the new look shows at once, a new time from the next start.
+  - Files: `splash-fx.js` (shared by both apps: presets, Easter dates,
+    animations), `lib/api/splash.js`, `splash-default.jpg` (the team photo, for
+    the admin preview). Keys: `rootahead:splash`, `rootahead:splashimg:bg|logo`.
+    A clean sheet never removes the splash setup.
+
 **Test files**: `root-ahead-test.html` and `ra-admin-test.html` share one test
 database when opened in the same browser: make a rider in RA Admin, then sign
 in with the code in the app. Demo codes: ELS2026, JAN2026, LOTTE26.
