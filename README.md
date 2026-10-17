@@ -266,6 +266,12 @@ Phones keep the one-column, week-by-week layout. It switches on rotate/resize.
   own team first, filter chips per team, tap a card to see it large.
   `/api/team-roster?id=<rider id>` only answers signed-in riders and sends ages,
   never birth dates, codes or notes.
+- **Team page (rider app)** opens on your own team (staff: their first team);
+  the chips at the top switch to the other teams (your own is marked YOURS,
+  there is no "All teams" any more). Every time Team is opened it starts on
+  your own team again. Compact tiles: 3 per row on a phone (4 on a wide
+  phone/tablet), so a team of ~20 riders is about 7 rows; tap a tile for the
+  big card.
 - In the rider form the team dropdown has "＋ New team…" to make a team on the spot.
 
 - **Race calendar** (RA Admin → Races): only the admin adds races (date, name,

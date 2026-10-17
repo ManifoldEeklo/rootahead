@@ -552,9 +552,10 @@
   .tm-st .ph{width:34px;height:34px;border-radius:50%;background:var(--tc) center/cover no-repeat;display:flex;align-items:center;justify-content:center;
     font-family:'Fjalla One',sans-serif;color:#141414;font-size:13px;flex:0 0 auto;}
   .tm-st b{display:block;font-size:13.5px;line-height:1.2;} .tm-st i{display:block;font-size:12px;color:var(--gold);font-style:normal;}
-  .tm-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px;}
-  @media (min-width:600px){ .tm-cards{grid-template-columns:repeat(3,minmax(0,1fr));} }
-  @media (min-width:900px){ .tm-cards{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px;} }
+  /* compact tiles: 3 per row on a phone, so a team of ~20 riders is about 7 rows */
+  .tm-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px;}
+  @media (min-width:560px){ .tm-cards{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;} }
+  @media (min-width:760px){ .tm-cards{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;} }
   /* a rider card: photo fills the card, name + nickname on a dark fade */
   .rcard{position:relative;display:block;width:100%;aspect-ratio:4/5;border-radius:16px;overflow:hidden;border:none;padding:0;cursor:pointer;
     background:linear-gradient(160deg,var(--tc),#152019 85%);box-shadow:0 8px 22px rgba(0,0,0,.35);color:#fff;text-align:left;font:inherit;
@@ -569,6 +570,17 @@
   .rcard .age{position:absolute;top:9px;right:9px;background:rgba(0,0,0,.55);border-radius:12px;padding:2px 9px;font-size:12px;font-weight:600;}
   .rcard .you{position:absolute;top:9px;left:9px;background:var(--gold);color:#141414;border-radius:12px;padding:2px 9px;font-size:11.5px;font-weight:700;letter-spacing:.04em;}
   .rcard::after{content:'';position:absolute;left:0;right:0;top:0;height:5px;background:var(--tc);}
+  .tm-cards .rcard{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.3);}
+  .tm-cards .rcard::after{height:4px;}
+  .tm-cards .rcard .ini{font-size:clamp(24px,8vw,36px);}
+  .tm-cards .rcard .fade{padding:22px 7px 7px;}
+  .tm-cards .rcard b{font-size:12.5px;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .tm-cards .rcard .nk{font-size:11px;margin-top:1px;}
+  .tm-cards .rcard .age{top:6px;right:6px;font-size:10.5px;padding:1px 6px;border-radius:9px;}
+  .tm-cards .rcard .you{top:6px;left:6px;font-size:9.5px;padding:1px 6px;border-radius:9px;}
+  .tm-chip.mine{border-color:var(--gold);}
+  .tm-chip .me{font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--gold);}
+  .tm-chip[aria-selected="true"] .me{color:#7a5a00;}
   #rcModal{position:fixed;inset:0;z-index:4600;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(6,10,8,.88);}
   #rcModal.open{display:flex;}
   .rc-big{width:min(380px,100%);}
@@ -5852,12 +5864,13 @@
   setTimeout(function(){ loadRaces(); }, 0);
 
   /* ================= TEAM: overview of every rider per team ================= */
-  var teamState = { data: null, filter: '' };
+  var teamState = { data: null, filter: null };   // filter: the team shown (null = your own team)
   var ROSTER_CACHE = 'rootahead_roster_cache';
   function showTeam(){
     if (!teamState){ setTimeout(showTeam, 0); return; }
     hideRace();
     homeDash.classList.add('hidden');
+    teamState.filter = null;   // always open on your own team
     document.getElementById('teamView').classList.remove('hidden');
     loadRoster();
   }
@@ -5923,9 +5936,15 @@
       c.addEventListener('click', function(){ teamState.filter = val; renderRoster(); document.getElementById('teamView').scrollTo(0, 0); });
       chips.appendChild(c);
     }
-    chip('All teams · ' + d.total, '', null);
-    d.teams.forEach(function(t){ chip(t.name + ' · ' + t.riders.length, t.id || '_none', t.color); });
-    d.teams.filter(function(t){ return !teamState.filter || (t.id || '_none') === teamState.filter; }).forEach(function(t){
+    // your own team: the one you are in (riders) or the first one you work for (staff; the server lists it first)
+    function key(t){ return t.id || '_none'; }
+    var mine = d.teams.filter(function(t){ return (t.riders || []).some(function(r){ return r.me; }) || (t.staff || []).some(function(x){ return x.me; }); })[0] || d.teams[0];
+    if (!teamState.filter || !d.teams.some(function(t){ return key(t) === teamState.filter; })) teamState.filter = key(mine);
+    d.teams.forEach(function(t){
+      chip(t.name + ' · ' + t.riders.length, key(t), t.color);
+      if (t === mine){ var c = chips.lastChild; c.classList.add('mine'); var me = document.createElement('span'); me.className = 'me'; me.textContent = 'YOURS'; c.appendChild(me); }
+    });
+    d.teams.filter(function(t){ return key(t) === teamState.filter; }).forEach(function(t){
       var sec = document.createElement('section'); sec.className = 'tm-sec'; sec.style.setProperty('--tc', t.color);
       var hd = document.createElement('header'); hd.className = 'tm-head';
       var lg = document.createElement('span'); lg.className = 'tm-logo-app' + (t.logoUrl ? ' logo' : '');
